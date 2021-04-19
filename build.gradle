@@ -1,0 +1,71 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'jacoco'
+
+    // https://github.com/gmazzo/gradle-buildconfig-plugin
+    id "com.github.gmazzo.buildconfig" version "3.0.0"
+}
+
+group 'bg.sofia.uni.fmi.mjt.password.vault'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'junit:junit:4.13'
+
+    compile 'com.google.code.gson:gson:2.8.6'
+
+    compile 'org.mockito:mockito-core:3.7.7'
+}
+
+test {
+    useJUnit()
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    dependsOn test // tests are required to run before generating the report
+}
+
+jacoco {
+    toolVersion = "0.8.6"
+}
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs += "--enable-preview"
+}
+
+tasks.withType(Test) {
+    jvmArgs += "--enable-preview"
+}
+
+tasks.withType(JavaExec) {
+    jvmArgs += '--enable-preview'
+}
+
+buildConfig {
+    className("MyConfig")   // forces the class name. Defaults to 'BuildConfig'
+    packageName("bg.sofia.uni.fmi.mjt.password.vault.server")  // forces the package. Defaults to '${project.group}'
+
+    useJavaOutput() // forces the outputType to 'java'
+
+    def HAPPY_DEV_AUTH_KEY = findProperty('HAPPY_DEV_AUTH_KEY')
+    def ENZOIC_AUTH_KEY = findProperty('ENZOIC_AUTH_KEY')
+
+    buildConfigField('String', 'HAPPY_DEV_AUTH_KEY', "\"${HAPPY_DEV_AUTH_KEY}\"")
+    buildConfigField('String', 'ENZOIC_AUTH_KEY', "\"${ENZOIC_AUTH_KEY}\"")
+}
+
+// add this to read from console
+run {
+    standardInput = System.in
+}
+
+application {
+    mainClass.set('bg.sofia.uni.fmi.mjt.password.vault.server.Server')
+//     mainClass.set('bg.sofia.uni.fmi.mjt.password.vault.client.Client')
+}
