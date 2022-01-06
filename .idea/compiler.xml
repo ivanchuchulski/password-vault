@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <bytecodeTargetLevel target="17">
+      <module name="api" target="17" />
+      <module name="api.lib" target="17" />
+      <module name="api.lib.main" target="17" />
+      <module name="api.lib.test" target="17" />
+      <module name="api.main" target="17" />
+      <module name="api.test" target="17" />
+      <module name="client" target="17" />
+      <module name="client.app" target="17" />
+      <module name="client.app.main" target="17" />
+      <module name="client.app.test" target="17" />
+      <module name="client.main" target="17" />
+      <module name="client.test" target="17" />
+      <module name="server" target="17" />
+      <module name="server.app" target="17" />
+      <module name="server.app.main" target="17" />
+      <module name="server.app.test" target="17" />
+      <module name="server.main" target="17" />
+      <module name="server.test" target="17" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

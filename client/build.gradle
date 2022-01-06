@@ -1,0 +1,22 @@
+plugins {
+    id 'application'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'junit:junit:4.13.2'
+
+    implementation project(':api')
+}
+
+application {
+    // Define the main class for the application.
+    mainClass = 'password.vault.client.Client'
+}
+
+run {
+    standardInput = System.in
+}
