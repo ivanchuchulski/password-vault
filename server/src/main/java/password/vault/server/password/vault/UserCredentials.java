@@ -1,6 +1,4 @@
-package password.vault.server.user.credentials;
-
-import password.vault.server.credential.CredentialIdentifier;
+package password.vault.server.password.vault;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,4 +26,6 @@ public class UserCredentials {
     public String getEncryptedPassword(CredentialIdentifier credentialIdentifier) {
         return websitesCredentials.get(credentialIdentifier);
     }
+
+
 }

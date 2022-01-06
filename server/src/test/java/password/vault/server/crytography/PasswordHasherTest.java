@@ -1,6 +1,7 @@
-package password.vault.server.password.hasher;
+package password.vault.server.crytography;
 
 import org.junit.Test;
+import password.vault.server.cryptography.PasswordHasher;
 
 import static org.junit.Assert.assertEquals;
 

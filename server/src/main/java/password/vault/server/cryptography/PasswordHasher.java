@@ -1,4 +1,4 @@
-package password.vault.server.password.hasher;
+package password.vault.server.cryptography;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;

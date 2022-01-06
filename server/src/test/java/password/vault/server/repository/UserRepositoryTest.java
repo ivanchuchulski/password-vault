@@ -14,10 +14,10 @@ import password.vault.server.exceptions.user.repository.UserAlreadyLoggedInExcep
 import password.vault.server.exceptions.user.repository.UserAlreadyRegisteredException;
 import password.vault.server.exceptions.user.repository.UserNotFoundException;
 import password.vault.server.exceptions.user.repository.UserNotLoggedInException;
-import password.vault.server.password.encryptor.PasswordEncryptor;
-import password.vault.server.user.User;
+import password.vault.server.cryptography.PasswordEncryptor;
+import password.vault.server.user.repository.User;
 import password.vault.server.user.repository.UserRepository;
-import password.vault.server.user.repository.UserRepositoryInMemory;
+import password.vault.server.user.repository.in.memory.UserRepositoryInMemory;
 
 import javax.crypto.SecretKey;
 import java.io.BufferedReader;

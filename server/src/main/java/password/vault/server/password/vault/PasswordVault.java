@@ -1,7 +1,6 @@
 package password.vault.server.password.vault;
 
 import com.google.gson.Gson;
-import password.vault.server.credential.CredentialIdentifier;
 import password.vault.server.dto.CredentialDTO;
 import password.vault.server.exceptions.InvalidUsernameForSiteException;
 import password.vault.server.exceptions.InvalidWebsiteException;
@@ -9,8 +8,7 @@ import password.vault.server.exceptions.password.CredentialNotFoundException;
 import password.vault.server.exceptions.password.CredentialsAlreadyAddedException;
 import password.vault.server.exceptions.password.PasswordEncryptorException;
 import password.vault.server.exceptions.password.UsernameNotHavingCredentialsException;
-import password.vault.server.password.encryptor.PasswordEncryptor;
-import password.vault.server.user.credentials.UserCredentials;
+import password.vault.server.cryptography.PasswordEncryptor;
 
 import javax.crypto.SecretKey;
 import java.io.BufferedReader;

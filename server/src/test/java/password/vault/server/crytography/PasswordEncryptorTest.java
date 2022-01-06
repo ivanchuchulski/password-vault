@@ -1,6 +1,7 @@
-package password.vault.server.password.encryptor;
+package password.vault.server.crytography;
 
 import org.junit.Test;
+import password.vault.server.cryptography.PasswordEncryptor;
 import password.vault.server.exceptions.password.PasswordEncryptorException;
 
 import javax.crypto.SecretKey;

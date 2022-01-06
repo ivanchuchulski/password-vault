@@ -1,4 +1,4 @@
-package password.vault.server;
+package password.vault.server.session;
 
 import java.nio.channels.SocketChannel;
 import java.util.HashMap;

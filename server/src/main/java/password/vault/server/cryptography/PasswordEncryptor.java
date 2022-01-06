@@ -1,4 +1,4 @@
-package password.vault.server.password.encryptor;
+package password.vault.server.cryptography;
 
 import password.vault.server.exceptions.password.PasswordEncryptorException;
 

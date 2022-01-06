@@ -1,4 +1,4 @@
-package password.vault.server.user;
+package password.vault.server.user.repository;
 
 import java.util.Objects;
 

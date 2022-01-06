@@ -10,7 +10,7 @@ import password.vault.server.exceptions.password.CredentialNotFoundException;
 import password.vault.server.exceptions.password.CredentialsAlreadyAddedException;
 import password.vault.server.exceptions.password.PasswordEncryptorException;
 import password.vault.server.exceptions.password.UsernameNotHavingCredentialsException;
-import password.vault.server.password.encryptor.PasswordEncryptor;
+import password.vault.server.cryptography.PasswordEncryptor;
 
 import javax.crypto.SecretKey;
 import java.io.BufferedReader;

@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import password.vault.server.MyConfig;
 import password.vault.server.dto.PasswordSafetyResponse;
 import password.vault.server.exceptions.password.PasswordSafetyCheckerException;
-import password.vault.server.password.hasher.PasswordHasher;
+import password.vault.server.cryptography.PasswordHasher;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;

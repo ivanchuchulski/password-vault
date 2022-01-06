@@ -1,4 +1,4 @@
-package password.vault.server.commands;
+package password.vault.server.communication;
 
 public record UserCommand(String command, String[] arguments) {
 

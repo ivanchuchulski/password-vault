@@ -1,4 +1,4 @@
-package password.vault.server.user.actions.log;
+package password.vault.server.session;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;

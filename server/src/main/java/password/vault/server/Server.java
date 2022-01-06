@@ -1,15 +1,15 @@
 package password.vault.server;
 
 import password.vault.api.ServerCommand;
-import password.vault.server.commands.UserCommand;
-import password.vault.server.commands.UserCommandCreator;
+import password.vault.server.communication.UserCommand;
+import password.vault.server.communication.UserCommandCreator;
 import password.vault.server.exceptions.SocketChannelReadException;
 import password.vault.server.password.generator.PasswordGenerator;
 import password.vault.server.password.safety.checker.PasswordSafetyChecker;
 import password.vault.server.password.vault.PasswordVault;
-import password.vault.server.responses.CommandResponse;
+import password.vault.server.communication.CommandResponse;
 import password.vault.server.user.repository.UserRepository;
-import password.vault.server.user.repository.UserRepositoryInMemory;
+import password.vault.server.user.repository.in.memory.UserRepositoryInMemory;
 
 import java.io.File;
 import java.io.IOException;

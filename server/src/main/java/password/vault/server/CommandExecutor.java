@@ -2,7 +2,7 @@ package password.vault.server;
 
 import password.vault.api.ServerCommand;
 import password.vault.api.ServerResponses;
-import password.vault.server.commands.UserCommand;
+import password.vault.server.communication.UserCommand;
 import password.vault.server.dto.PasswordGeneratorResponse;
 import password.vault.server.dto.PasswordSafetyResponse;
 import password.vault.server.exceptions.InvalidUsernameForSiteException;
@@ -19,8 +19,9 @@ import password.vault.server.exceptions.user.repository.RegisterException;
 import password.vault.server.password.generator.PasswordGenerator;
 import password.vault.server.password.safety.checker.PasswordSafetyChecker;
 import password.vault.server.password.vault.PasswordVault;
-import password.vault.server.responses.CommandResponse;
-import password.vault.server.user.actions.log.UserActionsLog;
+import password.vault.server.communication.CommandResponse;
+import password.vault.server.session.ChannelUsernameMapper;
+import password.vault.server.session.UserActionsLog;
 import password.vault.server.user.repository.UserRepository;
 
 import java.nio.channels.SocketChannel;

@@ -1,4 +1,4 @@
-package password.vault.server.user.repository;
+package password.vault.server.user.repository.in.memory;
 
 import com.google.gson.Gson;
 import password.vault.server.exceptions.user.repository.InvalidUsernameException;
@@ -7,8 +7,9 @@ import password.vault.server.exceptions.user.repository.UserAlreadyLoggedInExcep
 import password.vault.server.exceptions.user.repository.UserAlreadyRegisteredException;
 import password.vault.server.exceptions.user.repository.UserNotFoundException;
 import password.vault.server.exceptions.user.repository.UserNotLoggedInException;
-import password.vault.server.password.hasher.PasswordHasher;
-import password.vault.server.user.User;
+import password.vault.server.cryptography.PasswordHasher;
+import password.vault.server.user.repository.User;
+import password.vault.server.user.repository.UserRepository;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
