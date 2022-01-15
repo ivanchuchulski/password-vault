@@ -14,6 +14,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.util.Base64;
@@ -68,11 +69,82 @@ public class PasswordEncryptor {
         }
     }
 
-    public static SecretKey getKeyFromString(String password) throws PasswordEncryptorException {
+
+    public static byte[] encrypt(String input, SecretKey key, byte[] ivBytes) throws
+            PasswordEncryptorException {
+        try {
+            IvParameterSpec ivParameterSpec = PasswordEncryptor.generateIv(ivBytes);
+
+            Cipher cipher = Cipher.getInstance(ENCRYPTION_ALGORITHM_NAME);
+            cipher.init(Cipher.ENCRYPT_MODE, key, ivParameterSpec);
+            byte[] cipherText = cipher.doFinal(input.getBytes());
+            byte[] encodedAndEncrypted = Base64.getEncoder().encode(cipherText);
+
+            return encodedAndEncrypted;
+        } catch (InvalidAlgorithmParameterException | InvalidKeyException | BadPaddingException | NoSuchAlgorithmException | IllegalBlockSizeException | NoSuchPaddingException e) {
+            throw new PasswordEncryptorException("error : encrypting string", e);
+        }
+    }
+
+    public static String decrypt(byte[] cipherText, SecretKey key, byte[] ivBytes) throws
+            PasswordEncryptorException {
+        try {
+            IvParameterSpec ivParameterSpec = PasswordEncryptor.generateIv(ivBytes);
+
+            Cipher cipher = Cipher.getInstance(ENCRYPTION_ALGORITHM_NAME);
+            cipher.init(Cipher.DECRYPT_MODE, key, ivParameterSpec);
+
+            byte[] decoded = Base64.getDecoder().decode(cipherText);
+            byte[] plainText = cipher.doFinal(decoded);
+
+            return new String(plainText);
+        } catch (InvalidAlgorithmParameterException | NoSuchPaddingException | IllegalBlockSizeException | NoSuchAlgorithmException | BadPaddingException | InvalidKeyException e) {
+            throw new PasswordEncryptorException("error : decrypting password", e);
+        }
+    }
+
+
+    public static EncryptedPassword encryptPassword(String input, SecretKey key) throws
+            PasswordEncryptorException {
+        try {
+            byte[] salt = PasswordEncryptor.generateSalt();
+            byte[] ivBytes = PasswordEncryptor.generateSalt();
+            IvParameterSpec ivParameterSpec = PasswordEncryptor.generateIv(ivBytes);
+
+            Cipher cipher = Cipher.getInstance(ENCRYPTION_ALGORITHM_NAME);
+            cipher.init(Cipher.ENCRYPT_MODE, key, ivParameterSpec);
+
+            byte[] cipherText = cipher.doFinal(input.getBytes());
+            byte[] encodedAndEncrypted = Base64.getEncoder().encode(cipherText);
+
+            return new EncryptedPassword(encodedAndEncrypted, salt, ivBytes);
+        } catch (InvalidAlgorithmParameterException | InvalidKeyException | BadPaddingException | NoSuchAlgorithmException | IllegalBlockSizeException | NoSuchPaddingException e) {
+            throw new PasswordEncryptorException("error : encrypting string", e);
+        }
+    }
+
+    public static String decryptPassword(EncryptedPassword encryptedPassword, SecretKey key) throws
+            PasswordEncryptorException {
+        try {
+            byte[] ivBytes = encryptedPassword.iv();
+            IvParameterSpec ivParameterSpec = generateIv(ivBytes);
+            Cipher cipher = Cipher.getInstance(ENCRYPTION_ALGORITHM_NAME);
+            cipher.init(Cipher.DECRYPT_MODE, key, ivParameterSpec);
+
+            byte[] decoded = Base64.getDecoder().decode(encryptedPassword.encryptedPassword());
+            byte[] plainText = cipher.doFinal(decoded);
+
+            return new String(plainText);
+        } catch (InvalidAlgorithmParameterException | NoSuchPaddingException | IllegalBlockSizeException | NoSuchAlgorithmException | BadPaddingException | InvalidKeyException e) {
+            throw new PasswordEncryptorException("error : decrypting password", e);
+        }
+    }
+
+    public static SecretKey getKeyFromString(String str) throws PasswordEncryptorException {
         try {
             SecretKeyFactory secretKeyFactory = SecretKeyFactory.getInstance(KEY_GENERATOR_ALGORITHM);
 
-            KeySpec keySpec = new PBEKeySpec(password.toCharArray(), KEY_SALT, KEY_ITERATIONS_COUNT, KEY_LENGTH);
+            KeySpec keySpec = new PBEKeySpec(str.toCharArray(), KEY_SALT, KEY_ITERATIONS_COUNT, KEY_LENGTH);
 
             return new SecretKeySpec(secretKeyFactory.generateSecret(keySpec).getEncoded(), SECRET_KEY_SPEC_ALGORITHM);
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
@@ -80,4 +152,13 @@ public class PasswordEncryptor {
         }
     }
 
+    public static IvParameterSpec generateIv(byte[] iv) {
+        return new IvParameterSpec(iv);
+    }
+
+    public static byte[] generateSalt() {
+        byte[] salt = new byte[16];
+        new SecureRandom().nextBytes(salt);
+        return salt;
+    }
 }

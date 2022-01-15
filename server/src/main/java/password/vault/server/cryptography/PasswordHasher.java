@@ -1,5 +1,7 @@
 package password.vault.server.cryptography;
 
+import password.vault.server.exceptions.HashException;
+
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -12,6 +14,7 @@ public class PasswordHasher {
     public static final String MD5_MESSAGE_DIGEST_INSTANCE = "MD5";
     public static final String SHA1_MESSAGE_DIGEST_INSTANCE = "SHA-1";
     public static final String SHA256_MESSAGE_DIGEST_INSTANCE = "SHA-256";
+    public static final String SHA512_MESSAGE_DIGEST_INSTANCE = "SHA-512";
 
     public static String computeHash(String password, String messageDigestInstance) {
         try {
@@ -21,6 +24,15 @@ public class PasswordHasher {
         } catch (NoSuchAlgorithmException noSuchAlgorithmException) {
             throw new RuntimeException(String.format("error : no such message digest algorithm found %s ",
                                                      messageDigestInstance), noSuchAlgorithmException);
+        }
+    }
+
+    public static byte[] computeSHA512HashWithSalt(byte[] text) throws HashException {
+        try {
+            MessageDigest messageDigest = MessageDigest.getInstance(SHA512_MESSAGE_DIGEST_INSTANCE);
+            return messageDigest.digest(text);
+        } catch (NoSuchAlgorithmException noSuchAlgorithmException) {
+            throw new HashException("error : no message digest algorithm found for sha-512", noSuchAlgorithmException);
         }
     }
 

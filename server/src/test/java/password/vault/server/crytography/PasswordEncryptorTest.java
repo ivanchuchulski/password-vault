@@ -1,10 +1,14 @@
 package password.vault.server.crytography;
 
 import org.junit.Test;
+import password.vault.server.cryptography.EncryptedPassword;
 import password.vault.server.cryptography.PasswordEncryptor;
 import password.vault.server.exceptions.password.PasswordEncryptorException;
 
 import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
+
+import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
 
@@ -29,5 +33,35 @@ public class PasswordEncryptorTest {
         String decryptedString = PasswordEncryptor.decrypt(encryptedString, key);
 
         assertEquals(input, decryptedString);
+    }
+
+    @Test
+    public void testEncryptingAStringAndDecryptingItReturnsTheSameString3() throws PasswordEncryptorException {
+        String input = "pass";
+
+        byte[] salt = PasswordEncryptor.generateSalt();
+        byte[] ivBytes = PasswordEncryptor.generateSalt();
+
+        // the key can be derived differently
+        SecretKey key = PasswordEncryptor.getKeyFromString(input + Arrays.toString(salt));
+
+        byte[] encryptedString = PasswordEncryptor.encrypt(input, key, ivBytes);
+        String decryptedString = PasswordEncryptor.decrypt(encryptedString, key, ivBytes);
+
+        System.out.println(Arrays.toString(encryptedString));
+
+        assertEquals(input, decryptedString);
+    }
+
+    @Test
+    public void testDecryptPasswordReturnsTheCorrectPassword() throws PasswordEncryptorException {
+        String input = "supersecretPass";
+
+        SecretKey keyFromString = PasswordEncryptor.getKeyFromString(input);
+        EncryptedPassword encryptedPassword = PasswordEncryptor.encryptPassword(input, keyFromString);
+
+        String decryptedPassword = PasswordEncryptor.decryptPassword(encryptedPassword, keyFromString);
+
+        assertEquals(input, decryptedPassword);
     }
 }
