@@ -98,21 +98,21 @@ public class Server {
         runServer = false;
     }
 
-    public static void main(String[] args) {
-        final int serverPort = 7777;
-        final Path usersFilePath = Path.of("resources" + File.separator + "users.txt");
-        final Path credentialsFile = Path.of("resources" + File.separator + "credentials.txt");
-
-        final HttpClient httpClientForPasswordSafetyChecker = HttpClient.newBuilder().build();
-        final HttpClient httpClientForPasswordGenerator = HttpClient.newBuilder().build();
-        final PasswordSafetyChecker passwordSafetyChecker =
-                new PasswordSafetyChecker(httpClientForPasswordSafetyChecker);
-        final PasswordGenerator passwordGenerator = new PasswordGenerator(httpClientForPasswordGenerator);
-
-        Server server = new Server(serverPort, usersFilePath, credentialsFile, passwordSafetyChecker,
-                                   passwordGenerator);
-        server.start();
-    }
+    // public static void main(String[] args) {
+    //     final int serverPort = 7777;
+    //     final Path usersFilePath = Path.of("resources" + File.separator + "users.txt");
+    //     final Path credentialsFile = Path.of("resources" + File.separator + "credentials.txt");
+    //
+    //     final HttpClient httpClientForPasswordSafetyChecker = HttpClient.newBuilder().build();
+    //     final HttpClient httpClientForPasswordGenerator = HttpClient.newBuilder().build();
+    //     final PasswordSafetyChecker passwordSafetyChecker =
+    //             new PasswordSafetyChecker(httpClientForPasswordSafetyChecker);
+    //     final PasswordGenerator passwordGenerator = new PasswordGenerator(httpClientForPasswordGenerator);
+    //
+    //     Server server = new Server(serverPort, usersFilePath, credentialsFile, passwordSafetyChecker,
+    //                                passwordGenerator);
+    //     server.start();
+    // }
 
     private void acceptConnection(SelectionKey key) throws IOException {
         ServerSocketChannel serverSocketChannel = (ServerSocketChannel) key.channel();

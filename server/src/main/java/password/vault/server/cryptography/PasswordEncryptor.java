@@ -141,10 +141,14 @@ public class PasswordEncryptor {
     }
 
     public static SecretKey getKeyFromString(String str) throws PasswordEncryptorException {
+        return getKeyFromString(str, KEY_SALT);
+    }
+
+    public static SecretKey getKeyFromString(String str, byte[] salt) throws PasswordEncryptorException {
         try {
             SecretKeyFactory secretKeyFactory = SecretKeyFactory.getInstance(KEY_GENERATOR_ALGORITHM);
 
-            KeySpec keySpec = new PBEKeySpec(str.toCharArray(), KEY_SALT, KEY_ITERATIONS_COUNT, KEY_LENGTH);
+            KeySpec keySpec = new PBEKeySpec(str.toCharArray(), salt, KEY_ITERATIONS_COUNT, KEY_LENGTH);
 
             return new SecretKeySpec(secretKeyFactory.generateSecret(keySpec).getEncoded(), SECRET_KEY_SPEC_ALGORITHM);
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {

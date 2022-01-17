@@ -20,6 +20,8 @@ dependencies {
 
     implementation 'org.mockito:mockito-core:3.7.7'
 
+    implementation 'org.mariadb.jdbc:mariadb-java-client:2.1.2'
+
     implementation project(':api')
 }
 
@@ -45,8 +47,16 @@ buildConfig {
     def HAPPY_DEV_AUTH_KEY = property('HAPPY_DEV_AUTH_KEY')
     def ENZOIC_AUTH_KEY = property('ENZOIC_AUTH_KEY')
 
+    def DB_URL = findProperty('DB_URL')
+    def DB_USER = findProperty('DB_USER')
+    def DB_PASSWORD = findProperty('DB_PASSWORD')
+
     buildConfigField('String', 'HAPPY_DEV_AUTH_KEY', "\"${HAPPY_DEV_AUTH_KEY}\"")
     buildConfigField('String', 'ENZOIC_AUTH_KEY', "\"${ENZOIC_AUTH_KEY}\"")
+
+    buildConfigField('String', 'DB_URL', "\"${DB_URL}\"")
+    buildConfigField('String', 'DB_USER', "\"${DB_USER}\"")
+    buildConfigField('String', 'DB_PASSWORD', "\"${DB_PASSWORD}\"")
 }
 
 // add this to read from console
@@ -55,5 +65,5 @@ run {
 }
 
 application {
-    mainClass.set('password.vault.server.Server')
+    mainClass.set('password.vault.server.Main')
 }

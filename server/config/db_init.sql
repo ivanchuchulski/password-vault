@@ -1,27 +1,36 @@
+-- password vault mariadb config
 CREATE
-DATABASE `password_vault` IF NOT EXISTS;
+DATABASE IF NOT EXISTS `password_vault`;
 
 USE
 `password_vault`;
 
+GRANT ALL
+ON password_vault.*
+    TO jnp_user@localhost
+        IDENTIFIED BY "jnp1234";
+
+
 CREATE TABLE `user`
 (
-    `username` VARCHAR(255) NOT NULL PRIMARY KEY,
-    `email`    VARCHAR(255) NOT NULL UNIQUES,
-    `password` VARBINARY    NOT NULL,
-    `salt`     VARBINARY    NOT NULL
+    `username` VARCHAR(255) NOT NULL,
+    `email`    VARCHAR(255) NOT NULL,
+    `password` VARBINARY(255) NOT NULL,
+    `salt`     VARBINARY(255) NOT NULL,
+    CONSTRAINT PRIMARY KEY (`username`)
 );
 
 
 CREATE TABLE `credential`
 (
-    `username`      VARCHAR(255) NOT NULL FOREIGN KEY REFERENCES `user`(`username`),
+    `username`      VARCHAR(255) NOT NULL,
     `website`       VARCHAR(255) NOT NULL,
     `site_username` VARCHAR(255) NOT NULL,
 
-    `password`      VARBINARY    NOT NULL,
-    `salt`          VARBINARY    NOT NULL,
-    `iv`            VARBINARY    NOT NULL,
+    `password`      VARBINARY(255) NOT NULL,
+    `salt`          VARBINARY(255) NOT NULL,
+    `iv`            VARBINARY(255) NOT NULL,
 
-    PRIMARY KEY (`website`, `site_username`, `username`)
+    CONSTRAINT PRIMARY KEY (`website`, `site_username`, `username`),
+    CONSTRAINT FOREIGN KEY (`username`) REFERENCES `user` (`username`)
 );
