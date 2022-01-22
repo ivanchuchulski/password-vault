@@ -1,20 +1,18 @@
 package password.vault.server;
 
 import password.vault.api.ServerCommand;
+import password.vault.server.communication.CommandResponse;
 import password.vault.server.communication.UserCommand;
 import password.vault.server.communication.UserCommandCreator;
 import password.vault.server.exceptions.SocketChannelReadException;
 import password.vault.server.password.generator.PasswordGenerator;
 import password.vault.server.password.safety.checker.PasswordSafetyChecker;
 import password.vault.server.password.vault.PasswordVault;
-import password.vault.server.communication.CommandResponse;
 import password.vault.server.user.repository.UserRepository;
 import password.vault.server.user.repository.in.memory.UserRepositoryInMemory;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.http.HttpClient;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -96,23 +94,10 @@ public class Server {
 
     public void stop() {
         runServer = false;
+        if (selector.isOpen()) {
+            selector.wakeup();
+        }
     }
-
-    // public static void main(String[] args) {
-    //     final int serverPort = 7777;
-    //     final Path usersFilePath = Path.of("resources" + File.separator + "users.txt");
-    //     final Path credentialsFile = Path.of("resources" + File.separator + "credentials.txt");
-    //
-    //     final HttpClient httpClientForPasswordSafetyChecker = HttpClient.newBuilder().build();
-    //     final HttpClient httpClientForPasswordGenerator = HttpClient.newBuilder().build();
-    //     final PasswordSafetyChecker passwordSafetyChecker =
-    //             new PasswordSafetyChecker(httpClientForPasswordSafetyChecker);
-    //     final PasswordGenerator passwordGenerator = new PasswordGenerator(httpClientForPasswordGenerator);
-    //
-    //     Server server = new Server(serverPort, usersFilePath, credentialsFile, passwordSafetyChecker,
-    //                                passwordGenerator);
-    //     server.start();
-    // }
 
     private void acceptConnection(SelectionKey key) throws IOException {
         ServerSocketChannel serverSocketChannel = (ServerSocketChannel) key.channel();

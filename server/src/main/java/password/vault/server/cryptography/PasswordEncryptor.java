@@ -162,6 +162,7 @@ public class PasswordEncryptor {
 
     public static byte[] generateSalt() {
         byte[] salt = new byte[16];
+        // SecureRandom sha1PRGNG = SecureRandom.getInstance("SHA1PRGNG");
         new SecureRandom().nextBytes(salt);
         return salt;
     }

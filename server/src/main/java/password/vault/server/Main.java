@@ -23,8 +23,8 @@ import java.util.Arrays;
 public class Main {
     public static void main(String[] args) throws IOException, HashException, PasswordEncryptorException,
             CredentialNotFoundException {
-        // startServer();
-        testDB();
+        startServer();
+        // testDB();
     }
 
     private static void startServer() {

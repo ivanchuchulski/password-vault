@@ -2,6 +2,7 @@ package password.vault.server;
 
 import password.vault.api.ServerCommand;
 import password.vault.api.ServerResponses;
+import password.vault.server.communication.CommandResponse;
 import password.vault.server.communication.UserCommand;
 import password.vault.server.dto.PasswordGeneratorResponse;
 import password.vault.server.dto.PasswordSafetyResponse;
@@ -19,17 +20,13 @@ import password.vault.server.exceptions.user.repository.RegisterException;
 import password.vault.server.password.generator.PasswordGenerator;
 import password.vault.server.password.safety.checker.PasswordSafetyChecker;
 import password.vault.server.password.vault.PasswordVault;
-import password.vault.server.communication.CommandResponse;
 import password.vault.server.session.ChannelUsernameMapper;
 import password.vault.server.session.UserActionsLog;
 import password.vault.server.user.repository.UserRepository;
 
 import java.nio.channels.SocketChannel;
-import java.time.LocalDateTime;
 
 public class CommandExecutor {
-    private static final int MAX_ALLOWED_USER_INACTIVITY_MINUTES = 1;
-
     private final UserActionsLog userActionsLog;
     private final ChannelUsernameMapper channelUsernameMapper;
 
@@ -81,25 +78,26 @@ public class CommandExecutor {
 
         String username = channelUsernameMapper.getUsernameForChannel(socketChannel);
 
-        if (!isUserLoggedIn(username)) {
+        if (!userRepository.isUsernameLoggedIn(username)) {
             return new CommandResponse(false, ServerResponses.NOT_LOGGED_IN.getResponseText());
         }
 
-        if (!userHasValidSession(username)) {
+        if (!userActionsLog.userHasValidSession(username)) {
             logoutUser(socketChannel);
             return new CommandResponse(false, ServerResponses.SESSION_EXPIRED.getResponseText());
         }
 
         userActionsLog.addUserActionTimeStamp(username);
 
-        String response;
+        String response =
         switch (serverCommand) {
-            case ADD_PASSWORD -> response = addPassword(username, arguments);
-            case REMOVE_PASSWORD -> response = removePassword(username, arguments);
-            case RETRIEVE_CREDENTIALS -> response = retrieveCredentials(username, arguments);
-            case GENERATE_PASSWORD -> response = generatePassword(username, arguments);
-            default -> response = ServerResponses.UNKNOWN_COMMAND.getResponseText();
-        }
+            case ADD_PASSWORD -> addPassword(username, arguments);
+            case REMOVE_PASSWORD ->  removePassword(username, arguments);
+            case UPDATE_PASSWORD ->  "unimplemented!";
+            case RETRIEVE_CREDENTIALS -> retrieveCredentials(username, arguments);
+            case GENERATE_PASSWORD -> generatePassword(username, arguments);
+            default ->  ServerResponses.UNKNOWN_COMMAND.getResponseText();
+        };
 
         return new CommandResponse(false, response);
     }
@@ -130,9 +128,9 @@ public class CommandExecutor {
         try {
             String channelUsername = channelUsernameMapper.getUsernameForChannel(socketChannel);
 
-            if (isUserLoggedIn(channelUsername)) {
+            if (userRepository.isUsernameLoggedIn(channelUsername)) {
                 return ServerResponses.REGISTRATION_ERROR.getResponseText().
-                        formatted(ServerResponses.ALREADY_LOGGED_IN.getResponseText());
+                                                         formatted(ServerResponses.ALREADY_LOGGED_IN.getResponseText());
             }
 
             String username = arguments[0];
@@ -269,13 +267,5 @@ public class CommandExecutor {
 
     private boolean isUserLoggedIn(String username) {
         return userRepository.isUsernameLoggedIn(username);
-    }
-
-    private boolean userHasValidSession(String username) {
-        LocalDateTime lastActionTimeForChannel = userActionsLog.getLastActionTimeForChannel(username);
-
-        LocalDateTime minimumMinutesAgo = LocalDateTime.now().minusMinutes(MAX_ALLOWED_USER_INACTIVITY_MINUTES);
-
-        return lastActionTimeForChannel.isAfter(minimumMinutesAgo);
     }
 }
