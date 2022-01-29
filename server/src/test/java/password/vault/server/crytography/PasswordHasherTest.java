@@ -49,7 +49,7 @@ public class PasswordHasherTest {
     @Test
     public void testComputeSHA512HashWithSalt() throws HashException, IOException {
         String text = "superSecretText";
-        byte[] salt = PasswordEncryptor.generateSalt();
+        byte[] salt = PasswordEncryptor.generateSixteenByteSalt();
 
         byte[] textBytes = text.getBytes(StandardCharsets.UTF_8);
 

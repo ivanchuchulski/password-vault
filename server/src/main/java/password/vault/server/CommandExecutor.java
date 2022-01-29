@@ -3,7 +3,7 @@ package password.vault.server;
 import password.vault.api.ServerCommand;
 import password.vault.api.ServerResponses;
 import password.vault.server.communication.CommandResponse;
-import password.vault.server.communication.UserCommand;
+import password.vault.server.communication.UserRequest;
 import password.vault.server.dto.PasswordGeneratorResponse;
 import password.vault.server.dto.PasswordSafetyResponse;
 import password.vault.server.exceptions.InvalidUsernameForSiteException;
@@ -48,73 +48,70 @@ public class CommandExecutor {
         this.channelUsernameMapper = new ChannelUsernameMapper();
     }
 
-    public CommandResponse executeCommand(SocketChannel socketChannel, UserCommand clientUserCommand) {
-        String userCommand = clientUserCommand.command();
-        String[] arguments = clientUserCommand.arguments();
-
-        ServerCommand serverCommand = ServerCommand.getServerCommandFromCommandText(userCommand);
+    public CommandResponse executeCommand(UserRequest userRequest) {
+        ServerCommand serverCommand = ServerCommand.getServerCommandFromCommandText(userRequest.command());
 
         if (serverCommand.equals(ServerCommand.UNKNOWN)) {
             return new CommandResponse(false, ServerResponses.UNKNOWN_COMMAND.getResponseText());
         }
 
-        if (commandHasIncorrectNumberOfArguments(clientUserCommand, serverCommand)) {
+        if (commandHasIncorrectNumberOfArguments(userRequest, serverCommand)) {
             return new CommandResponse(false, ServerResponses.
                     WRONG_COMMAND_NUMBER_OF_ARGUMENTS.getResponseText().formatted(serverCommand.getCommandOverview()));
         }
 
         switch (serverCommand) {
             case DISCONNECT:
-                return new CommandResponse(true, disconnectUser(socketChannel));
+                return new CommandResponse(true, disconnectUser(userRequest));
             case REGISTER:
-                return new CommandResponse(false, registerUser(socketChannel, arguments));
+                return new CommandResponse(false, registerUser(userRequest));
             case LOGIN:
-                return new CommandResponse(false, loginUser(socketChannel, arguments));
+                return new CommandResponse(false, loginUser(userRequest));
             case LOGOUT:
-                return new CommandResponse(false, logoutUser(socketChannel));
+                return new CommandResponse(false, logoutUser(userRequest));
             case HELP:
                 return new CommandResponse(false, ServerCommand.printHelp());
         }
 
-        String username = channelUsernameMapper.getUsernameForChannel(socketChannel);
+        String username = channelUsernameMapper.getUsernameForChannel(userRequest.getSocketChannel());
 
         if (!userRepository.isUsernameLoggedIn(username)) {
             return new CommandResponse(false, ServerResponses.NOT_LOGGED_IN.getResponseText());
         }
 
         if (!userActionsLog.userHasValidSession(username)) {
-            logoutUser(socketChannel);
+            logoutUser(userRequest);
             return new CommandResponse(false, ServerResponses.SESSION_EXPIRED.getResponseText());
         }
 
         userActionsLog.addUserActionTimeStamp(username);
 
         String response =
-        switch (serverCommand) {
-            case ADD_PASSWORD -> addPassword(username, arguments);
-            case REMOVE_PASSWORD ->  removePassword(username, arguments);
-            case UPDATE_PASSWORD ->  "unimplemented!";
-            case RETRIEVE_CREDENTIALS -> retrieveCredentials(username, arguments);
-            case GENERATE_PASSWORD -> generatePassword(username, arguments);
-            default ->  ServerResponses.UNKNOWN_COMMAND.getResponseText();
-        };
+                switch (serverCommand) {
+                    case ADD_PASSWORD -> addPassword(username, userRequest.arguments());
+                    case REMOVE_PASSWORD -> removePassword(username, userRequest.arguments());
+                    case UPDATE_PASSWORD -> "unimplemented!";
+                    case RETRIEVE_CREDENTIALS -> retrieveCredentials(username, userRequest.arguments());
+                    case GENERATE_PASSWORD -> generatePassword(username, userRequest.arguments());
+                    default -> ServerResponses.UNKNOWN_COMMAND.getResponseText();
+                };
 
         return new CommandResponse(false, response);
     }
 
-    private boolean commandHasIncorrectNumberOfArguments(UserCommand clientUserCommand, ServerCommand serverCommand) {
-        return serverCommand.getNumberOfArguments() != clientUserCommand.numberOfArguments();
+    private boolean commandHasIncorrectNumberOfArguments(UserRequest clientUserRequest, ServerCommand serverCommand) {
+        return serverCommand.getNumberOfArguments() != clientUserRequest.numberOfArguments();
     }
 
-    private String disconnectUser(SocketChannel socketChannel) {
+    private String disconnectUser(UserRequest userRequest) {
         try {
             System.out.println("disconnecting client");
 
-            String channelUsername = channelUsernameMapper.getUsernameForChannel(socketChannel);
+            String channelUsername = channelUsernameMapper.getUsernameForChannel(userRequest.getSocketChannel());
 
             userRepository.logOutUser(channelUsername);
 
-            channelUsernameMapper.removeUsernameForChannel(socketChannel);
+            channelUsernameMapper.removeUsernameForChannel(userRequest.getSocketChannel());
             userActionsLog.removeUserSession(channelUsername);
 
             return ServerResponses.DISCONNECTED.getResponseText();
@@ -124,18 +121,15 @@ public class CommandExecutor {
         }
     }
 
-    private String registerUser(SocketChannel socketChannel, String[] arguments) {
+    private String registerUser(UserRequest userRequest) {
         try {
-            String channelUsername = channelUsernameMapper.getUsernameForChannel(socketChannel);
+            String username = userRequest.arguments()[0];
+            String password = userRequest.arguments()[1];
+            String repeatedPassword = userRequest.arguments()[2];
 
-            if (userRepository.isUsernameLoggedIn(channelUsername)) {
-                return ServerResponses.REGISTRATION_ERROR.getResponseText().
-                                                         formatted(ServerResponses.ALREADY_LOGGED_IN.getResponseText());
+            if (!password.equals(repeatedPassword)) {
+                return ServerResponses.REGISTRATION_ERROR.getResponseText().formatted("passwords do not match");
             }
-
-            String username = arguments[0];
-            String password = arguments[1];
-            String repeatedPassword = arguments[2];
 
             userRepository.registerUser(username, password, repeatedPassword);
 
@@ -145,14 +139,14 @@ public class CommandExecutor {
         }
     }
 
-    private String loginUser(SocketChannel socketChannel, String[] arguments) {
+    private String loginUser(UserRequest userRequest) {
         try {
-            String username = arguments[0];
-            String password = arguments[1];
+            String username = userRequest.arguments()[0];
+            String password = userRequest.arguments()[1];
 
             userRepository.logInUser(username, password);
 
-            channelUsernameMapper.addUsernameForChannel(socketChannel, username);
+            channelUsernameMapper.addUsernameForChannel(userRequest.getSocketChannel(), username);
             userActionsLog.addUserActionTimeStamp(username);
 
             return ServerResponses.LOGIN_SUCCESS.getResponseText().formatted(username);
@@ -161,12 +155,12 @@ public class CommandExecutor {
         }
     }
 
-    private String logoutUser(SocketChannel socketChannel) {
+    private String logoutUser(UserRequest userRequest) {
         try {
-            String usernameForChannel = channelUsernameMapper.getUsernameForChannel(socketChannel);
+            String usernameForChannel = channelUsernameMapper.getUsernameForChannel(userRequest.getSocketChannel());
 
             userRepository.logOutUser(usernameForChannel);
-            channelUsernameMapper.removeUsernameForChannel(socketChannel);
+            channelUsernameMapper.removeUsernameForChannel(userRequest.getSocketChannel());
             userActionsLog.removeUserSession(usernameForChannel);
 
             return ServerResponses.LOGOUT_SUCCESS.getResponseText();
@@ -263,9 +257,5 @@ public class CommandExecutor {
         } catch (InvalidWebsiteException | InvalidUsernameForSiteException e) {
             return ServerResponses.WRONG_COMMAND_ARGUMENT.getResponseText().formatted(e.getMessage());
         }
-    }
-
-    private boolean isUserLoggedIn(String username) {
-        return userRepository.isUsernameLoggedIn(username);
     }
 }

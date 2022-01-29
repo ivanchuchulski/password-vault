@@ -200,23 +200,6 @@ public class ServerTest {
     }
 
     @Test
-    public void testRegisteringWhenLoggedIn() throws IOException {
-        String username = getUniqueUsername();
-
-        sendRequestAndGetResponse(registerCommand(username, PASSWORD_FOR_TESTING, PASSWORD_FOR_TESTING));
-        sendRequestAndGetResponse(loginCommand(username, PASSWORD_FOR_TESTING));
-        String response = sendRequestAndGetResponse(registerCommand(username, PASSWORD_FOR_TESTING,
-                                                                    PASSWORD_FOR_TESTING));
-
-        String expectedResponse = ServerResponses.REGISTRATION_ERROR.getResponseText().
-                formatted(ServerResponses.ALREADY_LOGGED_IN.getResponseText());
-
-        assertEquals("when logged in user tries to register the reponse should an error response",
-                     expectedResponse,
-                     response);
-    }
-
-    @Test
     public void testLoggingInWhenAlreadyLoggedIn() throws IOException {
         String username = getUniqueUsername();
 

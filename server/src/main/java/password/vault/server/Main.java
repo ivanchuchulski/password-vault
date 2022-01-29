@@ -21,8 +21,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 
 public class Main {
-    public static void main(String[] args) throws IOException, HashException, PasswordEncryptorException,
-            CredentialNotFoundException {
+    public static void main(String[] args) {
         startServer();
         // testDB();
     }
@@ -50,7 +49,6 @@ public class Main {
         String email = "test@example.com";
         String pass = "test1234";
 
-
         CredentialIdentifier credentialIdentifier = new CredentialIdentifier("facebook.com", "testUsername");
         String sitePass = "passtest1234";
 
@@ -71,7 +69,7 @@ public class Main {
     private static void testInsertUser(DatabaseConnector databaseConnector, String name, String email, String pass) throws
             IOException, HashException {
         byte[] passBytes = pass.getBytes(StandardCharsets.UTF_8);
-        byte[] salt = PasswordEncryptor.generateSalt();
+        byte[] salt = PasswordEncryptor.generateSixteenByteSalt();
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         outputStream.write(passBytes);
@@ -89,8 +87,8 @@ public class Main {
     private static void testInsertCredential(DatabaseConnector databaseConnector, String username,
                                              CredentialIdentifier credentialIdentifier, String sitePass) throws
             PasswordEncryptorException {
-        byte[] salt = PasswordEncryptor.generateSalt();
-        byte[] ivBytes = PasswordEncryptor.generateSalt();
+        byte[] salt = PasswordEncryptor.generateSixteenByteSalt();
+        byte[] ivBytes = PasswordEncryptor.generateSixteenByteSalt();
 
         // the key can be derived differently
         SecretKey key = generateSecretKeyString(username, credentialIdentifier, salt);

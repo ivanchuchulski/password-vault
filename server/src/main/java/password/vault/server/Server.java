@@ -2,8 +2,7 @@ package password.vault.server;
 
 import password.vault.api.ServerCommand;
 import password.vault.server.communication.CommandResponse;
-import password.vault.server.communication.UserCommand;
-import password.vault.server.communication.UserCommandCreator;
+import password.vault.server.communication.UserRequest;
 import password.vault.server.exceptions.SocketChannelReadException;
 import password.vault.server.password.generator.PasswordGenerator;
 import password.vault.server.password.safety.checker.PasswordSafetyChecker;
@@ -117,11 +116,15 @@ public class Server {
             return;
         }
 
-        UserCommand clientUserCommand = UserCommandCreator.createCommand(request);
+        UserRequest clientUserRequest = new UserRequest(socketChannel, request);
 
-        CommandResponse commandResponse = commandExecutor.executeCommand(socketChannel, clientUserCommand);
+        CommandResponse commandResponse = commandExecutor.executeCommand(clientUserRequest);
 
         writeResponseToClient(socketChannel, commandResponse.response());
+
+        // if (clientUserRequest.command().equals(ServerCommand.DISCONNECT.getCommandText())) {
+        //     socketChannel.close();
+        // }
 
         if (commandResponse.toDisconnect()) {
             socketChannel.close();
@@ -143,8 +146,7 @@ public class Server {
             return messageFromBuffer.replace(System.lineSeparator(), "");
         } catch (SocketChannelReadException socketChannelReadException) {
 
-            commandExecutor.executeCommand(socketChannel,
-                                           new UserCommand(ServerCommand.LOGOUT.getCommandText(), new String[]{}));
+            commandExecutor.executeCommand(new UserRequest(socketChannel, ServerCommand.LOGOUT.getCommandText()));
 
             socketChannel.close();
 
@@ -180,8 +182,7 @@ public class Server {
             writeResponseToBuffer(response);
             writeResponseToSocketChannel(socketChannel);
         } catch (IOException ioException) {
-            commandExecutor.executeCommand(socketChannel,
-                                           new UserCommand(ServerCommand.LOGOUT.getCommandText(), new String[]{}));
+            commandExecutor.executeCommand(new UserRequest(socketChannel, ServerCommand.LOGOUT.getCommandText()));
 
             socketChannel.close();
         }

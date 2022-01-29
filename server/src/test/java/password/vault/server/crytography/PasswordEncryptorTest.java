@@ -6,7 +6,6 @@ import password.vault.server.cryptography.PasswordEncryptor;
 import password.vault.server.exceptions.password.PasswordEncryptorException;
 
 import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
 
 import java.util.Arrays;
 
@@ -39,8 +38,8 @@ public class PasswordEncryptorTest {
     public void testEncryptingAStringAndDecryptingItReturnsTheSameString3() throws PasswordEncryptorException {
         String input = "pass";
 
-        byte[] salt = PasswordEncryptor.generateSalt();
-        byte[] ivBytes = PasswordEncryptor.generateSalt();
+        byte[] salt = PasswordEncryptor.generateSixteenByteSalt();
+        byte[] ivBytes = PasswordEncryptor.generateSixteenByteSalt();
 
         // the key can be derived differently
         SecretKey key = PasswordEncryptor.getKeyFromString(input + Arrays.toString(salt));

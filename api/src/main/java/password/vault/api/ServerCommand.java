@@ -2,6 +2,7 @@ package password.vault.api;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public enum ServerCommand {
@@ -60,11 +61,7 @@ public enum ServerCommand {
     }
 
     public static ServerCommand getServerCommandFromCommandText(String commandText) {
-        if (COMMAND_TEXT_TO_ENUM_VALUE.containsKey(commandText)) {
-            return COMMAND_TEXT_TO_ENUM_VALUE.get(commandText.toLowerCase());
-        } else {
-            return UNKNOWN;
-        }
+        return COMMAND_TEXT_TO_ENUM_VALUE.getOrDefault(commandText.toLowerCase(Locale.ROOT), UNKNOWN);
     }
 }
 

@@ -107,8 +107,8 @@ public class PasswordEncryptor {
     public static EncryptedPassword encryptPassword(String input, SecretKey key) throws
             PasswordEncryptorException {
         try {
-            byte[] salt = PasswordEncryptor.generateSalt();
-            byte[] ivBytes = PasswordEncryptor.generateSalt();
+            byte[] salt = PasswordEncryptor.generateSixteenByteSalt();
+            byte[] ivBytes = PasswordEncryptor.generateSixteenByteSalt();
             IvParameterSpec ivParameterSpec = PasswordEncryptor.generateIv(ivBytes);
 
             Cipher cipher = Cipher.getInstance(ENCRYPTION_ALGORITHM_NAME);
@@ -160,7 +160,7 @@ public class PasswordEncryptor {
         return new IvParameterSpec(iv);
     }
 
-    public static byte[] generateSalt() {
+    public static byte[] generateSixteenByteSalt() {
         byte[] salt = new byte[16];
         // SecureRandom sha1PRGNG = SecureRandom.getInstance("SHA1PRGNG");
         new SecureRandom().nextBytes(salt);

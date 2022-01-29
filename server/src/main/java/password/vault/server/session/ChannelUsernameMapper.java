@@ -24,6 +24,11 @@ public class ChannelUsernameMapper {
     }
 
     public String getUsernameForChannel(SocketChannel socketChannel) {
-        return usernameForChannel.get(socketChannel);
+        String username = usernameForChannel.get(socketChannel);
+        if (username != null) {
+            return username;
+        } else {
+            return "";
+        }
     }
 }

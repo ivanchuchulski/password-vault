@@ -5,11 +5,11 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-public class UserCommandCreatorTest {
+public class UserRequestTest {
     @Test
     public void testCommandCreationWithNoArguments() {
         String commandText = "test";
-        UserCommand cmd = UserCommandCreator.createCommand(commandText);
+        UserRequest cmd = new UserRequest(null, commandText);
 
         assertEquals("unexpected command returned for command 'test'", commandText, cmd.command());
         assertNotNull("command arguments should not be null", cmd.arguments());
@@ -19,7 +19,7 @@ public class UserCommandCreatorTest {
     @Test
     public void testCommandCreationWithOneArgument() {
         String command = "test abcd";
-        UserCommand cmd = UserCommandCreator.createCommand(command);
+        UserRequest cmd = new UserRequest(null, command);
 
         int expectedNumberOfArguments = 1;
         String expectedArguments = command.split(" ")[1];
@@ -33,7 +33,7 @@ public class UserCommandCreatorTest {
     @Test
     public void testCommandCreationWithOneArgumentInQuotes() {
         String command = "test abcd 1234";
-        UserCommand cmd = UserCommandCreator.createCommand(command);
+        UserRequest cmd = new UserRequest(null, command);
 
         int expectedNumberOfArguments = 2;
         String expectedArguments = command.split(" ")[1];

@@ -54,6 +54,19 @@ public class DatabaseConnector {
         }
     }
 
+    public boolean isUserRegistered(String username) {
+        try (PreparedStatement prep = connection.prepareStatement(DMLQueries.SELECT_USER_BY_USERNAME.getQueryText())) {
+            prep.setString(1, username);
+
+            try (ResultSet result = prep.executeQuery()) {
+                return result.next();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     public boolean insertCredential(String username, String website, String usernameForWebsite, byte[] pass,
                                     byte[] salt, byte[] iv) {
         try (PreparedStatement preparedStatement =

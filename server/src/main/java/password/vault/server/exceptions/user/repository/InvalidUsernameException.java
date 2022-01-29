@@ -4,4 +4,7 @@ public class InvalidUsernameException extends RegisterException {
     public InvalidUsernameException(String message) {
         super(message);
     }
+
+    public InvalidUsernameException() {
+    }
 }
