@@ -39,6 +39,7 @@ public class UserRepositoryInMemory implements UserRepository {
         readUsersFromFile();
     }
 
+    @Override
     public void registerUser(String username, String password, String email)
             throws InvalidUsernameException, UserAlreadyRegisteredException, HashException {
         User user = new User(username, hashPassword(password));
@@ -56,6 +57,7 @@ public class UserRepositoryInMemory implements UserRepository {
         writeUserToFile(user);
     }
 
+    @Override
     public void logInUser(String username, String password) throws UserNotFoundException, UserAlreadyLoggedInException,
             HashException {
         User user = new User(username, hashPassword(password));
@@ -71,6 +73,7 @@ public class UserRepositoryInMemory implements UserRepository {
         loggedInUsernames.add(username);
     }
 
+    @Override
     public void logOutUser(String username) throws UserNotLoggedInException {
         if (!isUsernameLoggedIn(username)) {
             throw new UserNotLoggedInException("user is not logged in");
@@ -79,10 +82,12 @@ public class UserRepositoryInMemory implements UserRepository {
         loggedInUsernames.remove(username);
     }
 
+    @Override
     public boolean isUsernameLoggedIn(String username) {
         return loggedInUsernames.contains(username);
     }
 
+    @Override
     public boolean isUsernameRegistered(String username) {
         return registeredUsers.stream()
                               .map(User::username)

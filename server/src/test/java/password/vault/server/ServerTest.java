@@ -335,8 +335,8 @@ public class ServerTest {
     }
 
     private String registerCommand(String username, String password, String repeatedPassword) {
-        return String.format("%s %s %s %s",
-                             ServerCommand.REGISTER.getCommandText(), username, password, repeatedPassword);
+        return String.format("%s %s %s %s %s",
+                             ServerCommand.REGISTER.getCommandText(), username, "", password, repeatedPassword);
     }
 
     private String loginCommand(String username, String password) {

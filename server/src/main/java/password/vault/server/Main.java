@@ -13,6 +13,7 @@ import password.vault.server.password.safety.checker.PasswordSafetyChecker;
 import password.vault.server.password.vault.CredentialIdentifier;
 import password.vault.server.password.vault.PasswordVault;
 import password.vault.server.user.repository.UserRepository;
+import password.vault.server.user.repository.UserRepositoryDatabase;
 import password.vault.server.user.repository.in.memory.UserRepositoryInMemory;
 
 import javax.crypto.SecretKey;
@@ -32,7 +33,8 @@ public class Main {
 
     private static void startServer() {
         final Path usersFilePath = Path.of("resources" + File.separator + "users.txt");
-        UserRepository userRepository = new UserRepositoryInMemory(usersFilePath);
+        UserRepository userRepositoryInMemory = new UserRepositoryInMemory(usersFilePath);
+        UserRepository userRepositoryDB = new UserRepositoryDatabase(new DatabaseConnector());
 
         final Path credentialsFile = Path.of("resources" + File.separator + "credentials.txt");
         PasswordVault passwordVault = new PasswordVault(credentialsFile);
@@ -44,7 +46,7 @@ public class Main {
         final HttpClient httpClientForPasswordGenerator = HttpClient.newBuilder().build();
         final PasswordGenerator passwordGenerator = new PasswordGenerator(httpClientForPasswordGenerator);
 
-        CommandExecutor commandExecutor = new CommandExecutor(userRepository, passwordVault, passwordSafetyChecker,
+        CommandExecutor commandExecutor = new CommandExecutor(userRepositoryDB, passwordVault, passwordSafetyChecker,
                                                               passwordGenerator);
         final int serverPort = 7777;
         Server server = new Server(serverPort, commandExecutor);

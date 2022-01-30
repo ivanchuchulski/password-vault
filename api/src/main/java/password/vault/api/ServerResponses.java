@@ -42,7 +42,8 @@ public enum ServerResponses {
     PASSWORD_DO_NOT_MATCH(""),
     NO_SUCH_CREDENTIAL(""),
     NO_CREDENTIALS_ADDED(""),
-    HELP_COMMAND("");
+    HELP_COMMAND(""),
+    USER_DOES_NOT_EXIST("");
 
     private final String responseText;
 

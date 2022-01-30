@@ -105,7 +105,8 @@ public class UserRepositoryInMemoryTest {
     }
 
     @Test(expected = UserNotFoundException.class)
-    public void testLoginNonRegisteredUser() throws LoginException, HashException, UserAlreadyLoggedInException {
+    public void testLoginNonRegisteredUser() throws LoginException, HashException, UserAlreadyLoggedInException,
+            UserNotFoundException {
         String username = getUniqueUsername();
         String password = PASSWORD_FOR_TESTING;
 
@@ -115,7 +116,7 @@ public class UserRepositoryInMemoryTest {
     @Test(expected = UserAlreadyLoggedInException.class)
     public void testLoginAlreadyLoggedInUser() throws LoginException, RegisterException, HashException,
             DatabaseConnectorException, InvalidUsernameException, UserAlreadyRegisteredException,
-            UserAlreadyLoggedInException {
+            UserAlreadyLoggedInException, UserNotFoundException {
         String username = getUniqueUsername();
         String password = PASSWORD_FOR_TESTING;
 
@@ -127,7 +128,7 @@ public class UserRepositoryInMemoryTest {
     @Test
     public void testLoginARegisteredUserLogsHimIn() throws RegisterException, LoginException, HashException,
             DatabaseConnectorException, InvalidUsernameException, UserAlreadyRegisteredException,
-            UserAlreadyLoggedInException {
+            UserAlreadyLoggedInException, UserNotFoundException {
         String username = getUniqueUsername();
         String password = PASSWORD_FOR_TESTING;
 
@@ -147,7 +148,7 @@ public class UserRepositoryInMemoryTest {
     @Test
     public void testLogOutALoggedInUser() throws RegisterException, LoginException, LogoutException, HashException,
             DatabaseConnectorException, InvalidUsernameException, UserAlreadyRegisteredException,
-            UserAlreadyLoggedInException, UserNotLoggedInException {
+            UserAlreadyLoggedInException, UserNotLoggedInException, UserNotFoundException {
         String username = getUniqueUsername();
         String password = PASSWORD_FOR_TESTING;
 

@@ -2,15 +2,15 @@ package password.vault.server.db;
 
 import password.vault.server.MyConfig;
 import password.vault.server.cryptography.EncryptedPassword;
+import password.vault.server.cryptography.PasswordHash;
 import password.vault.server.exceptions.password.CredentialNotFoundException;
+import password.vault.server.exceptions.user.repository.UserNotFoundException;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 
 public class DatabaseConnector {
@@ -54,8 +54,71 @@ public class DatabaseConnector {
         }
     }
 
+    public boolean loginUser(String username) throws DatabaseConnectorException {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(DMLQueries.LOGIN_USER.getQueryText())) {
+            preparedStatement.setString(1, username);
+
+            int loginSuccess = preparedStatement.executeUpdate();
+
+            if (loginSuccess == 0) {
+                return false;
+            } else {
+                return true;
+            }
+
+        } catch (SQLException e) {
+            throw new DatabaseConnectorException("unable to log in user");
+        }
+    }
+
+    public boolean logoutUser(String username) throws DatabaseConnectorException {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(DMLQueries.LOGOUT_USER.getQueryText())) {
+            preparedStatement.setString(1, username);
+
+            int logoutSuccess = preparedStatement.executeUpdate();
+
+            if (logoutSuccess == 0) {
+                return false;
+            } else {
+                return true;
+            }
+
+        } catch (SQLException e) {
+            throw new DatabaseConnectorException("unable to log in user");
+        }
+    }
+
+    public PasswordHash getPasswordForUser(String username) throws UserNotFoundException, DatabaseConnectorException {
+        try (PreparedStatement preparedStatement =
+                     connection.prepareStatement(DMLQueries.SELECT_USER_PASSWORD.getQueryText())) {
+            preparedStatement.setString(1, username);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (!resultSet.next()) {
+                    throw new UserNotFoundException();
+                }
+                return new PasswordHash(resultSet.getBytes("password"), resultSet.getBytes("salt"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new DatabaseConnectorException("unable to get user password", e);
+        }
+    }
+
     public boolean isUserRegistered(String username) throws DatabaseConnectorException {
         try (PreparedStatement prep = connection.prepareStatement(DMLQueries.SELECT_USER_BY_USERNAME.getQueryText())) {
+            prep.setString(1, username);
+
+            try (ResultSet result = prep.executeQuery()) {
+                return result.next();
+            }
+        } catch (SQLException e) {
+            throw new DatabaseConnectorException("error inserting user", e);
+        }
+    }
+
+    public boolean isUserLoggedIn(String username) throws DatabaseConnectorException {
+        try (PreparedStatement prep = connection.prepareStatement(DMLQueries.SELECT_LOGGED_IN_USER.getQueryText())) {
             prep.setString(1, username);
 
             try (ResultSet result = prep.executeQuery()) {

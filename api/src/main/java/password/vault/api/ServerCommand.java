@@ -6,7 +6,7 @@ import java.util.Locale;
 import java.util.Map;
 
 public enum ServerCommand {
-    REGISTER("register", 3, "register <user> <password> <password-repeat>"),
+    REGISTER("register", 4, "register <user> <email> <password> <password-repeat>"),
     LOGIN("login", 2, "login <user> <password>"),
     LOGOUT("logout", 0, "logout"),
     DISCONNECT("disconnect", 0, "disconnect"),

@@ -19,9 +19,11 @@ import password.vault.server.exceptions.password.PasswordSafetyCheckerException;
 import password.vault.server.exceptions.password.UsernameNotHavingCredentialsException;
 import password.vault.server.exceptions.user.repository.InvalidUsernameException;
 import password.vault.server.exceptions.user.repository.LoginException;
+import password.vault.server.exceptions.user.repository.LogoutException;
 import password.vault.server.exceptions.user.repository.RegisterException;
 import password.vault.server.exceptions.user.repository.UserAlreadyLoggedInException;
 import password.vault.server.exceptions.user.repository.UserAlreadyRegisteredException;
+import password.vault.server.exceptions.user.repository.UserNotFoundException;
 import password.vault.server.exceptions.user.repository.UserNotLoggedInException;
 import password.vault.server.password.generator.PasswordGenerator;
 import password.vault.server.password.safety.checker.PasswordSafetyChecker;
@@ -68,7 +70,7 @@ public class CommandExecutor {
         }
 
         if (serverCommand.equals(ServerCommand.DISCONNECT)) {
-            return new CommandResponse(true, new Response(ServerResponses.DISCONNECTED, disconnectUser(userRequest)));
+            return new CommandResponse(true, disconnectUser(userRequest));
         }
 
         switch (serverCommand) {
@@ -113,7 +115,7 @@ public class CommandExecutor {
         return serverCommand.getNumberOfArguments() != clientUserRequest.numberOfArguments();
     }
 
-    private String disconnectUser(UserRequest userRequest) {
+    private Response disconnectUser(UserRequest userRequest) {
         try {
             System.out.println("disconnecting client");
 
@@ -123,24 +125,27 @@ public class CommandExecutor {
             channelUsernameMapper.removeUsernameForChannel(userRequest.getSocketChannel());
             userActionsLog.removeUserSession(channelUsername);
 
-            return ServerResponses.DISCONNECTED.getResponseText();
+            return new Response(ServerResponses.DISCONNECTED, "successfully logged out");
         } catch (UserNotLoggedInException e) {
             System.out.println("a non-logged in user disconnected");
-            return ServerResponses.DISCONNECTED.getResponseText();
+            return new Response(ServerResponses.DISCONNECTED, "successfully logged out");
+        } catch (LogoutException e) {
+            return new Response(ServerResponses.LOGOUT_ERROR, "unable to process logout request");
         }
     }
 
     private Response registerUser(UserRequest userRequest) {
         try {
             String username = userRequest.arguments()[0];
-            String password = userRequest.arguments()[1];
-            String repeatedPassword = userRequest.arguments()[2];
+            String email = userRequest.arguments()[1];
+            String password = userRequest.arguments()[2];
+            String repeatedPassword = userRequest.arguments()[3];
 
             if (!password.equals(repeatedPassword)) {
                 return new Response(ServerResponses.PASSWORD_DO_NOT_MATCH, "passwords do not match");
             }
 
-            userRepository.registerUser(username, password, "");
+            userRepository.registerUser(username, password, email);
 
             return new Response(ServerResponses.REGISTRATION_SUCCESS,
                                 "username %s registered successfully".formatted(username));
@@ -169,6 +174,8 @@ public class CommandExecutor {
             return new Response(ServerResponses.LOGIN_ERROR, "unable to complete your logout request, try again ");
         } catch (UserAlreadyLoggedInException e) {
             return new Response(ServerResponses.USER_ALREADY_LOGGED, "you are already logged in");
+        } catch (UserNotFoundException e) {
+            return new Response(ServerResponses.USER_DOES_NOT_EXIST, "wrong username/password combination");
         }
     }
 
@@ -183,6 +190,8 @@ public class CommandExecutor {
             return new Response(ServerResponses.LOGOUT_SUCCESS, "success logging out");
         } catch (UserNotLoggedInException e) {
             return new Response(ServerResponses.USER_NOT_LOGGED_IN, "you are not logged in");
+        } catch (LogoutException e) {
+            return new Response(ServerResponses.LOGOUT_ERROR, "unable to process logout request");
         }
     }
 

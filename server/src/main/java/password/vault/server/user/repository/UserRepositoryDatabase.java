@@ -5,6 +5,8 @@ import password.vault.server.db.DatabaseConnector;
 import password.vault.server.db.DatabaseConnectorException;
 import password.vault.server.exceptions.HashException;
 import password.vault.server.exceptions.user.repository.InvalidUsernameException;
+import password.vault.server.exceptions.user.repository.LoginException;
+import password.vault.server.exceptions.user.repository.LogoutException;
 import password.vault.server.exceptions.user.repository.RegisterException;
 import password.vault.server.exceptions.user.repository.UserAlreadyLoggedInException;
 import password.vault.server.exceptions.user.repository.UserAlreadyRegisteredException;
@@ -24,7 +26,6 @@ public class UserRepositoryDatabase implements UserRepository {
     public void registerUser(RegistrationRequest registrationRequest) throws UserAlreadyRegisteredException,
             HashException, DatabaseConnectorException,
             InvalidUsernameException, RegisterException {
-
         if (!registrationRequest.username().matches(VALID_USERNAME_PATTERN)) {
             throw new InvalidUsernameException();
         }
@@ -48,26 +49,63 @@ public class UserRepositoryDatabase implements UserRepository {
     @Override
     public void registerUser(String username, String password, String email) throws InvalidUsernameException,
             UserAlreadyRegisteredException, HashException, DatabaseConnectorException, RegisterException {
-        registerUser(new RegistrationRequest(username, password, email));
+        registerUser(new RegistrationRequest(username, email, password));
     }
 
     @Override
-    public void logInUser(String username, String password) throws UserNotFoundException, UserAlreadyLoggedInException {
+    public void logInUser(String username, String password) throws UserNotFoundException, UserAlreadyLoggedInException,
+            LoginException, HashException {
+        try {
+            PasswordHash retrievedHash = databaseConnector.getPasswordForUser(username);
+            byte[] salt = retrievedHash.getSalt();
+            PasswordHash computedHash = new PasswordHash(password, salt);
 
+            if (!computedHash.equals(retrievedHash)) {
+                throw new UserNotFoundException();
+            }
+
+            if (databaseConnector.isUserLoggedIn(username)) {
+                throw new UserAlreadyLoggedInException();
+            }
+
+            if (!databaseConnector.loginUser(username)) {
+                throw new LoginException("unable to login user");
+            }
+        } catch (DatabaseConnectorException e) {
+            throw new LoginException("database connection failed on logging in user");
+        }
     }
 
     @Override
-    public void logOutUser(String username) throws UserNotLoggedInException {
+    public void logOutUser(String username) throws UserNotLoggedInException, LogoutException {
+        try {
+            if (!databaseConnector.isUserLoggedIn(username)) {
+                throw new UserNotLoggedInException();
+            }
 
+            if (!databaseConnector.logoutUser(username)) {
+                throw new LogoutException("unable to logout user");
+            }
+        } catch (DatabaseConnectorException e) {
+            throw new LogoutException("database connection failed to logout user");
+        }
     }
 
     @Override
     public boolean isUsernameRegistered(String username) {
-        return false;
+        try {
+            return databaseConnector.isUserRegistered(username);
+        } catch (DatabaseConnectorException e) {
+            return false;
+        }
     }
 
     @Override
     public boolean isUsernameLoggedIn(String username) {
-        return false;
+        try {
+            return databaseConnector.isUserLoggedIn(username);
+        } catch (DatabaseConnectorException e) {
+            return false;
+        }
     }
 }

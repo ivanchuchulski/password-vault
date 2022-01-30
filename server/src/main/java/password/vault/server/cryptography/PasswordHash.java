@@ -12,19 +12,25 @@ public final class PasswordHash {
     private final byte[] salt;
 
     public PasswordHash(String text) throws HashException {
+        this(text, PasswordEncryptor.generateSixteenByteSalt());
+    }
+
+    public PasswordHash(String text, byte[] salt) throws HashException {
         try {
-            salt = PasswordEncryptor.generateSixteenByteSalt();
+            byte[] textBytes = text.getBytes(StandardCharsets.UTF_8);
+            this.salt = salt;
 
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            outputStream.write(text.getBytes(StandardCharsets.UTF_8));
-            outputStream.write(salt);
+            byte[] concatenated = concatenatePasswordAndSalt(salt, textBytes);
 
-            byte[] concatenated = outputStream.toByteArray();
-
-            passwordBytes = PasswordHasher.computeSHA512HashWithSalt(concatenated);
+            this.passwordBytes = PasswordHasher.computeSHA512HashWithSalt(concatenated);
         } catch (IOException e) {
-            throw new HashException("error hashing text");
+            throw new HashException("error building hash", e);
         }
+    }
+
+    public PasswordHash(byte[] passwordBytes, byte[] salt) {
+        this.passwordBytes = passwordBytes;
+        this.salt = salt;
     }
 
     public byte[] getPasswordBytes() {
@@ -53,4 +59,14 @@ public final class PasswordHash {
         result = 31 * result + Arrays.hashCode(salt);
         return result;
     }
+
+
+    private byte[] concatenatePasswordAndSalt(byte[] salt, byte[] passwordBytes) throws IOException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        outputStream.write(passwordBytes);
+        outputStream.write(salt);
+
+        return outputStream.toByteArray();
+    }
+
 }

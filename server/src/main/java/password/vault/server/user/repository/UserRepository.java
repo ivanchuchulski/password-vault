@@ -3,6 +3,8 @@ package password.vault.server.user.repository;
 import password.vault.server.db.DatabaseConnectorException;
 import password.vault.server.exceptions.HashException;
 import password.vault.server.exceptions.user.repository.InvalidUsernameException;
+import password.vault.server.exceptions.user.repository.LoginException;
+import password.vault.server.exceptions.user.repository.LogoutException;
 import password.vault.server.exceptions.user.repository.RegisterException;
 import password.vault.server.exceptions.user.repository.UserAlreadyLoggedInException;
 import password.vault.server.exceptions.user.repository.UserAlreadyRegisteredException;
@@ -14,9 +16,9 @@ public interface UserRepository {
             UserAlreadyRegisteredException, HashException, DatabaseConnectorException, RegisterException;
 
     void logInUser(String username, String password) throws UserNotFoundException, UserAlreadyLoggedInException,
-            HashException;
+            HashException, LoginException;
 
-    void logOutUser(String username) throws UserNotLoggedInException;
+    void logOutUser(String username) throws UserNotLoggedInException, LogoutException;
 
     boolean isUsernameRegistered(String username);
 
