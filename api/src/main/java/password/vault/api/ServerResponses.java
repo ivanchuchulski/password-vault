@@ -35,7 +35,14 @@ public enum ServerResponses {
     CREDENTIAL_GENERATION_ERROR("[ error generating credentials : you already have password for site %s and username" +
                                         " %s ]"),
 
-    PASSWORD_GENERATION_SERVICE_ERROR("[ error generating safe password safety ]");
+    PASSWORD_GENERATION_ERROR("[ error generating safe password safety ]"),
+
+    USER_ALREADY_LOGGED(""),
+    USER_NOT_LOGGED_IN(""),
+    PASSWORD_DO_NOT_MATCH(""),
+    NO_SUCH_CREDENTIAL(""),
+    NO_CREDENTIALS_ADDED(""),
+    HELP_COMMAND("");
 
     private final String responseText;
 

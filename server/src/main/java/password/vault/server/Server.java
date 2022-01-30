@@ -1,14 +1,11 @@
 package password.vault.server;
 
+import com.google.gson.Gson;
+import password.vault.api.Response;
 import password.vault.api.ServerCommand;
 import password.vault.server.communication.CommandResponse;
 import password.vault.server.communication.UserRequest;
 import password.vault.server.exceptions.SocketChannelReadException;
-import password.vault.server.password.generator.PasswordGenerator;
-import password.vault.server.password.safety.checker.PasswordSafetyChecker;
-import password.vault.server.password.vault.PasswordVault;
-import password.vault.server.user.repository.UserRepository;
-import password.vault.server.user.repository.in.memory.UserRepositoryInMemory;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -18,13 +15,14 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.Set;
 
 public class Server {
     private static final int BUFFER_SIZE = 4096;
     private static final String SERVER_HOST = "localhost";
+
+    private final Gson gson;
 
     private final Selector selector;
     private final ByteBuffer messageBuffer;
@@ -47,6 +45,7 @@ public class Server {
             runServer = true;
 
             this.commandExecutor = commandExecutor;
+            gson = new Gson();
         } catch (IOException ioException) {
             throw new RuntimeException("error : creating server", ioException);
         }
@@ -173,9 +172,10 @@ public class Server {
         return StandardCharsets.UTF_8.decode(messageBuffer).toString();
     }
 
-    private void writeResponseToClient(SocketChannel socketChannel, String response) throws IOException {
+    private void writeResponseToClient(SocketChannel socketChannel, Response response) throws IOException {
         try {
-            writeResponseToBuffer(response);
+            String responseJSON = gson.toJson(response);
+            writeResponseToBuffer(responseJSON);
             writeResponseToSocketChannel(socketChannel);
         } catch (IOException ioException) {
             commandExecutor.executeCommand(new UserRequest(socketChannel, ServerCommand.LOGOUT.getCommandText()));

@@ -15,7 +15,7 @@ import static org.junit.Assert.assertEquals;
 
 public class PasswordHasherTest {
     @Test
-    public void testMD5HashOnPassword() {
+    public void testMD5HashOnPassword() throws HashException {
         String password = "test12341234";
         String expectedMD5Hash = "3a0fd1b2d199e5155cc73b6fc16eaaf4";
 
@@ -25,7 +25,7 @@ public class PasswordHasherTest {
     }
 
     @Test
-    public void testSHA1HashOnPassword() {
+    public void testSHA1HashOnPassword() throws HashException {
         String password = "test12341234";
         String expectedMD5Hash = "805fc3b72b1d632259794a9d7620ea3c72aefbcb";
 
@@ -35,7 +35,7 @@ public class PasswordHasherTest {
     }
 
     @Test
-    public void testSHA256HashOnPassword() {
+    public void testSHA256HashOnPassword() throws HashException {
         String password = "test12341234";
         String expectedMD5Hash = "247dfa6801d335380c31b584998ea9b48baab7c7fae706a12477598e29972dee";
 

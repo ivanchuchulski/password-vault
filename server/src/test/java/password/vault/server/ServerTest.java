@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+import password.vault.api.Response;
 import password.vault.api.ServerCommand;
 import password.vault.api.ServerResponses;
 import password.vault.server.dto.PasswordGeneratorResponse;
@@ -118,59 +119,58 @@ public class ServerTest {
     public void testServerResponseWithUnknownCommand() throws IOException {
         String unknownCommandText = "echo";
 
-        String actualResponse = sendRequestAndGetResponse(unknownCommandText);
-
-        String expectedResponse = ServerResponses.UNKNOWN_COMMAND.getResponseText();
+        Response actualResponse = sendRequestAndGetResponse(unknownCommandText);
 
         assertEquals("when sending unknown command an unknown command response should be received",
-                     expectedResponse,
-                     actualResponse);
+                     ServerResponses.UNKNOWN_COMMAND,
+                     actualResponse.serverResponse());
     }
 
     @Test
     public void testServerResponseWhenRequestIsDisconnect() throws IOException {
-        String actualResponse = sendRequestAndGetResponse(disconnectCommand());
-
-        String expectedResponse = ServerResponses.DISCONNECTED.getResponseText();
+        Response actualResponse = sendRequestAndGetResponse(disconnectCommand());
 
         assertEquals("when sending disconnect command a disconnect response should be received",
-                     expectedResponse,
-                     actualResponse);
+                     ServerResponses.DISCONNECTED,
+                     actualResponse.serverResponse());
     }
 
     @Test
     public void testServerResponseToHelpCommand() throws IOException {
-        String actualResponse = sendRequestAndGetResponse(helpCommand());
+        Response actualResponse = sendRequestAndGetResponse(helpCommand());
 
         String expectedResponse = ServerCommand.printHelp();
         assertEquals("when sending help command an overview of all commands should be received",
-                     expectedResponse,
-                     actualResponse);
+                     ServerResponses.HELP_COMMAND,
+                     actualResponse.serverResponse());
+
+        assertEquals("when sending help command an overview of all commands should be received",
+                     ServerCommand.printHelp(),
+                     actualResponse.message());
     }
 
     @Test
     public void testServerResponseWhenCommandHasIncorrectNumberOfArguments() throws IOException {
         String command = disconnectCommand() + " me";
-        String actualResponse = sendRequestAndGetResponse(command);
-
-        String expectedResponse = ServerResponses.WRONG_COMMAND_NUMBER_OF_ARGUMENTS
-                .getResponseText().formatted(ServerCommand.DISCONNECT.getCommandOverview());
+        Response actualResponse = sendRequestAndGetResponse(command);
 
         assertEquals("when sending disconnect command a disconnect response should be received",
-                     expectedResponse,
-                     actualResponse);
+                     ServerResponses.WRONG_COMMAND_NUMBER_OF_ARGUMENTS,
+                     actualResponse.serverResponse());
     }
 
     @Test
     public void testValidRegistration() throws IOException {
         String username = getUniqueUsername();
 
-        String response = sendRequestAndGetResponse(registerCommand(username, PASSWORD_FOR_TESTING,
-                                                                    PASSWORD_FOR_TESTING));
+        Response response = sendRequestAndGetResponse(registerCommand(username, PASSWORD_FOR_TESTING,
+                                                                      PASSWORD_FOR_TESTING));
 
         String expectedResponse = ServerResponses.REGISTRATION_SUCCESS.getResponseText().formatted(username);
 
-        assertEquals("valid registration should return a success response", expectedResponse, response);
+        assertEquals("valid registration should return a success response",
+                     ServerResponses.REGISTRATION_SUCCESS,
+                     response.serverResponse());
     }
 
     @Test
@@ -178,11 +178,11 @@ public class ServerTest {
         String username = getUniqueUsername();
 
         sendRequestAndGetResponse(registerCommand(username, PASSWORD_FOR_TESTING, PASSWORD_FOR_TESTING));
-        String response = sendRequestAndGetResponse(loginCommand(username, PASSWORD_FOR_TESTING));
+        Response response = sendRequestAndGetResponse(loginCommand(username, PASSWORD_FOR_TESTING));
 
-        String expectedResponse = ServerResponses.LOGIN_SUCCESS.getResponseText().formatted(username);
-
-        assertEquals("valid login should return a success response", expectedResponse, response);
+        assertEquals("valid login should return a success response",
+                     ServerResponses.LOGIN_SUCCESS,
+                     response.serverResponse());
     }
 
     @Test
@@ -191,11 +191,13 @@ public class ServerTest {
 
         sendRequestAndGetResponse(registerCommand(username, PASSWORD_FOR_TESTING, PASSWORD_FOR_TESTING));
         sendRequestAndGetResponse(loginCommand(username, PASSWORD_FOR_TESTING));
-        String response = sendRequestAndGetResponse(logoutCommand());
+        Response response = sendRequestAndGetResponse(logoutCommand());
 
         String expectedResponse = ServerResponses.LOGOUT_SUCCESS.getResponseText().formatted(username);
 
-        assertEquals("valid logout should return a success response", expectedResponse, response);
+        assertEquals("valid logout should return a success response",
+                     ServerResponses.LOGOUT_SUCCESS,
+                     response.serverResponse());
     }
 
     @Test
@@ -205,38 +207,32 @@ public class ServerTest {
         sendRequestAndGetResponse(registerCommand(username, PASSWORD_FOR_TESTING, PASSWORD_FOR_TESTING));
         sendRequestAndGetResponse(loginCommand(username, PASSWORD_FOR_TESTING));
 
-        String response = sendRequestAndGetResponse(loginCommand(username, PASSWORD_FOR_TESTING));
+        Response response = sendRequestAndGetResponse(loginCommand(username, PASSWORD_FOR_TESTING));
 
-        String expectedResponse = ServerResponses.LOGIN_ERROR
-                .getResponseText().formatted("can't login user again, user is already logged in");
-
-        assertEquals("logging in when user is already logged in should return a error response", expectedResponse,
-                     response);
+        assertEquals("logging in when user is already logged in should return a error response",
+                     ServerResponses.USER_ALREADY_LOGGED,
+                     response.serverResponse());
     }
 
     @Test
     public void testLogoutWithoutLoggingIn() throws IOException {
-        String response = sendRequestAndGetResponse(logoutCommand());
+        Response response = sendRequestAndGetResponse(logoutCommand());
 
-        String expectedResponse = ServerResponses.LOGOUT_ERROR.getResponseText().formatted("user is not logged in");
-
-        assertEquals("logging out when a user has not logged in should return a error response", expectedResponse,
-                     response);
+        assertEquals("logging out when a user has not logged in should return a error response",
+                     ServerResponses.USER_NOT_LOGGED_IN,
+                     response.serverResponse());
     }
 
     @Test
     public void testRegisteringWithWrongRepeatedPassword() throws IOException {
         String username = getUniqueUsername();
 
-        String response = sendRequestAndGetResponse(registerCommand(username, PASSWORD_FOR_TESTING,
-                                                                    PASSWORD_FOR_TESTING + "1234"));
-
-        String expectedResponse = ServerResponses.
-                REGISTRATION_ERROR.getResponseText().formatted("passwords do not match");
+        Response response = sendRequestAndGetResponse(registerCommand(username, PASSWORD_FOR_TESTING,
+                                                                      new String(PASSWORD_FOR_TESTING + "1234")));
 
         assertEquals("when trying to register with non matching passwords and error message should be returned",
-                     expectedResponse,
-                     response);
+                     ServerResponses.PASSWORD_DO_NOT_MATCH,
+                     response.serverResponse());
     }
 
     @Test
@@ -247,15 +243,17 @@ public class ServerTest {
         sendRequestAndGetResponse(registerCommand(username, PASSWORD_FOR_TESTING, PASSWORD_FOR_TESTING));
         sendRequestAndGetResponse(loginCommand(username, PASSWORD_FOR_TESTING));
         sendRequestAndGetResponse(addPassword(WEBSITE_FOR_TESTING, usernameForSite, PASSWORD_FOR_TESTING));
-        String response = sendRequestAndGetResponse(retrieveCredentials(WEBSITE_FOR_TESTING, usernameForSite));
+
+        Response response = sendRequestAndGetResponse(retrieveCredentials(WEBSITE_FOR_TESTING, usernameForSite));
         sendRequestAndGetResponse(logoutCommand());
 
-        String expectedResponse =
-                ServerResponses.CREDENTIAL_RETRIEVAL_SUCCESS.getResponseText().formatted(PASSWORD_FOR_TESTING);
+        assertEquals("incorrect response returned",
+                     ServerResponses.CREDENTIAL_RETRIEVAL_SUCCESS,
+                     response.serverResponse());
 
-        assertEquals("when adding a password and retrieving it the returned password should be the provided one",
-                     expectedResponse,
-                     response);
+        assertEquals("the returned password should be the same as the provided one",
+                     PASSWORD_FOR_TESTING,
+                     response.message());
     }
 
     @Test
@@ -266,14 +264,16 @@ public class ServerTest {
         sendRequestAndGetResponse(registerCommand(username, PASSWORD_FOR_TESTING, PASSWORD_FOR_TESTING));
         sendRequestAndGetResponse(loginCommand(username, PASSWORD_FOR_TESTING));
         sendRequestAndGetResponse(addPassword(WEBSITE_FOR_TESTING, usernameForSite, PASSWORD_FOR_TESTING));
-        String response = sendRequestAndGetResponse(removePassword(WEBSITE_FOR_TESTING, usernameForSite));
+
+        Response response = sendRequestAndGetResponse(removePassword(WEBSITE_FOR_TESTING, usernameForSite));
         sendRequestAndGetResponse(logoutCommand());
 
         String expectedResponse = ServerResponses.CREDENTIAL_REMOVAL_SUCCESS.getResponseText()
                                                                             .formatted(WEBSITE_FOR_TESTING,
                                                                                        usernameForSite);
         assertEquals("when removing a previously added password the response should be successful removal",
-                     expectedResponse, response);
+                     ServerResponses.CREDENTIAL_REMOVAL_SUCCESS,
+                     response.serverResponse());
     }
 
     @Test
@@ -284,13 +284,19 @@ public class ServerTest {
         sendRequestAndGetResponse(registerCommand(username, PASSWORD_FOR_TESTING, PASSWORD_FOR_TESTING));
         sendRequestAndGetResponse(loginCommand(username, PASSWORD_FOR_TESTING));
         sendRequestAndGetResponse(generatePassword(WEBSITE_FOR_TESTING, usernameForSite, SAFE_PASSWORD_LENGTH));
-        String response = sendRequestAndGetResponse(retrieveCredentials(WEBSITE_FOR_TESTING, usernameForSite));
+
+        Response response = sendRequestAndGetResponse(retrieveCredentials(WEBSITE_FOR_TESTING, usernameForSite));
         sendRequestAndGetResponse(disconnectCommand());
 
         String expectedResponse = ServerResponses.CREDENTIAL_RETRIEVAL_SUCCESS.getResponseText()
                                                                               .formatted(SAMPLE_SAFE_PASSWORD);
+        assertEquals("response should be success",
+                     ServerResponses.CREDENTIAL_RETRIEVAL_SUCCESS,
+                     response.serverResponse());
+
         assertEquals("generated password should be the sample mocked password",
-                     expectedResponse, response);
+                     ServerResponses.CREDENTIAL_RETRIEVAL_SUCCESS,
+                     response.serverResponse());
     }
 
     @Test
@@ -298,16 +304,15 @@ public class ServerTest {
         String username = getUniqueUsername();
         String usernameForSite = buildUsernameForSiteFromUsername(username);
 
-        String response = sendRequestAndGetResponse(addPassword(WEBSITE_FOR_TESTING, usernameForSite,
+        Response response = sendRequestAndGetResponse(addPassword(WEBSITE_FOR_TESTING, usernameForSite,
                                                                 PASSWORD_FOR_TESTING));
 
-        String expectedResponse = ServerResponses.NOT_LOGGED_IN.getResponseText();
-
         assertEquals("when trying to add a password for non-logged user an error response is expected",
-                     expectedResponse, response);
+                     ServerResponses.NOT_LOGGED_IN,
+                     response.serverResponse());
     }
 
-    private String sendRequestAndGetResponse(String request) throws IOException {
+    private Response sendRequestAndGetResponse(String request) throws IOException {
         client.sendRequest(request);
         return client.receiveResponse();
     }

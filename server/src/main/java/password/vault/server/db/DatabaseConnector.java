@@ -32,7 +32,8 @@ public class DatabaseConnector {
         connection.close();
     }
 
-    public boolean insertUser(String username, String email, byte[] passwordHash, byte[] salt) {
+    public boolean insertUser(String username, String email, byte[] passwordHash, byte[] salt) throws
+            DatabaseConnectorException {
         try (PreparedStatement preparedStatement = connection.prepareStatement(DMLQueries.INSERT_USER.getQueryText())) {
             preparedStatement.setString(1, username);
             preparedStatement.setString(2, email);
@@ -49,12 +50,11 @@ public class DatabaseConnector {
                 return true;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
+            throw new DatabaseConnectorException("error inserting user", e);
         }
     }
 
-    public boolean isUserRegistered(String username) {
+    public boolean isUserRegistered(String username) throws DatabaseConnectorException {
         try (PreparedStatement prep = connection.prepareStatement(DMLQueries.SELECT_USER_BY_USERNAME.getQueryText())) {
             prep.setString(1, username);
 
@@ -62,8 +62,7 @@ public class DatabaseConnector {
                 return result.next();
             }
         } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
+            throw new DatabaseConnectorException("error inserting user", e);
         }
     }
 

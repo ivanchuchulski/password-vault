@@ -12,7 +12,7 @@ public enum ServerCommand {
     DISCONNECT("disconnect", 0, "disconnect"),
     ADD_PASSWORD("add-password", 3, "add-password <website> <user> <password>"),
     REMOVE_PASSWORD("remove-password", 2, "remove-password <website> <user>"),
-    UPDATE_PASSWORD("update-password", 4, "update-password <website> <user> <oldpass> <newpass>"),
+    // UPDATE_PASSWORD("update-password", 4, "update-password <website> <user> <oldpass> <newpass>"),
     RETRIEVE_CREDENTIALS("get-password", 2, "get-password <website> <user>"),
     GENERATE_PASSWORD("generate-password", 3, "generate-password <website> <user> <passwordLength>"),
     HELP("help", 0, ""),

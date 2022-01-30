@@ -1,8 +1,8 @@
 package password.vault.server.user.repository.in.memory;
 
 import com.google.gson.Gson;
+import password.vault.server.exceptions.HashException;
 import password.vault.server.exceptions.user.repository.InvalidUsernameException;
-import password.vault.server.exceptions.user.repository.PasswordsNotMatchingException;
 import password.vault.server.exceptions.user.repository.UserAlreadyLoggedInException;
 import password.vault.server.exceptions.user.repository.UserAlreadyRegisteredException;
 import password.vault.server.exceptions.user.repository.UserNotFoundException;
@@ -39,12 +39,8 @@ public class UserRepositoryInMemory implements UserRepository {
         readUsersFromFile();
     }
 
-    public void registerUser(String username, String password, String repeatedPassword)
-            throws PasswordsNotMatchingException, InvalidUsernameException, UserAlreadyRegisteredException {
-        if (!password.equals(repeatedPassword)) {
-            throw new PasswordsNotMatchingException("passwords do not match");
-        }
-
+    public void registerUser(String username, String password, String email)
+            throws InvalidUsernameException, UserAlreadyRegisteredException, HashException {
         User user = new User(username, hashPassword(password));
 
         if (!isUsernameCorrect(user.username())) {
@@ -60,7 +56,8 @@ public class UserRepositoryInMemory implements UserRepository {
         writeUserToFile(user);
     }
 
-    public void logInUser(String username, String password) throws UserNotFoundException, UserAlreadyLoggedInException {
+    public void logInUser(String username, String password) throws UserNotFoundException, UserAlreadyLoggedInException,
+            HashException {
         User user = new User(username, hashPassword(password));
 
         if (!isUserRegistered(user)) {
@@ -100,7 +97,7 @@ public class UserRepositoryInMemory implements UserRepository {
         return registeredUsers.contains(user);
     }
 
-    private String hashPassword(String password) {
+    private String hashPassword(String password) throws HashException {
         return PasswordHasher.computeHash(password, PasswordHasher.SHA256_MESSAGE_DIGEST_INSTANCE);
     }
 

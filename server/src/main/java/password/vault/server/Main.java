@@ -4,6 +4,7 @@ import password.vault.server.cryptography.EncryptedPassword;
 import password.vault.server.cryptography.PasswordEncryptor;
 import password.vault.server.cryptography.PasswordHasher;
 import password.vault.server.db.DatabaseConnector;
+import password.vault.server.db.DatabaseConnectorException;
 import password.vault.server.exceptions.HashException;
 import password.vault.server.exceptions.password.CredentialNotFoundException;
 import password.vault.server.exceptions.password.PasswordEncryptorException;
@@ -75,7 +76,7 @@ public class Main {
     }
 
     private static void testInsertUser(DatabaseConnector databaseConnector, String name, String email, String pass) throws
-            IOException, HashException {
+            IOException, HashException, DatabaseConnectorException {
         byte[] passBytes = pass.getBytes(StandardCharsets.UTF_8);
         byte[] salt = PasswordEncryptor.generateSixteenByteSalt();
 

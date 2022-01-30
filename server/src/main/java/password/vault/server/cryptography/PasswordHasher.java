@@ -16,13 +16,13 @@ public class PasswordHasher {
     public static final String SHA256_MESSAGE_DIGEST_INSTANCE = "SHA-256";
     public static final String SHA512_MESSAGE_DIGEST_INSTANCE = "SHA-512";
 
-    public static String computeHash(String password, String messageDigestInstance) {
+    public static String computeHash(String password, String messageDigestInstance) throws HashException {
         try {
             MessageDigest messageDigest = MessageDigest.getInstance(messageDigestInstance);
 
             return hashString(password, messageDigest);
         } catch (NoSuchAlgorithmException noSuchAlgorithmException) {
-            throw new RuntimeException(String.format("error : no such message digest algorithm found %s ",
+            throw new HashException(String.format("error : no such message digest algorithm found %s ",
                                                      messageDigestInstance), noSuchAlgorithmException);
         }
     }

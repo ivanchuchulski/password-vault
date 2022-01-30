@@ -1,5 +1,8 @@
 package password.vault.server.communication;
 
-public record CommandResponse(boolean toDisconnect, String response) {
+
+import password.vault.api.Response;
+
+public record CommandResponse(boolean toDisconnect, Response response) {
 
 }
