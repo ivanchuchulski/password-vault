@@ -33,8 +33,7 @@ public class Server {
 
     private final CommandExecutor commandExecutor;
 
-    public Server(int port, Path registeredUsersFile, Path credentialsFile,
-                  PasswordSafetyChecker passwordSafetyChecker, PasswordGenerator passwordGenerator) {
+    public Server(int port, CommandExecutor commandExecutor) {
         try {
             messageBuffer = ByteBuffer.allocate(BUFFER_SIZE);
 
@@ -47,10 +46,7 @@ public class Server {
 
             runServer = true;
 
-            UserRepository userRepository = new UserRepositoryInMemory(registeredUsersFile);
-            PasswordVault passwordVault = new PasswordVault(credentialsFile);
-            commandExecutor = new CommandExecutor(userRepository, passwordVault, passwordSafetyChecker,
-                                                  passwordGenerator);
+            this.commandExecutor = commandExecutor;
         } catch (IOException ioException) {
             throw new RuntimeException("error : creating server", ioException);
         }

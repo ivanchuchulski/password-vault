@@ -16,6 +16,9 @@ import password.vault.server.exceptions.password.PasswordGeneratorException;
 import password.vault.server.exceptions.password.PasswordSafetyCheckerException;
 import password.vault.server.password.generator.PasswordGenerator;
 import password.vault.server.password.safety.checker.PasswordSafetyChecker;
+import password.vault.server.password.vault.PasswordVault;
+import password.vault.server.user.repository.UserRepository;
+import password.vault.server.user.repository.in.memory.UserRepositoryInMemory;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -42,6 +45,11 @@ public class ServerTest {
     private static Server server;
     private static TestClient client;
 
+    private static final Path REGISTERED_USERS_FILE =
+            Path.of("resources" + SYSTEM_FILE_SEPARATOR + "server-test-users.txt");
+    private static final Path CREDENTIALS_FILE =
+            Path.of("resources" + SYSTEM_FILE_SEPARATOR + "server-test-credentials.txt");
+
     private static final String SAMPLE_USERNAMES_FILEPATH =
             "test_resources" + SYSTEM_FILE_SEPARATOR + "unique-usernames.txt";
     private static List<String> usernamesForTesting;
@@ -49,47 +57,38 @@ public class ServerTest {
     private static final String PASSWORD_FOR_TESTING = "1234";
     private static final String WEBSITE_FOR_TESTING = "facebook.com";
 
-    private static final Path REGISTERED_USERS_FILE =
-            Path.of("resources" + SYSTEM_FILE_SEPARATOR + "server-test-users.txt");
-    private static final Path CREDENTIALS_FILE =
-            Path.of("resources" + SYSTEM_FILE_SEPARATOR + "server-test-credentials.txt");
-
     private static final int NUMBER_OF_GENERATED_SAFE_PASSWORDS = 1;
-
 
     private static final String SAMPLE_SAFE_PASSWORD = "_rrR~S>k$[8+Ps/x2WyaFv";
     private static final int SAFE_PASSWORD_LENGTH = SAMPLE_SAFE_PASSWORD.length();
 
-    private static PasswordSafetyChecker passwordSafetyChecker;
-
-    private static PasswordGenerator passwordGenerator;
-
     @BeforeClass
     public static void setUpBeforeClass() throws IOException, PasswordGeneratorException,
             PasswordSafetyCheckerException {
+        Files.deleteIfExists(REGISTERED_USERS_FILE);
+        UserRepository userRepository = new UserRepositoryInMemory(REGISTERED_USERS_FILE);
 
-        PasswordGeneratorResponse passwordGeneratorResponse =
-                new PasswordGeneratorResponse(true,
-                                              NUMBER_OF_GENERATED_SAFE_PASSWORDS,
-                                              new String[]{SAMPLE_SAFE_PASSWORD});
+        Files.deleteIfExists(CREDENTIALS_FILE);
+        PasswordVault passwordVault = new PasswordVault(CREDENTIALS_FILE);
+
+        PasswordGeneratorResponse passwordGeneratorResponse = new PasswordGeneratorResponse(true,
+                                                                                            NUMBER_OF_GENERATED_SAFE_PASSWORDS,
+                                                                                            new String[]{SAMPLE_SAFE_PASSWORD});
+        PasswordGenerator passwordGenerator = Mockito.mock(PasswordGenerator.class);
+        when(passwordGenerator.generateSafePassword(anyInt())).thenReturn(passwordGeneratorResponse);
 
         PasswordSafetyResponse passwordSafetyResponse = new PasswordSafetyResponse(false, 0);
-
-        passwordGenerator = Mockito.mock(PasswordGenerator.class);
-        passwordSafetyChecker = Mockito.mock(PasswordSafetyChecker.class);
-
-        when(passwordGenerator.generateSafePassword(anyInt())).thenReturn(passwordGeneratorResponse);
+        PasswordSafetyChecker passwordSafetyChecker = Mockito.mock(PasswordSafetyChecker.class);
         when(passwordSafetyChecker.checkPassword(anyString())).thenReturn(passwordSafetyResponse);
 
-        Files.deleteIfExists(REGISTERED_USERS_FILE);
-        Files.deleteIfExists(CREDENTIALS_FILE);
+        CommandExecutor commandExecutor = new CommandExecutor(userRepository, passwordVault, passwordSafetyChecker,
+                                                              passwordGenerator);
 
         random = new Random();
         usernamesForTesting = getUniqueNamesFromFile();
 
         serverRunnerThread = new Thread(() -> {
-            server = new Server(SERVER_PORT, REGISTERED_USERS_FILE, CREDENTIALS_FILE, passwordSafetyChecker,
-                                passwordGenerator);
+            server = new Server(SERVER_PORT, commandExecutor);
             server.start();
         });
 

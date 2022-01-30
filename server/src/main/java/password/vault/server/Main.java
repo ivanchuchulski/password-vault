@@ -10,6 +10,9 @@ import password.vault.server.exceptions.password.PasswordEncryptorException;
 import password.vault.server.password.generator.PasswordGenerator;
 import password.vault.server.password.safety.checker.PasswordSafetyChecker;
 import password.vault.server.password.vault.CredentialIdentifier;
+import password.vault.server.password.vault.PasswordVault;
+import password.vault.server.user.repository.UserRepository;
+import password.vault.server.user.repository.in.memory.UserRepositoryInMemory;
 
 import javax.crypto.SecretKey;
 import java.io.ByteArrayOutputStream;
@@ -27,18 +30,23 @@ public class Main {
     }
 
     private static void startServer() {
-        final int serverPort = 7777;
         final Path usersFilePath = Path.of("resources" + File.separator + "users.txt");
+        UserRepository userRepository = new UserRepositoryInMemory(usersFilePath);
+
         final Path credentialsFile = Path.of("resources" + File.separator + "credentials.txt");
+        PasswordVault passwordVault = new PasswordVault(credentialsFile);
 
         final HttpClient httpClientForPasswordSafetyChecker = HttpClient.newBuilder().build();
-        final HttpClient httpClientForPasswordGenerator = HttpClient.newBuilder().build();
         final PasswordSafetyChecker passwordSafetyChecker =
                 new PasswordSafetyChecker(httpClientForPasswordSafetyChecker);
+
+        final HttpClient httpClientForPasswordGenerator = HttpClient.newBuilder().build();
         final PasswordGenerator passwordGenerator = new PasswordGenerator(httpClientForPasswordGenerator);
 
-        Server server = new Server(serverPort, usersFilePath, credentialsFile, passwordSafetyChecker,
-                                   passwordGenerator);
+        CommandExecutor commandExecutor = new CommandExecutor(userRepository, passwordVault, passwordSafetyChecker,
+                                                              passwordGenerator);
+        final int serverPort = 7777;
+        Server server = new Server(serverPort, commandExecutor);
         server.start();
     }
 

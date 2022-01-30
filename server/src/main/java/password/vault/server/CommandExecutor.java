@@ -24,8 +24,6 @@ import password.vault.server.session.ChannelUsernameMapper;
 import password.vault.server.session.UserActionsLog;
 import password.vault.server.user.repository.UserRepository;
 
-import java.nio.channels.SocketChannel;
-
 public class CommandExecutor {
     private final UserActionsLog userActionsLog;
     private final ChannelUsernameMapper channelUsernameMapper;
