@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class PasswordVaultTest {
+public class PasswordVaultInMemoryTest {
     private static final String SYSTEM_FILE_SEPARATOR = File.separator;
 
     private static final String SAMPLE_USERNAMES_FILEPATH = "test_resources" + File.separator + "unique-usernames.txt";
@@ -39,7 +39,7 @@ public class PasswordVaultTest {
     private static final Path CREDENTIALS_FILE =
             Path.of("resources" + SYSTEM_FILE_SEPARATOR + "password-vault-test-credentials.txt");
     private static final Gson gson = new Gson();
-    private static PasswordVault passwordVault;
+    private static PasswordVaultInMemory passwordVault;
 
     private static final String WEBSITE_FOR_TESTING = "facebook.com";
     private static final String ANOTHER_WEBSITE_FOR_TESTING = "twitter.com";
@@ -59,7 +59,7 @@ public class PasswordVaultTest {
 
         addOneCredentialToCredentialsFile();
 
-        passwordVault = new PasswordVault(CREDENTIALS_FILE);
+        passwordVault = new PasswordVaultInMemory(CREDENTIALS_FILE);
 
         usernamesForTesting = getUniqueNamesFromFile();
     }

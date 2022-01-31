@@ -18,6 +18,7 @@ import password.vault.server.exceptions.password.PasswordSafetyCheckerException;
 import password.vault.server.password.generator.PasswordGenerator;
 import password.vault.server.password.safety.checker.PasswordSafetyChecker;
 import password.vault.server.password.vault.PasswordVault;
+import password.vault.server.password.vault.PasswordVaultInMemory;
 import password.vault.server.user.repository.UserRepository;
 import password.vault.server.user.repository.in.memory.UserRepositoryInMemory;
 
@@ -70,7 +71,7 @@ public class ServerTest {
         UserRepository userRepository = new UserRepositoryInMemory(REGISTERED_USERS_FILE);
 
         Files.deleteIfExists(CREDENTIALS_FILE);
-        PasswordVault passwordVault = new PasswordVault(CREDENTIALS_FILE);
+        PasswordVault passwordVault = new PasswordVaultInMemory(CREDENTIALS_FILE);
 
         PasswordGeneratorResponse passwordGeneratorResponse = new PasswordGeneratorResponse(true,
                                                                                             NUMBER_OF_GENERATED_SAFE_PASSWORDS,
