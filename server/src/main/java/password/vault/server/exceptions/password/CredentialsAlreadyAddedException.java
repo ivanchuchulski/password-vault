@@ -4,4 +4,8 @@ public class CredentialsAlreadyAddedException extends Exception {
     public CredentialsAlreadyAddedException(String message) {
         super(message);
     }
+
+    public CredentialsAlreadyAddedException() {
+        
+    }
 }

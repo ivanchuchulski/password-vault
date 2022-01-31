@@ -5,6 +5,7 @@ import password.vault.server.cryptography.EncryptedPassword;
 import password.vault.server.cryptography.PasswordHash;
 import password.vault.server.exceptions.password.CredentialNotFoundException;
 import password.vault.server.exceptions.user.repository.UserNotFoundException;
+import password.vault.server.password.vault.CredentialIdentifier;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -129,17 +130,17 @@ public class DatabaseConnector {
         }
     }
 
-    public boolean insertCredential(String username, String website, String usernameForWebsite, byte[] pass,
-                                    byte[] salt, byte[] iv) {
+    public boolean insertCredential(String username, String website, String usernameForWebsite,
+                                    EncryptedPassword encryptedPassword) {
         try (PreparedStatement preparedStatement =
                      connection.prepareStatement(DMLQueries.INSERT_CREDENTIAL.getQueryText())) {
 
             preparedStatement.setString(1, username);
             preparedStatement.setString(2, website);
             preparedStatement.setString(3, usernameForWebsite);
-            preparedStatement.setBytes(4, pass);
-            preparedStatement.setBytes(5, salt);
-            preparedStatement.setBytes(6, iv);
+            preparedStatement.setBytes(4, encryptedPassword.encryptedPassword());
+            preparedStatement.setBytes(5, encryptedPassword.salt());
+            preparedStatement.setBytes(6, encryptedPassword.iv());
 
             int insertSuccess = preparedStatement.executeUpdate();
             return insertSuccess == 1;
@@ -150,13 +151,36 @@ public class DatabaseConnector {
         }
     }
 
-    public EncryptedPassword getCredential(String username, String website, String usernameForWebsite) throws
+    public boolean deleteCredential(String username, CredentialIdentifier credentialIdentifier) throws
+            DatabaseConnectorException {
+        try (PreparedStatement preparedStatement =
+                     connection.prepareStatement(DMLQueries.DELETE_CREDENTIAL.getQueryText())) {
+
+            preparedStatement.setString(1, username);
+            preparedStatement.setString(2, credentialIdentifier.website());
+            preparedStatement.setString(3, credentialIdentifier.usernameForWebsite());
+
+            int deleteSuccess = preparedStatement.executeUpdate();
+
+            if (deleteSuccess == 0) {
+                System.out.println("deleting error username %s".formatted(username));
+                return false;
+            } else {
+                System.out.println("success deleting username %s".formatted(username));
+                return true;
+            }
+        } catch (SQLException e) {
+            throw new DatabaseConnectorException("unable to delete credential");
+        }
+    }
+
+    public EncryptedPassword getCredential(String username, CredentialIdentifier credentialIdentifier) throws
             CredentialNotFoundException {
         try (PreparedStatement preparedStatement =
                      connection.prepareStatement(DMLQueries.SELECT_CREDENTIAL.getQueryText())) {
             preparedStatement.setString(1, username);
-            preparedStatement.setString(2, website);
-            preparedStatement.setString(3, usernameForWebsite);
+            preparedStatement.setString(2, credentialIdentifier.website());
+            preparedStatement.setString(3, credentialIdentifier.usernameForWebsite());
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (!resultSet.next()) {
@@ -176,5 +200,39 @@ public class DatabaseConnector {
 
     public List<EncryptedPassword> getAllCredentialsForUser(String username) {
         throw new UnsupportedOperationException();
+    }
+
+    public boolean isCredentialAdded(String username, CredentialIdentifier credentialIdentifier) throws
+            DatabaseConnectorException {
+        try (PreparedStatement preparedStatement =
+                     connection.prepareStatement(DMLQueries.SELECT_CREDENTIAL.getQueryText())) {
+
+            preparedStatement.setString(1, username);
+            preparedStatement.setString(2, credentialIdentifier.website());
+            preparedStatement.setString(3, credentialIdentifier.usernameForWebsite());
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                return resultSet.next();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new DatabaseConnectorException("unable to select credential");
+        }
+    }
+
+    public boolean doesUserHaveAnyCredentials(String username) throws
+            DatabaseConnectorException {
+        try (PreparedStatement preparedStatement =
+                     connection.prepareStatement(DMLQueries.SELECT_ALL_USERS_CREDENTIAL.getQueryText())) {
+
+            preparedStatement.setString(1, username);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                return resultSet.next();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new DatabaseConnectorException("unable to select credential");
+        }
     }
 }

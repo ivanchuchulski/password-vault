@@ -17,7 +17,12 @@ public enum DMLQueries {
     SELECT_CREDENTIAL("SELECT password, salt, iv FROM credential WHERE username = ? AND  website = ? AND " +
                               "site_username = ?;"),
 
-    SELECT_LOGGED_IN_USER("SELECT * FROM session WHERE username = ?");
+    SELECT_ALL_USERS_CREDENTIAL("SELECT * FROM credential WHERE username = ? "),
+
+    DELETE_CREDENTIAL("DELETE FROM credential WHERE username = ? AND website = ? AND site_username = ?"),
+
+    SELECT_LOGGED_IN_USER("SELECT * FROM session WHERE username = ?"),
+    ;
 
     private final String queryText;
 

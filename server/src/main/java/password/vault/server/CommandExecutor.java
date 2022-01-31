@@ -27,12 +27,15 @@ import password.vault.server.exceptions.user.repository.UserNotFoundException;
 import password.vault.server.exceptions.user.repository.UserNotLoggedInException;
 import password.vault.server.password.generator.PasswordGenerator;
 import password.vault.server.password.safety.checker.PasswordSafetyChecker;
+import password.vault.server.password.vault.CredentialRemovalFailure;
 import password.vault.server.password.vault.PasswordVault;
+import password.vault.server.password.vault.WebsiteCredential;
 import password.vault.server.session.ChannelUsernameMapper;
 import password.vault.server.session.UserActionsLog;
 import password.vault.server.user.repository.UserRepository;
 
 public class CommandExecutor {
+    private static final String SAMPLE_MASTER_PASSWORD = "1234";
     private final UserActionsLog userActionsLog;
     private final ChannelUsernameMapper channelUsernameMapper;
 
@@ -201,10 +204,6 @@ public class CommandExecutor {
             String usernameForSite = arguments[1];
             String passwordForSite = arguments[2];
 
-            if (passwordVault.userHasCredentialsForSiteAndUsername(username, website, usernameForSite)) {
-                return new Response(ServerResponses.CREDENTIAL_GENERATION_ERROR, "");
-            }
-
             PasswordSafetyResponse passwordSafetyResponse = passwordSafetyChecker.checkPassword(passwordForSite);
 
             if (passwordSafetyResponse.wasPasswordExposed()) {
@@ -212,19 +211,19 @@ public class CommandExecutor {
                         .formatted(passwordSafetyResponse.getTimesExposed()));
             }
 
-            passwordVault.addPassword(username, website, usernameForSite, passwordForSite);
+            passwordVault.addPassword(username, new WebsiteCredential(website, usernameForSite, passwordForSite),
+                                      SAMPLE_MASTER_PASSWORD);
 
-            return new Response(ServerResponses.CREDENTIAL_ADDITION_SUCCESS, "");
+            return new Response(ServerResponses.CREDENTIAL_ADDITION_SUCCESS, "added password successfully");
         } catch (CredentialsAlreadyAddedException e) {
             return new Response(ServerResponses.CREDENTIAL_ADDITION_ERROR, "credential already added");
-        } catch (PasswordEncryptorException | PasswordSafetyCheckerException e) {
+        } catch (PasswordEncryptorException | PasswordSafetyCheckerException | DatabaseConnectorException e) {
             return new Response(ServerResponses.CREDENTIAL_ADDITION_ERROR, "couldn't complete your request, try again");
         } catch (InvalidWebsiteException e) {
             return new Response(ServerResponses.WRONG_COMMAND_ARGUMENT, "website is invalid");
         } catch (InvalidUsernameForSiteException e) {
             return new Response(ServerResponses.WRONG_COMMAND_ARGUMENT, "username is invalid");
         }
-
     }
 
     private Response removePassword(String username, String[] arguments) {
@@ -232,13 +231,15 @@ public class CommandExecutor {
             String website = arguments[0];
             String usernameForSite = arguments[1];
 
-            passwordVault.removePassword(username, website, usernameForSite);
+            passwordVault.removePassword(username, website, usernameForSite, SAMPLE_MASTER_PASSWORD);
 
             return new Response(ServerResponses.CREDENTIAL_REMOVAL_SUCCESS, "credentials removed");
         } catch (UsernameNotHavingCredentialsException e) {
             return new Response(ServerResponses.NO_CREDENTIALS_ADDED, "you don't have any credential");
         } catch (CredentialNotFoundException e) {
             return new Response(ServerResponses.NO_SUCH_CREDENTIAL, "no such credential");
+        } catch (DatabaseConnectorException | CredentialRemovalFailure e) {
+            return new Response(ServerResponses.CREDENTIAL_REMOVAL_ERROR, "couldn't complete your request, try again");
         }
     }
 
@@ -247,15 +248,16 @@ public class CommandExecutor {
             String website = arguments[0];
             String usernameForSite = arguments[1];
 
-            String retrievedPassword = passwordVault.retrieveCredentials(username, website, usernameForSite);
+            String retrievedPassword = passwordVault.retrieveCredentials(username, website, usernameForSite,
+                                                                         SAMPLE_MASTER_PASSWORD);
 
             return new Response(ServerResponses.CREDENTIAL_RETRIEVAL_SUCCESS, retrievedPassword);
         } catch (UsernameNotHavingCredentialsException e) {
             return new Response(ServerResponses.NO_CREDENTIALS_ADDED, "you don't have any credentials");
         } catch (CredentialNotFoundException e) {
             return new Response(ServerResponses.NO_SUCH_CREDENTIAL, "no such credential");
-        } catch (PasswordEncryptorException e) {
-            return new Response(ServerResponses.CREDENTIAL_RETRIEVAL_ERROR, "unable to retrive credential, try again");
+        } catch (PasswordEncryptorException | DatabaseConnectorException e) {
+            return new Response(ServerResponses.CREDENTIAL_RETRIEVAL_ERROR, "unable to retrieve credential, try again");
         }
     }
 
@@ -279,10 +281,11 @@ public class CommandExecutor {
 
             String generatedPassword = passwordGeneratorResponse.getPassword();
 
-            passwordVault.addPassword(username, website, usernameForSite, generatedPassword);
+            passwordVault.addPassword(username, new WebsiteCredential(website, usernameForSite, generatedPassword),
+                                      generatedPassword);
 
             return new Response(ServerResponses.CREDENTIAL_GENERATION_SUCCESS, generatedPassword);
-        } catch (PasswordGeneratorException | PasswordEncryptorException e) {
+        } catch (PasswordGeneratorException | PasswordEncryptorException | DatabaseConnectorException e) {
             return new Response(ServerResponses.PASSWORD_GENERATION_ERROR, "unable to generate password");
         } catch (CredentialsAlreadyAddedException e) {
             return new Response(ServerResponses.CREDENTIAL_ADDITION_ERROR, "credential already added");

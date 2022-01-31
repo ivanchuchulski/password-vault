@@ -4,4 +4,8 @@ public class CredentialNotFoundException extends Exception {
     public CredentialNotFoundException(String message) {
         super(message);
     }
+
+    public CredentialNotFoundException() {
+
+    }
 }

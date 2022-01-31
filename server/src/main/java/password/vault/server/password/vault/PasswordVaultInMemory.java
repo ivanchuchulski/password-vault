@@ -1,14 +1,13 @@
 package password.vault.server.password.vault;
 
 import com.google.gson.Gson;
+import password.vault.server.cryptography.PasswordEncryptor;
+import password.vault.server.db.DatabaseConnectorException;
 import password.vault.server.dto.CredentialDTO;
-import password.vault.server.exceptions.InvalidUsernameForSiteException;
-import password.vault.server.exceptions.InvalidWebsiteException;
 import password.vault.server.exceptions.password.CredentialNotFoundException;
 import password.vault.server.exceptions.password.CredentialsAlreadyAddedException;
 import password.vault.server.exceptions.password.PasswordEncryptorException;
 import password.vault.server.exceptions.password.UsernameNotHavingCredentialsException;
-import password.vault.server.cryptography.PasswordEncryptor;
 
 import javax.crypto.SecretKey;
 import java.io.BufferedReader;
@@ -51,41 +50,31 @@ public class PasswordVaultInMemory implements PasswordVault {
     }
 
     @Override
-    public void addPassword(String username, String website, String usernameForSite, String password)
-            throws CredentialsAlreadyAddedException, PasswordEncryptorException,
-            InvalidUsernameForSiteException, InvalidWebsiteException {
-        if (!isWebsiteValid(website)) {
-            throw new InvalidWebsiteException(String.format("website %s is invalid", website));
-        }
-
-        if (!isUsernameForSiteValid(usernameForSite)) {
-            throw new InvalidUsernameForSiteException(String.format("username for site %s is invalid",
-                                                                    usernameForSite));
-        }
-
+    public void addPassword(String username, WebsiteCredential websiteCredential, String masterPassword) throws
+            CredentialsAlreadyAddedException, PasswordEncryptorException, DatabaseConnectorException {
         if (!credentialsForUser.containsKey(username)) {
             credentialsForUser.put(username, new UserCredentials());
         }
 
         UserCredentials userCredentials = credentialsForUser.get(username);
 
-        CredentialIdentifier credentialIdentifier = new CredentialIdentifier(website, usernameForSite);
+        CredentialIdentifier credentialIdentifier = new CredentialIdentifier(websiteCredential.website(), websiteCredential.usernameForSite());
 
         if (userCredentials.containsCredential(credentialIdentifier)) {
             throw new CredentialsAlreadyAddedException(
                     String.format("user %s has already added credentials for website %s and username %s",
-                                  username, website, usernameForSite));
+                                  username, websiteCredential.website(), websiteCredential.usernameForSite()));
         }
 
-        String encryptedPassword = encryptPassword(password, buildKeyDerivationString(username, usernameForSite));
+        String encryptedPassword = encryptPassword(websiteCredential.password(), buildKeyDerivationString(username, websiteCredential.usernameForSite()));
 
         userCredentials.addCredential(credentialIdentifier, encryptedPassword);
 
-        writeCredentialToFile(new CredentialDTO(username, website, usernameForSite, encryptedPassword));
+        writeCredentialToFile(new CredentialDTO(username, websiteCredential.website(), websiteCredential.usernameForSite(), encryptedPassword));
     }
 
     @Override
-    public void removePassword(String username, String website, String usernameForSite)
+    public void removePassword(String username, String website, String usernameForSite, String masterPassword)
             throws UsernameNotHavingCredentialsException, CredentialNotFoundException {
         UserCredentials userCredentials = getCredentialsForUser(username);
 
@@ -106,7 +95,7 @@ public class PasswordVaultInMemory implements PasswordVault {
 
 
     @Override
-    public String retrieveCredentials(String username, String website, String usernameForSite)
+    public String retrieveCredentials(String username, String website, String usernameForSite, String masterPassword)
             throws UsernameNotHavingCredentialsException, CredentialNotFoundException, PasswordEncryptorException {
         UserCredentials userCredentials = getCredentialsForUser(username);
 
@@ -130,7 +119,7 @@ public class PasswordVaultInMemory implements PasswordVault {
     @Override
     public boolean userHasCredentialsForSiteAndUsername(String username, String website, String usernameForSite) {
         try {
-            retrieveCredentials(username, website, usernameForSite);
+            retrieveCredentials(username, website, usernameForSite, "");
             return true;
         } catch (UsernameNotHavingCredentialsException | CredentialNotFoundException | PasswordEncryptorException e) {
             return false;

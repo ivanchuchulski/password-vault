@@ -53,14 +53,13 @@ public class PasswordEncryptorTest {
     }
 
     @Test
-    public void testDecryptPasswordReturnsTheCorrectPassword() throws PasswordEncryptorException {
-        String input = "supersecretPass";
+    public void testEncryptionWithMasterPassword() throws PasswordEncryptorException {
+        String password = "pass1234";
+        String masterPass = "themasterPass";
 
-        SecretKey keyFromString = PasswordEncryptor.getKeyFromString(input);
-        EncryptedPassword encryptedPassword = PasswordEncryptor.encryptPassword(input, keyFromString);
+        EncryptedPassword encryptedPassword = PasswordEncryptor.encryptWithMasterPassword(password, masterPass);
+        String decryptedPassword = PasswordEncryptor.decryptWithMasterPassword(encryptedPassword, masterPass);
 
-        String decryptedPassword = PasswordEncryptor.decryptPassword(encryptedPassword, keyFromString);
-
-        assertEquals(input, decryptedPassword);
+        assertEquals("decrypted password should match the original one", password, decryptedPassword);
     }
 }

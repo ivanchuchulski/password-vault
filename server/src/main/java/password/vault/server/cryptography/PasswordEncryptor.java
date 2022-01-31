@@ -53,8 +53,7 @@ public class PasswordEncryptor {
         }
     }
 
-    public static String decrypt(String cipherText, SecretKey key)
-            throws PasswordEncryptorException {
+    public static String decrypt(String cipherText, SecretKey key) throws PasswordEncryptorException {
         try {
             Cipher cipher = Cipher.getInstance(ENCRYPTION_ALGORITHM_NAME);
 
@@ -70,8 +69,7 @@ public class PasswordEncryptor {
     }
 
 
-    public static byte[] encrypt(String input, SecretKey key, byte[] ivBytes) throws
-            PasswordEncryptorException {
+    public static byte[] encrypt(String input, SecretKey key, byte[] ivBytes) throws PasswordEncryptorException {
         try {
             IvParameterSpec ivParameterSpec = PasswordEncryptor.generateIv(ivBytes);
 
@@ -103,18 +101,20 @@ public class PasswordEncryptor {
         }
     }
 
-
-    public static EncryptedPassword encryptPassword(String input, SecretKey key) throws
+    /* ----- */
+    public static EncryptedPassword encryptWithMasterPassword(String password, String masterPassword) throws
             PasswordEncryptorException {
         try {
             byte[] salt = PasswordEncryptor.generateSixteenByteSalt();
             byte[] ivBytes = PasswordEncryptor.generateSixteenByteSalt();
             IvParameterSpec ivParameterSpec = PasswordEncryptor.generateIv(ivBytes);
 
+            SecretKey key = getKeyFromString(masterPassword, salt);
+
             Cipher cipher = Cipher.getInstance(ENCRYPTION_ALGORITHM_NAME);
             cipher.init(Cipher.ENCRYPT_MODE, key, ivParameterSpec);
 
-            byte[] cipherText = cipher.doFinal(input.getBytes());
+            byte[] cipherText = cipher.doFinal(password.getBytes());
             byte[] encodedAndEncrypted = Base64.getEncoder().encode(cipherText);
 
             return new EncryptedPassword(encodedAndEncrypted, salt, ivBytes);
@@ -123,11 +123,12 @@ public class PasswordEncryptor {
         }
     }
 
-    public static String decryptPassword(EncryptedPassword encryptedPassword, SecretKey key) throws
+    public static String decryptWithMasterPassword(EncryptedPassword encryptedPassword, String masterPassword) throws
             PasswordEncryptorException {
         try {
-            byte[] ivBytes = encryptedPassword.iv();
-            IvParameterSpec ivParameterSpec = generateIv(ivBytes);
+            SecretKey key = getKeyFromString(masterPassword, encryptedPassword.salt());
+
+            IvParameterSpec ivParameterSpec = generateIv(encryptedPassword.iv());
             Cipher cipher = Cipher.getInstance(ENCRYPTION_ALGORITHM_NAME);
             cipher.init(Cipher.DECRYPT_MODE, key, ivParameterSpec);
 

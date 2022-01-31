@@ -81,7 +81,7 @@ public class PasswordVaultInMemoryTest {
                                                                       INITIALLY_ADDED_USERNAME_FOR_SITE));
 
         String retrievedCredentials = passwordVault.retrieveCredentials(INITIALLY_ADDED_USERNAME, WEBSITE_FOR_TESTING,
-                                                                        INITIALLY_ADDED_USERNAME_FOR_SITE);
+                                                                        INITIALLY_ADDED_USERNAME_FOR_SITE, "");
 
         assertEquals("unexpected password for the initially added credential", PASSWORD_FOR_TESTING,
                      retrievedCredentials);
@@ -89,10 +89,11 @@ public class PasswordVaultInMemoryTest {
 
     @Test
     public void testAddingAPasswordAndRetrievingItReturnsTheSamePassword() throws Exception {
-        passwordVault.addPassword(uniqueUsername, WEBSITE_FOR_TESTING, usernameForWebsite, PASSWORD_FOR_TESTING);
+        passwordVault.addPassword(uniqueUsername, new WebsiteCredential(WEBSITE_FOR_TESTING, usernameForWebsite,
+                                                                        PASSWORD_FOR_TESTING), PASSWORD_FOR_TESTING);
 
         String retrievedPassword = passwordVault
-                .retrieveCredentials(uniqueUsername, WEBSITE_FOR_TESTING, usernameForWebsite);
+                .retrieveCredentials(uniqueUsername, WEBSITE_FOR_TESTING, usernameForWebsite, "");
 
         assertEquals("the retrieved password should match the added one", PASSWORD_FOR_TESTING, retrievedPassword);
     }
@@ -103,30 +104,34 @@ public class PasswordVaultInMemoryTest {
      */
     @Test(expected = CredentialsAlreadyAddedException.class)
     public void testAddingAPasswordForTheSameSiteAndUsernameThrowsException() throws Exception {
-        passwordVault.addPassword(uniqueUsername, WEBSITE_FOR_TESTING, usernameForWebsite, PASSWORD_FOR_TESTING);
+        passwordVault.addPassword(uniqueUsername, new WebsiteCredential(WEBSITE_FOR_TESTING, usernameForWebsite,
+                                                                        PASSWORD_FOR_TESTING), PASSWORD_FOR_TESTING);
 
-        passwordVault.addPassword(uniqueUsername, WEBSITE_FOR_TESTING, usernameForWebsite, PASSWORD_FOR_TESTING);
+        passwordVault.addPassword(uniqueUsername, new WebsiteCredential(WEBSITE_FOR_TESTING, usernameForWebsite,
+                                                                        PASSWORD_FOR_TESTING), PASSWORD_FOR_TESTING);
     }
 
     @Test(expected = CredentialNotFoundException.class)
     public void testRemovingAPasswordRemovesIt() throws Exception {
-        passwordVault.addPassword(uniqueUsername, WEBSITE_FOR_TESTING, usernameForWebsite, PASSWORD_FOR_TESTING);
+        passwordVault.addPassword(uniqueUsername, new WebsiteCredential(WEBSITE_FOR_TESTING, usernameForWebsite,
+                                                                        PASSWORD_FOR_TESTING), PASSWORD_FOR_TESTING);
 
-        passwordVault.removePassword(uniqueUsername, WEBSITE_FOR_TESTING, usernameForWebsite);
+        passwordVault.removePassword(uniqueUsername, WEBSITE_FOR_TESTING, usernameForWebsite, "");
 
-        passwordVault.retrieveCredentials(uniqueUsername, WEBSITE_FOR_TESTING, usernameForWebsite);
+        passwordVault.retrieveCredentials(uniqueUsername, WEBSITE_FOR_TESTING, usernameForWebsite, "");
     }
 
     @Test(expected = UsernameNotHavingCredentialsException.class)
     public void testRemovingAPasswordForNonAddedUser() throws Exception {
-        passwordVault.removePassword(uniqueUsername, WEBSITE_FOR_TESTING, usernameForWebsite);
+        passwordVault.removePassword(uniqueUsername, WEBSITE_FOR_TESTING, usernameForWebsite, "");
     }
 
     @Test(expected = CredentialNotFoundException.class)
     public void testRemovingAPasswordForNonAddedWebsiteAndUsername() throws Exception {
-        passwordVault.addPassword(uniqueUsername, WEBSITE_FOR_TESTING, usernameForWebsite, PASSWORD_FOR_TESTING);
+        passwordVault.addPassword(uniqueUsername, new WebsiteCredential(WEBSITE_FOR_TESTING, usernameForWebsite,
+                                                                        PASSWORD_FOR_TESTING), PASSWORD_FOR_TESTING);
 
-        passwordVault.removePassword(uniqueUsername, ANOTHER_WEBSITE_FOR_TESTING, usernameForWebsite);
+        passwordVault.removePassword(uniqueUsername, ANOTHER_WEBSITE_FOR_TESTING, usernameForWebsite, "");
     }
 
     private static List<String> getUniqueNamesFromFile() throws IOException {
