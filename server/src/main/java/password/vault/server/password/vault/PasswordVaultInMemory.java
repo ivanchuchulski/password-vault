@@ -115,6 +115,10 @@ public class PasswordVaultInMemory implements PasswordVault {
         return PasswordEncryptor.decrypt(encryptedPassword, secretKey);
     }
 
+    @Override
+    public List<CredentialIdentifier> getAllCredentials(String username) {
+        throw new UnsupportedOperationException();
+    }
 
     @Override
     public boolean userHasCredentialsForSiteAndUsername(String username, String website, String usernameForSite) {

@@ -6,6 +6,8 @@ import password.vault.server.exceptions.password.CredentialsAlreadyAddedExceptio
 import password.vault.server.exceptions.password.PasswordEncryptorException;
 import password.vault.server.exceptions.password.UsernameNotHavingCredentialsException;
 
+import java.util.List;
+
 public interface PasswordVault {
     void addPassword(String username, WebsiteCredential websiteCredential, String masterPassword)
             throws CredentialsAlreadyAddedException, PasswordEncryptorException, DatabaseConnectorException;
@@ -16,6 +18,9 @@ public interface PasswordVault {
 
     String retrieveCredentials(String username, String website, String usernameForSite, String masterPassword)
             throws UsernameNotHavingCredentialsException, CredentialNotFoundException, PasswordEncryptorException,
+            DatabaseConnectorException;
+
+    List<CredentialIdentifier> getAllCredentials(String username) throws UsernameNotHavingCredentialsException,
             DatabaseConnectorException;
 
     boolean userHasCredentialsForSiteAndUsername(String username, String website, String usernameForSite) throws

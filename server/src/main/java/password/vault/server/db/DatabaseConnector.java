@@ -12,6 +12,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.LinkedList;
 import java.util.List;
 
 public class DatabaseConnector {
@@ -198,8 +199,25 @@ public class DatabaseConnector {
         }
     }
 
-    public List<EncryptedPassword> getAllCredentialsForUser(String username) {
-        throw new UnsupportedOperationException();
+    public List<CredentialIdentifier> getAllCredentialsForUser(String username) throws DatabaseConnectorException {
+        try (PreparedStatement preparedStatement =
+                     connection.prepareStatement(DMLQueries.SELECT_ALL_USERS_CREDENTIAL.getQueryText())) {
+            preparedStatement.setString(1, username);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                List<CredentialIdentifier> credentialIdentifiers = new LinkedList<>();
+                while (resultSet.next()) {
+                    String website = resultSet.getString("website");
+                    String siteUsername = resultSet.getString("site_username");
+
+                    credentialIdentifiers.add(new CredentialIdentifier(website, siteUsername));
+                }
+                return credentialIdentifiers;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new DatabaseConnectorException("unable to get all credentials");
+        }
     }
 
     public boolean isCredentialAdded(String username, CredentialIdentifier credentialIdentifier) throws

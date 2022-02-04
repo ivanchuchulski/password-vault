@@ -9,6 +9,8 @@ import password.vault.server.exceptions.password.CredentialsAlreadyAddedExceptio
 import password.vault.server.exceptions.password.PasswordEncryptorException;
 import password.vault.server.exceptions.password.UsernameNotHavingCredentialsException;
 
+import java.util.List;
+
 public class PasswordVaultDB implements PasswordVault {
     private final DatabaseConnector databaseConnector;
 
@@ -69,6 +71,17 @@ public class PasswordVaultDB implements PasswordVault {
 
         return PasswordEncryptor.decryptWithMasterPassword(encryptedPassword, masterPassword);
     }
+
+    @Override
+    public List<CredentialIdentifier> getAllCredentials(String username) throws UsernameNotHavingCredentialsException,
+            DatabaseConnectorException {
+        if (!databaseConnector.doesUserHaveAnyCredentials(username)) {
+            throw new UsernameNotHavingCredentialsException();
+        }
+
+        return databaseConnector.getAllCredentialsForUser(username);
+    }
+
 
     @Override
     public boolean userHasCredentialsForSiteAndUsername(String username, String website, String usernameForSite) throws

@@ -27,12 +27,15 @@ import password.vault.server.exceptions.user.repository.UserNotFoundException;
 import password.vault.server.exceptions.user.repository.UserNotLoggedInException;
 import password.vault.server.password.generator.PasswordGenerator;
 import password.vault.server.password.safety.checker.PasswordSafetyChecker;
+import password.vault.server.password.vault.CredentialIdentifier;
 import password.vault.server.password.vault.CredentialRemovalFailure;
 import password.vault.server.password.vault.PasswordVault;
 import password.vault.server.password.vault.WebsiteCredential;
 import password.vault.server.session.ChannelUsernameMapper;
 import password.vault.server.session.UserActionsLog;
 import password.vault.server.user.repository.UserRepository;
+
+import java.util.List;
 
 public class CommandExecutor {
     private static final String SAMPLE_MASTER_PASSWORD = "1234";
@@ -97,8 +100,8 @@ public class CommandExecutor {
 
         if (!userActionsLog.userHasValidSession(username)) {
             logoutUser(userRequest);
-            return new CommandResponse(false, new Response(ServerResponses.SESSION_EXPIRED, "your session has " +
-                    "expired"));
+            return new CommandResponse(false, new Response(ServerResponses.SESSION_EXPIRED,
+                                                           "your session has expired, you have to log in again"));
         }
 
         userActionsLog.addUserActionTimeStamp(username);
@@ -109,6 +112,7 @@ public class CommandExecutor {
                     case REMOVE_PASSWORD -> removePassword(username, userRequest.arguments());
                     case RETRIEVE_CREDENTIALS -> retrieveCredentials(username, userRequest.arguments());
                     case GENERATE_PASSWORD -> generatePassword(username, userRequest.arguments());
+                    case GET_ALL_CREDENTIALS -> getAllCredentials(username);
                     default -> new Response(ServerResponses.HELP_COMMAND, ServerCommand.printHelp());
                 };
 
@@ -261,6 +265,28 @@ public class CommandExecutor {
             return new Response(ServerResponses.CREDENTIAL_RETRIEVAL_ERROR, "unable to retrieve credential, try again");
         }
     }
+
+    private Response getAllCredentials(String username) {
+        try {
+            List<CredentialIdentifier> allCredentials = passwordVault.getAllCredentials(username);
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("user %s credentials : %n".formatted(username));
+            for (CredentialIdentifier credentialIdentifier : allCredentials) {
+                String format = String.format("username \"%s\" for website \"%s\"%n",
+                                              credentialIdentifier.usernameForWebsite(),
+                                              credentialIdentifier.website());
+                sb.append(format);
+            }
+
+            return new Response(ServerResponses.CREDENTIAL_RETRIEVAL_SUCCESS, sb.toString());
+        } catch (UsernameNotHavingCredentialsException e) {
+            return new Response(ServerResponses.CREDENTIAL_REMOVAL_ERROR, "you do not have any credentials added");
+        } catch (DatabaseConnectorException e) {
+            return new Response(ServerResponses.CREDENTIAL_RETRIEVAL_ERROR, "unable to retrieve credential, try again");
+        }
+    }
+
 
     private Response generatePassword(String username, String[] arguments) {
         try {

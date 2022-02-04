@@ -15,6 +15,7 @@ public enum ServerCommand {
     REMOVE_PASSWORD("remove-password", 2, "remove-password <website> <user>"),
     // UPDATE_PASSWORD("update-password", 4, "update-password <website> <user> <oldpass> <newpass>"),
     RETRIEVE_CREDENTIALS("get-password", 2, "get-password <website> <user>"),
+    GET_ALL_CREDENTIALS("get-all-credentials", 0, "get-all-credentials"),
 
     GENERATE_PASSWORD("generate-password", 3, "generate-password <website> <user> <passwordLength>"),
 
