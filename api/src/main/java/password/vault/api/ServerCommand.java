@@ -10,12 +10,15 @@ public enum ServerCommand {
     LOGIN("login", 2, "login <user> <password>"),
     LOGOUT("logout", 0, "logout"),
     DISCONNECT("disconnect", 0, "disconnect"),
+
     ADD_PASSWORD("add-password", 3, "add-password <website> <user> <password>"),
     REMOVE_PASSWORD("remove-password", 2, "remove-password <website> <user>"),
     // UPDATE_PASSWORD("update-password", 4, "update-password <website> <user> <oldpass> <newpass>"),
     RETRIEVE_CREDENTIALS("get-password", 2, "get-password <website> <user>"),
+
     GENERATE_PASSWORD("generate-password", 3, "generate-password <website> <user> <passwordLength>"),
-    HELP("help", 0, ""),
+
+    HELP("help", 0, "help"),
     UNKNOWN("", 0, "");
 
     private final String commandText;
@@ -53,10 +56,18 @@ public enum ServerCommand {
 
     public static String printHelp() {
         StringBuilder sb = new StringBuilder();
-        for (ServerCommand instance : ServerCommand.values()) {
-            sb.append(instance.commandOverview);
-            sb.append(" ");
+        sb.append("commands overview : ");
+        sb.append(System.lineSeparator());
+
+        ServerCommand[] values = ServerCommand.values();
+
+        for (int i = 0; i < values.length; i++) {
+            sb.append(values[i].getCommandOverview());
+            if (i != values.length - 1) {
+                sb.append(System.lineSeparator());
+            }
         }
+
         return sb.toString();
     }
 

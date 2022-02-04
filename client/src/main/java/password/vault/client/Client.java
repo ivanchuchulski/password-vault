@@ -2,7 +2,6 @@ package password.vault.client;
 
 import com.google.gson.Gson;
 import password.vault.api.Response;
-import password.vault.api.ServerCommand;
 import password.vault.api.ServerResponses;
 
 import java.io.BufferedReader;
@@ -27,10 +26,10 @@ public class Client {
 
     private final Gson gson;
 
-    public Client(int serverPort) {
+    public Client(String host, int serverPort) {
         try {
             socketChannel = SocketChannel.open();
-            socketChannel.connect(new InetSocketAddress(SERVER_HOST, serverPort));
+            socketChannel.connect(new InetSocketAddress(host, serverPort));
 
             reader = new BufferedReader(Channels.newReader(socketChannel, StandardCharsets.UTF_8));
             writer = new PrintWriter(Channels.newWriter(socketChannel, StandardCharsets.UTF_8), true);
@@ -41,7 +40,11 @@ public class Client {
         }
     }
 
-    public void sendRequest(String request) throws IOException {
+    public Client() {
+        this(SERVER_HOST, SERVER_PORT);
+    }
+
+    public void sendRequest(String request)  {
         if (socketChannel.isConnected()) {
             writer.println(request);
         }
@@ -59,34 +62,37 @@ public class Client {
     }
 
     public static void main(String[] args) {
-        Client wishListClient = new Client(SERVER_PORT);
+        Client client = new Client();
+
         System.out.println("connected to the server.");
 
         try (Scanner scanner = new Scanner(System.in)) {
             while (true) {
-                System.out.print("enter message: ");
-                String message = scanner.nextLine();
+                String message = getUserInput(scanner);
 
-                if (message.equalsIgnoreCase(USER_QUIT_COMMAND)) {
-                    wishListClient.sendRequest(ServerCommand.DISCONNECT.getCommandText());
-                    break;
-                }
+                System.out.println("sending message to the server...");
+                client.sendRequest(message);
 
-                System.out.println("sending message <" + message + "> to the server...");
-
-                wishListClient.sendRequest(message);
-
-                Response response = wishListClient.receiveResponse();
-
-                System.out.println("server replied : " + response.message());
+                Response response = client.receiveResponse();
+                printServerResponse(response);
 
                 if (response.serverResponse().equals(DISCONNECTED_FROM_SERVER_REPLY)) {
                     break;
                 }
-
             }
+
+            client.closeConnection();
         } catch (IOException ioException) {
             throw new RuntimeException(ioException);
         }
+    }
+
+    private static String getUserInput(Scanner scanner) {
+        System.out.print("Enter message: ");
+        return scanner.nextLine();
+    }
+
+    private static void printServerResponse(Response response) {
+        System.out.printf("Server replied : %s%n%n", response.message());
     }
 }

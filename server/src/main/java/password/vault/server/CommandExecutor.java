@@ -73,7 +73,8 @@ public class CommandExecutor {
         }
 
         if (serverCommand.equals(ServerCommand.DISCONNECT)) {
-            return new CommandResponse(true, disconnectUser(userRequest));
+            Response response = disconnectUser(userRequest);
+            return new CommandResponse(true, response);
         }
 
         switch (serverCommand) {
@@ -211,8 +212,8 @@ public class CommandExecutor {
                         .formatted(passwordSafetyResponse.getTimesExposed()));
             }
 
-            passwordVault.addPassword(username, new WebsiteCredential(website, usernameForSite, passwordForSite),
-                                      SAMPLE_MASTER_PASSWORD);
+            WebsiteCredential websiteCredential = new WebsiteCredential(website, usernameForSite, passwordForSite);
+            passwordVault.addPassword(username, websiteCredential, SAMPLE_MASTER_PASSWORD);
 
             return new Response(ServerResponses.CREDENTIAL_ADDITION_SUCCESS, "added password successfully");
         } catch (CredentialsAlreadyAddedException e) {

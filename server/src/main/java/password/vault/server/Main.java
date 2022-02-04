@@ -10,7 +10,6 @@ import password.vault.server.user.repository.UserRepository;
 import password.vault.server.user.repository.UserRepositoryDatabase;
 import password.vault.server.user.repository.in.memory.UserRepositoryInMemory;
 
-import java.io.File;
 import java.net.http.HttpClient;
 import java.nio.file.Path;
 
@@ -20,10 +19,11 @@ public class Main {
     }
 
     private static void startServer() {
-        final Path usersFilePath = Path.of("resources" + File.separator + "users.txt");
+        Path resources = Path.of("resources");
+        final Path usersFilePath = resources.resolve("users.txt");
         UserRepository userRepositoryInMemory = new UserRepositoryInMemory(usersFilePath);
 
-        final Path credentialsFile = Path.of("resources" + File.separator + "credentials.txt");
+        final Path credentialsFile = resources.resolve("credentials.txt");
         PasswordVault passwordVaultInMemory = new PasswordVaultInMemory(credentialsFile);
 
         DatabaseConnector databaseConnector = new DatabaseConnector();
