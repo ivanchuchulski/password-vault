@@ -43,7 +43,8 @@ public enum ServerResponses {
     NO_SUCH_CREDENTIAL(""),
     NO_CREDENTIALS_ADDED(""),
     HELP_COMMAND(""),
-    USER_DOES_NOT_EXIST("");
+    USER_DOES_NOT_EXIST(""),
+    SAFE_PASSWORD("");
 
     private final String responseText;
 

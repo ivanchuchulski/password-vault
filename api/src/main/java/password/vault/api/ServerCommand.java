@@ -18,6 +18,7 @@ public enum ServerCommand {
     GET_ALL_CREDENTIALS("get-all-credentials", 0, "get-all-credentials"),
 
     GENERATE_PASSWORD("generate-password", 3, "generate-password <website> <user> <passwordLength>"),
+    CHECK_PASSWORD_SAFETY("check-password", 1, "check-password <password>"),
 
     HELP("help", 0, "help"),
     UNKNOWN("", 0, "");

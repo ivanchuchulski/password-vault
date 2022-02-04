@@ -113,6 +113,7 @@ public class CommandExecutor {
                     case RETRIEVE_CREDENTIALS -> retrieveCredentials(username, userRequest.arguments());
                     case GENERATE_PASSWORD -> generatePassword(username, userRequest.arguments());
                     case GET_ALL_CREDENTIALS -> getAllCredentials(username);
+                    case CHECK_PASSWORD_SAFETY -> checkPasswordSafety(username, userRequest.arguments());
                     default -> new Response(ServerResponses.HELP_COMMAND, ServerCommand.printHelp());
                 };
 
@@ -212,8 +213,8 @@ public class CommandExecutor {
             PasswordSafetyResponse passwordSafetyResponse = passwordSafetyChecker.checkPassword(passwordForSite);
 
             if (passwordSafetyResponse.wasPasswordExposed()) {
-                return new Response(ServerResponses.UNSAFE_PASSWORD, "password was exposed %d times"
-                        .formatted(passwordSafetyResponse.getTimesExposed()));
+                return new Response(ServerResponses.UNSAFE_PASSWORD,
+                                    "password was exposed %d times".formatted(passwordSafetyResponse.getTimesExposed()));
             }
 
             WebsiteCredential websiteCredential = new WebsiteCredential(website, usernameForSite, passwordForSite);
@@ -322,6 +323,24 @@ public class CommandExecutor {
             return new Response(ServerResponses.WRONG_COMMAND_ARGUMENT, "website is invalid");
         } catch (InvalidUsernameForSiteException e) {
             return new Response(ServerResponses.WRONG_COMMAND_ARGUMENT, "username is invalid");
+        }
+    }
+
+    private Response checkPasswordSafety(String username, String[] arguments) {
+        try {
+            String password = arguments[0];
+            PasswordSafetyResponse passwordSafetyResponse = passwordSafetyChecker.checkPassword(password);
+
+            if (passwordSafetyResponse.wasPasswordExposed()) {
+                return new Response(ServerResponses.UNSAFE_PASSWORD,
+                                    "the password is unsafe, it was was exposed %d times".formatted(passwordSafetyResponse.getTimesExposed()));
+
+            }
+
+            return new Response(ServerResponses.SAFE_PASSWORD, "password is safe, we found zero exposures");
+        } catch (PasswordSafetyCheckerException e) {
+            return new Response(ServerResponses.PASSWORD_SAFETY_SERVICE_ERROR,
+                                "unable to complete your request, please try again later");
         }
     }
 }
