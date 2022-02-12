@@ -1,58 +1,50 @@
 package password.vault.api;
 
 public enum ServerResponses {
-    UNKNOWN_COMMAND("[ error : unknown command ]"),
-    WRONG_COMMAND_NUMBER_OF_ARGUMENTS("[ error : wrong number of arguments, correct is %s ]"),
-    WRONG_COMMAND_ARGUMENT("[ error : wrong command argument : %s ]"),
-    SESSION_EXPIRED("[ error : your session has expired, logging you out ]"),
-    DISCONNECTED("[ success : disconnected from server ]"),
+    UNKNOWN_COMMAND(),
+    WRONG_COMMAND_NUMBER_OF_ARGUMENTS(),
+    WRONG_COMMAND_ARGUMENT(),
+    SESSION_EXPIRED(),
+    DISCONNECTED(),
 
-    NOT_LOGGED_IN("[ error : you are not logged in ]"),
-    ALREADY_LOGGED_IN("you are already logged in"),
+    NOT_LOGGED_IN(),
+    ALREADY_LOGGED_IN(),
 
-    REGISTRATION_SUCCESS("[ success : username %s successfully registered ]"),
-    REGISTRATION_ERROR("[ error registering : %s ]"),
+    REGISTRATION_SUCCESS(),
+    REGISTRATION_ERROR(),
 
-    LOGIN_SUCCESS("[ success : user %s successfully logged in ]"),
-    LOGIN_ERROR("[ error logging in : %s ]"),
+    LOGIN_SUCCESS(),
+    LOGIN_ERROR(),
 
-    LOGOUT_SUCCESS("[ success : logging out ]"),
-    LOGOUT_ERROR("[ error logging out : %s ]"),
+    LOGOUT_SUCCESS(),
+    LOGOUT_ERROR(),
 
-    CREDENTIAL_ADDITION_SUCCESS("[ success added credentials ]"),
-    CREDENTIAL_ADDITION_ERROR("[ error adding credentials : %s]"),
-    UNSAFE_PASSWORD("[ error adding password : password %s is unsafe, it was exposed %s times ]"),
+    CREDENTIAL_ADDITION_SUCCESS(),
+    CREDENTIAL_ADDITION_ERROR(),
+    UNSAFE_PASSWORD(),
 
-    CREDENTIAL_REMOVAL_SUCCESS("[ success removed credentials for site %s and username %s ]"),
-    CREDENTIAL_REMOVAL_ERROR("[ error removing credentials : %s ]"),
+    CREDENTIAL_REMOVAL_SUCCESS(),
+    CREDENTIAL_REMOVAL_ERROR(),
 
-    CREDENTIAL_RETRIEVAL_SUCCESS("[ success retrieving credentials : password is %s ]"),
-    CREDENTIAL_RETRIEVAL_ERROR("[ error retrieving credentials : %s ]"),
+    CREDENTIAL_RETRIEVAL_SUCCESS(),
+    CREDENTIAL_RETRIEVAL_ERROR(),
 
-    PASSWORD_SAFETY_SERVICE_ERROR("[ error checking password safety : %s]"),
+    PASSWORD_SAFETY_SERVICE_ERROR(),
 
-    CREDENTIAL_GENERATION_SUCCESS("[ success generated credentials : website %s usernameForSite %s password %s ]"),
-    CREDENTIAL_GENERATION_ERROR("[ error generating credentials : you already have password for site %s and username" +
-                                        " %s ]"),
+    CREDENTIAL_GENERATION_SUCCESS(),
+    CREDENTIAL_GENERATION_ERROR(),
 
-    PASSWORD_GENERATION_ERROR("[ error generating safe password safety ]"),
+    PASSWORD_GENERATION_ERROR(),
 
-    USER_ALREADY_LOGGED(""),
-    USER_NOT_LOGGED_IN(""),
-    PASSWORD_DO_NOT_MATCH(""),
-    NO_SUCH_CREDENTIAL(""),
-    NO_CREDENTIALS_ADDED(""),
-    HELP_COMMAND(""),
-    USER_DOES_NOT_EXIST(""),
-    SAFE_PASSWORD("");
+    USER_ALREADY_LOGGED(),
+    USER_NOT_LOGGED_IN(),
+    PASSWORD_DO_NOT_MATCH(),
+    NO_SUCH_CREDENTIAL(),
+    NO_CREDENTIALS_ADDED(),
+    HELP_COMMAND(),
+    USER_DOES_NOT_EXIST(),
+    SAFE_PASSWORD();
 
-    private final String responseText;
-
-    ServerResponses(String responseText) {
-        this.responseText = responseText;
-    }
-
-    public String getResponseText() {
-        return responseText;
+    ServerResponses() {
     }
 }

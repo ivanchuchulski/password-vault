@@ -29,9 +29,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class PasswordVaultInMemory implements PasswordVault {
-    private final static String WEBSITE_PATTERN = "[a-zA-Z0-9]+\\.[a-zA-Z]+";
-    private final static String USERNAME_FOR_SITE_PATTERN = "[a-zA-Z0-9-_]{3,}";
-
     // { username -> { website, usernameForWebsite -> password }}
     private final Map<String, UserCredentials> credentialsForUser;
     private final Path credentialsFile;
@@ -51,7 +48,7 @@ public class PasswordVaultInMemory implements PasswordVault {
 
     @Override
     public void addPassword(String username, WebsiteCredential websiteCredential, String masterPassword) throws
-            CredentialsAlreadyAddedException, PasswordEncryptorException, DatabaseConnectorException {
+            CredentialsAlreadyAddedException, PasswordEncryptorException {
         if (!credentialsForUser.containsKey(username)) {
             credentialsForUser.put(username, new UserCredentials());
         }
@@ -130,14 +127,6 @@ public class PasswordVaultInMemory implements PasswordVault {
         }
     }
 
-    private boolean isWebsiteValid(String website) {
-        return website.matches(WEBSITE_PATTERN);
-    }
-
-    private boolean isUsernameForSiteValid(String usernameForSite) {
-        return usernameForSite.matches(USERNAME_FOR_SITE_PATTERN);
-    }
-
     private UserCredentials getCredentialsForUser(String username) throws UsernameNotHavingCredentialsException {
         if (!credentialsForUser.containsKey(username)) {
             throw new UsernameNotHavingCredentialsException(
@@ -176,9 +165,6 @@ public class PasswordVaultInMemory implements PasswordVault {
 
             while ((line = bufferedReader.readLine()) != null) {
                 CredentialDTO credentialDTO = gson.fromJson(line, CredentialDTO.class);
-
-                System.out.println("credential");
-                System.out.println(credentialDTO.toString());
                 credentialDTOS.add(credentialDTO);
             }
 

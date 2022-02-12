@@ -26,7 +26,7 @@ public class DatabaseConnector {
         try {
             connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException("unable to connect to database");
         }
     }
 

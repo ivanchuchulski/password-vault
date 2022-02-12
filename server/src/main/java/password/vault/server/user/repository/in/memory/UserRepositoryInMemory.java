@@ -137,7 +137,6 @@ public class UserRepositoryInMemory implements UserRepository {
 
             while ((line = bufferedReader.readLine()) != null) {
                 User user = gson.fromJson(line, User.class);
-                System.out.println(user.toString());
                 registeredUsers.add(user);
             }
 

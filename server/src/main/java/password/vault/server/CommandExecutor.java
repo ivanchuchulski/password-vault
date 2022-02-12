@@ -177,8 +177,7 @@ public class CommandExecutor {
             channelUsernameMapper.addUsernameForChannel(userRequest.getSocketChannel(), username);
             userActionsLog.addUserActionTimeStamp(username);
 
-            return new Response(ServerResponses.LOGIN_SUCCESS,
-                                ServerResponses.LOGIN_SUCCESS.getResponseText().formatted(username));
+            return new Response(ServerResponses.LOGIN_SUCCESS, "sucess logging in user %s".formatted(username));
         } catch (LoginException | HashException e) {
             return new Response(ServerResponses.LOGIN_ERROR, "unable to complete your logout request, try again ");
         } catch (UserAlreadyLoggedInException e) {

@@ -167,8 +167,6 @@ public class ServerTest {
         Response response = sendRequestAndGetResponse(registerCommand(username, PASSWORD_FOR_TESTING,
                                                                       PASSWORD_FOR_TESTING));
 
-        String expectedResponse = ServerResponses.REGISTRATION_SUCCESS.getResponseText().formatted(username);
-
         assertEquals("valid registration should return a success response",
                      ServerResponses.REGISTRATION_SUCCESS,
                      response.serverResponse());
@@ -193,8 +191,6 @@ public class ServerTest {
         sendRequestAndGetResponse(registerCommand(username, PASSWORD_FOR_TESTING, PASSWORD_FOR_TESTING));
         sendRequestAndGetResponse(loginCommand(username, PASSWORD_FOR_TESTING));
         Response response = sendRequestAndGetResponse(logoutCommand());
-
-        String expectedResponse = ServerResponses.LOGOUT_SUCCESS.getResponseText().formatted(username);
 
         assertEquals("valid logout should return a success response",
                      ServerResponses.LOGOUT_SUCCESS,
@@ -269,9 +265,6 @@ public class ServerTest {
         Response response = sendRequestAndGetResponse(removePassword(WEBSITE_FOR_TESTING, usernameForSite));
         sendRequestAndGetResponse(logoutCommand());
 
-        String expectedResponse = ServerResponses.CREDENTIAL_REMOVAL_SUCCESS.getResponseText()
-                                                                            .formatted(WEBSITE_FOR_TESTING,
-                                                                                       usernameForSite);
         assertEquals("when removing a previously added password the response should be successful removal",
                      ServerResponses.CREDENTIAL_REMOVAL_SUCCESS,
                      response.serverResponse());
@@ -289,8 +282,6 @@ public class ServerTest {
         Response response = sendRequestAndGetResponse(retrieveCredentials(WEBSITE_FOR_TESTING, usernameForSite));
         sendRequestAndGetResponse(disconnectCommand());
 
-        String expectedResponse = ServerResponses.CREDENTIAL_RETRIEVAL_SUCCESS.getResponseText()
-                                                                              .formatted(SAMPLE_SAFE_PASSWORD);
         assertEquals("response should be success",
                      ServerResponses.CREDENTIAL_RETRIEVAL_SUCCESS,
                      response.serverResponse());
