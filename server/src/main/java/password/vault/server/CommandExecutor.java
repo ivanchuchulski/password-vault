@@ -113,7 +113,7 @@ public class CommandExecutor {
                     case RETRIEVE_CREDENTIALS -> retrieveCredentials(username, userRequest.arguments());
                     case GENERATE_PASSWORD -> generatePassword(username, userRequest.arguments());
                     case GET_ALL_CREDENTIALS -> getAllCredentials(username);
-                    case CHECK_PASSWORD_SAFETY -> checkPasswordSafety(username, userRequest.arguments());
+                    case CHECK_PASSWORD_SAFETY -> checkPasswordSafety(userRequest.arguments());
                     default -> new Response(ServerResponses.HELP_COMMAND, ServerCommand.printHelp());
                 };
 
@@ -262,6 +262,7 @@ public class CommandExecutor {
         } catch (CredentialNotFoundException e) {
             return new Response(ServerResponses.NO_SUCH_CREDENTIAL, "no such credential");
         } catch (PasswordEncryptorException | DatabaseConnectorException e) {
+            e.printStackTrace();
             return new Response(ServerResponses.CREDENTIAL_RETRIEVAL_ERROR, "unable to retrieve credential, try again");
         }
     }
@@ -309,7 +310,7 @@ public class CommandExecutor {
             String generatedPassword = passwordGeneratorResponse.getPassword();
 
             passwordVault.addPassword(username, new WebsiteCredential(website, usernameForSite, generatedPassword),
-                                      generatedPassword);
+                                      SAMPLE_MASTER_PASSWORD);
 
             return new Response(ServerResponses.CREDENTIAL_GENERATION_SUCCESS, generatedPassword);
         } catch (PasswordGeneratorException | PasswordEncryptorException | DatabaseConnectorException e) {
@@ -325,7 +326,7 @@ public class CommandExecutor {
         }
     }
 
-    private Response checkPasswordSafety(String username, String[] arguments) {
+    private Response checkPasswordSafety(String[] arguments) {
         try {
             String password = arguments[0];
             PasswordSafetyResponse passwordSafetyResponse = passwordSafetyChecker.checkPassword(password);
