@@ -8,7 +8,7 @@ public enum DMLQueries {
 
     SELECT_USER_PASSWORD("SELECT password, salt FROM user WHERE username = ?"),
 
-    SELECT_MASTER_PASSWORD("SELECT master_password, master_password_salt FROM session WHERE username = ?"),
+    SELECT_MASTER_PASSWORD("SELECT master_password, master_password_salt FROM user WHERE username = ?"),
 
     LOGIN_USER("INSERT INTO session(username) VALUES(?)"),
 

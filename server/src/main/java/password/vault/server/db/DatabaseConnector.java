@@ -39,8 +39,10 @@ public class DatabaseConnector {
         try (PreparedStatement preparedStatement = connection.prepareStatement(DMLQueries.INSERT_USER.getQueryText())) {
             preparedStatement.setString(1, username);
             preparedStatement.setString(2, email);
+
             preparedStatement.setBytes(3, passwordHash.getPasswordBytes());
             preparedStatement.setBytes(4, passwordHash.getSalt());
+
             preparedStatement.setBytes(5, masterPasswordHash.getPasswordBytes());
             preparedStatement.setBytes(6, masterPasswordHash.getSalt());
 
@@ -98,6 +100,7 @@ public class DatabaseConnector {
             preparedStatement.setString(1, username);
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                resultSet.next();
                 return new PasswordHash(resultSet.getBytes("password"), resultSet.getBytes("salt"));
             }
         } catch (SQLException e) {
@@ -250,12 +253,13 @@ public class DatabaseConnector {
                      connection.prepareStatement(DMLQueries.SELECT_MASTER_PASSWORD.getQueryText())) {
             preparedStatement.setString(1, username);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                resultSet.next();
                 return new PasswordHash(resultSet.getBytes("master_password"),
                                         resultSet.getBytes("master_password_salt"));
             }
 
         } catch (SQLException e) {
-            throw new DatabaseConnectorException("unable to retrive master password");
+            throw new DatabaseConnectorException("unable to retrieve master password");
         }
     }
 }
