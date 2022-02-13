@@ -9,7 +9,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import password.vault.server.dto.PasswordSafetyResponse;
-import password.vault.server.exceptions.password.PasswordSafetyCheckerException;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -45,7 +44,7 @@ public class PasswordSafetyCheckerTest {
     }
 
     @Test
-    public void testCheckPasswordReturnsPasswordIsUnsafe() throws PasswordSafetyCheckerException {
+    public void testCheckPasswordReturnsPasswordIsUnsafe() throws PasswordSafetyChecker.PasswordSafetyCheckerException {
         boolean passwordWasExposed = true;
         int timesExposed = 10;
         PasswordSafetyResponse expectedPasswordSafetyResponse = new PasswordSafetyResponse(passwordWasExposed,
@@ -63,7 +62,7 @@ public class PasswordSafetyCheckerTest {
 
     // the API returns status 404 when the password has not been found in their database
     @Test
-    public void testCheckPasswordReturnsPasswordIsSafe() throws PasswordSafetyCheckerException {
+    public void testCheckPasswordReturnsPasswordIsSafe() throws PasswordSafetyChecker.PasswordSafetyCheckerException {
         when(httpResponseMock.statusCode()).thenReturn(HttpURLConnection.HTTP_NOT_FOUND);
 
         PasswordSafetyResponse passwordSafetyResponse = passwordSafetyChecker.checkPassword(PASSWORD_TO_CHECK);
@@ -73,8 +72,9 @@ public class PasswordSafetyCheckerTest {
                     passwordSafetyResponse.wasPasswordExposed());
     }
 
-    @Test(expected = PasswordSafetyCheckerException.class)
-    public void testCheckPasswordThrowsExceptionWhenServiceIsUnavailable() throws PasswordSafetyCheckerException {
+    @Test(expected = PasswordSafetyChecker.PasswordSafetyCheckerException.class)
+    public void testCheckPasswordThrowsExceptionWhenServiceIsUnavailable() throws
+            PasswordSafetyChecker.PasswordSafetyCheckerException {
         when(httpResponseMock.statusCode()).thenReturn(HttpURLConnection.HTTP_UNAVAILABLE);
 
         passwordSafetyChecker.checkPassword(PASSWORD_TO_CHECK);

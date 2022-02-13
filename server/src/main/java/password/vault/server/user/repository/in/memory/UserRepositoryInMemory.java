@@ -1,12 +1,7 @@
 package password.vault.server.user.repository.in.memory;
 
 import com.google.gson.Gson;
-import password.vault.server.exceptions.HashException;
-import password.vault.server.exceptions.user.repository.InvalidUsernameException;
-import password.vault.server.exceptions.user.repository.UserAlreadyLoggedInException;
-import password.vault.server.exceptions.user.repository.UserAlreadyRegisteredException;
-import password.vault.server.exceptions.user.repository.UserNotFoundException;
-import password.vault.server.exceptions.user.repository.UserNotLoggedInException;
+import password.vault.server.cryptography.PasswordEncryptor;
 import password.vault.server.cryptography.PasswordHasher;
 import password.vault.server.user.repository.User;
 import password.vault.server.user.repository.UserRepository;
@@ -41,7 +36,7 @@ public class UserRepositoryInMemory implements UserRepository {
 
     @Override
     public void registerUser(String username, String password, String email)
-            throws InvalidUsernameException, UserAlreadyRegisteredException, HashException {
+            throws InvalidUsernameException, UserAlreadyRegisteredException, PasswordEncryptor.HashException {
         User user = new User(username, hashPassword(password));
 
         if (!isUsernameCorrect(user.username())) {
@@ -59,7 +54,7 @@ public class UserRepositoryInMemory implements UserRepository {
 
     @Override
     public void logInUser(String username, String password) throws UserNotFoundException, UserAlreadyLoggedInException,
-            HashException {
+            PasswordEncryptor.HashException {
         User user = new User(username, hashPassword(password));
 
         if (!isUserRegistered(user)) {
@@ -102,7 +97,7 @@ public class UserRepositoryInMemory implements UserRepository {
         return registeredUsers.contains(user);
     }
 
-    private String hashPassword(String password) throws HashException {
+    private String hashPassword(String password) throws PasswordEncryptor.HashException {
         return PasswordHasher.computeHash(password, PasswordHasher.SHA256_MESSAGE_DIGEST_INSTANCE);
     }
 

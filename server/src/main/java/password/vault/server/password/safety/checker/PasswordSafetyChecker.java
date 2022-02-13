@@ -2,9 +2,8 @@ package password.vault.server.password.safety.checker;
 
 import com.google.gson.Gson;
 import password.vault.server.MyConfig;
+import password.vault.server.cryptography.PasswordEncryptor;
 import password.vault.server.dto.PasswordSafetyResponse;
-import password.vault.server.exceptions.HashException;
-import password.vault.server.exceptions.password.PasswordSafetyCheckerException;
 import password.vault.server.cryptography.PasswordHasher;
 
 import java.io.IOException;
@@ -48,7 +47,7 @@ public class PasswordSafetyChecker {
                                                  .build();
 
             response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-        } catch (URISyntaxException | IOException | InterruptedException | HashException e) {
+        } catch (URISyntaxException | IOException | InterruptedException | PasswordEncryptor.HashException e) {
             throw new PasswordSafetyCheckerException("could not retrieve password safety report from service",
                                                      e);
         }
@@ -69,5 +68,15 @@ public class PasswordSafetyChecker {
         }
 
         throw new PasswordSafetyCheckerException("unexpected response from password safety service");
+    }
+
+    public static class PasswordSafetyCheckerException extends Exception {
+        public PasswordSafetyCheckerException(String message) {
+            super(message);
+        }
+
+        public PasswordSafetyCheckerException(String message, Throwable cause) {
+            super(message, cause);
+        }
     }
 }

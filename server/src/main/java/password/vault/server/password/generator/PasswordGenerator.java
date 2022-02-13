@@ -3,7 +3,6 @@ package password.vault.server.password.generator;
 import com.google.gson.Gson;
 import password.vault.server.MyConfig;
 import password.vault.server.dto.PasswordGeneratorResponse;
-import password.vault.server.exceptions.password.PasswordGeneratorException;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -72,5 +71,15 @@ public class PasswordGenerator {
 
     public static int minimumAllowedPasswordLength() {
         return MIN_PASSWORD_LENGTH;
+    }
+
+    public static class PasswordGeneratorException extends Exception {
+        public PasswordGeneratorException(String message) {
+            super(message);
+        }
+
+        public PasswordGeneratorException(String message, Throwable cause) {
+            super(message, cause);
+        }
     }
 }

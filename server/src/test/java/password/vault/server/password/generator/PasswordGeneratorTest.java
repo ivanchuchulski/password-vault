@@ -9,7 +9,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import password.vault.server.dto.PasswordGeneratorResponse;
-import password.vault.server.exceptions.password.PasswordGeneratorException;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -42,7 +41,8 @@ public class PasswordGeneratorTest {
     }
 
     @Test
-    public void testGenerateSafePasswordGeneratesPasswordWithProvidedLength() throws PasswordGeneratorException {
+    public void testGenerateSafePasswordGeneratesPasswordWithProvidedLength() throws
+            PasswordGenerator.PasswordGeneratorException {
         boolean success = true;
         int numberOfSafePasswordsGenerated = 1;
         String safePasswordMock = "_rrR~S>k$[8+Ps/x2WyaFv";
@@ -66,13 +66,15 @@ public class PasswordGeneratorTest {
                      safePassword.length());
     }
 
-    @Test(expected = PasswordGeneratorException.class)
-    public void testGenerateSafePasswordThrowsExceptionWhenGivenNegativePasswordLength() throws PasswordGeneratorException {
+    @Test(expected = PasswordGenerator.PasswordGeneratorException.class)
+    public void testGenerateSafePasswordThrowsExceptionWhenGivenNegativePasswordLength() throws
+            PasswordGenerator.PasswordGeneratorException {
         passwordGenerator.generateSafePassword(-1);
     }
 
-    @Test(expected = PasswordGeneratorException.class)
-    public void testGenerateSafePasswordWithNotFoundStatusCodeThrowsException() throws PasswordGeneratorException {
+    @Test(expected = PasswordGenerator.PasswordGeneratorException.class)
+    public void testGenerateSafePasswordWithNotFoundStatusCodeThrowsException() throws
+            PasswordGenerator.PasswordGeneratorException {
         when(httpResponseMock.statusCode()).thenReturn(HttpURLConnection.HTTP_NOT_FOUND);
 
         passwordGenerator.generateSafePassword(PasswordGenerator.minimumAllowedPasswordLength());

@@ -1,23 +1,21 @@
 package password.vault.server.password.vault;
 
+import password.vault.server.cryptography.PasswordEncryptor;
 import password.vault.server.db.DatabaseConnectorException;
-import password.vault.server.exceptions.password.CredentialNotFoundException;
-import password.vault.server.exceptions.password.CredentialsAlreadyAddedException;
-import password.vault.server.exceptions.password.PasswordEncryptorException;
-import password.vault.server.exceptions.password.UsernameNotHavingCredentialsException;
 
 import java.util.List;
 
 public interface PasswordVault {
     void addPassword(String username, WebsiteCredential websiteCredential, String masterPassword)
-            throws CredentialsAlreadyAddedException, PasswordEncryptorException, DatabaseConnectorException;
+            throws PasswordVaultDB.CredentialsAlreadyAddedException, PasswordEncryptor.PasswordEncryptorException, DatabaseConnectorException;
 
     void removePassword(String username, String website, String usernameForSite, String masterPassword)
             throws UsernameNotHavingCredentialsException, CredentialNotFoundException, DatabaseConnectorException,
-            CredentialRemovalFailure;
+            PasswordVaultDB.CredentialRemovalException;
 
     String retrieveCredentials(String username, String website, String usernameForSite, String masterPassword)
-            throws UsernameNotHavingCredentialsException, CredentialNotFoundException, PasswordEncryptorException,
+            throws UsernameNotHavingCredentialsException, CredentialNotFoundException,
+            PasswordEncryptor.PasswordEncryptorException,
             DatabaseConnectorException;
 
     List<CredentialIdentifier> getAllCredentials(String username) throws UsernameNotHavingCredentialsException,
@@ -25,4 +23,41 @@ public interface PasswordVault {
 
     boolean userHasCredentialsForSiteAndUsername(String username, String website, String usernameForSite) throws
             DatabaseConnectorException;
+
+    class CredentialNotFoundException extends Exception {
+        public CredentialNotFoundException(String message) {
+            super(message);
+        }
+
+        public CredentialNotFoundException() {
+
+        }
+    }
+
+    class UsernameNotHavingCredentialsException extends Exception {
+        public UsernameNotHavingCredentialsException(String message) {
+            super(message);
+        }
+
+        public UsernameNotHavingCredentialsException() {
+
+        }
+    }
+
+    class CredentialRemovalException extends Exception {
+
+        public CredentialRemovalException(String message) {
+            super(message);
+        }
+    }
+
+    class CredentialsAlreadyAddedException extends Exception {
+        public CredentialsAlreadyAddedException(String message) {
+            super(message);
+        }
+
+        public CredentialsAlreadyAddedException() {
+
+        }
+    }
 }

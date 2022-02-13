@@ -1,26 +1,87 @@
 package password.vault.server.user.repository;
 
+import password.vault.server.cryptography.PasswordEncryptor;
 import password.vault.server.db.DatabaseConnectorException;
-import password.vault.server.exceptions.HashException;
-import password.vault.server.exceptions.user.repository.InvalidUsernameException;
-import password.vault.server.exceptions.user.repository.LoginException;
-import password.vault.server.exceptions.user.repository.LogoutException;
-import password.vault.server.exceptions.user.repository.RegisterException;
-import password.vault.server.exceptions.user.repository.UserAlreadyLoggedInException;
-import password.vault.server.exceptions.user.repository.UserAlreadyRegisteredException;
-import password.vault.server.exceptions.user.repository.UserNotFoundException;
-import password.vault.server.exceptions.user.repository.UserNotLoggedInException;
 
 public interface UserRepository {
     void registerUser(String username, String password, String email) throws InvalidUsernameException,
-            UserAlreadyRegisteredException, HashException, DatabaseConnectorException, RegisterException;
+            UserAlreadyRegisteredException, PasswordEncryptor.HashException, DatabaseConnectorException, RegisterException;
 
     void logInUser(String username, String password) throws UserNotFoundException, UserAlreadyLoggedInException,
-            HashException, LoginException;
+            PasswordEncryptor.HashException, LoginException;
 
     void logOutUser(String username) throws UserNotLoggedInException, LogoutException;
 
     boolean isUsernameRegistered(String username);
 
     boolean isUsernameLoggedIn(String username);
+
+    class InvalidUsernameException extends Exception {
+        public InvalidUsernameException(String message) {
+            super(message);
+        }
+
+        public InvalidUsernameException() {
+        }
+    }
+
+    class LoginException extends Exception {
+        public LoginException(String message) {
+            super(message);
+        }
+    }
+
+    class LogoutException extends Exception {
+        public LogoutException(String message) {
+            super(message);
+        }
+    }
+
+    class PasswordsNotMatchingException extends Exception {
+        public PasswordsNotMatchingException(String message) {
+            super(message);
+        }
+    }
+
+    class RegisterException extends Exception {
+        public RegisterException(String message) {
+            super(message);
+        }
+    }
+
+    class UserAlreadyLoggedInException extends Exception {
+        public UserAlreadyLoggedInException(String message) {
+            super(message);
+        }
+
+        public UserAlreadyLoggedInException() {
+
+        }
+    }
+
+    class UserAlreadyRegisteredException extends Exception {
+        public UserAlreadyRegisteredException(String message) {
+            super(message);
+        }
+    }
+
+    class UserNotFoundException extends Exception {
+        public UserNotFoundException(String message) {
+            super(message);
+        }
+
+        public UserNotFoundException() {
+            super();
+        }
+    }
+
+    class UserNotLoggedInException extends Exception {
+        public UserNotLoggedInException(String message) {
+            super(message);
+        }
+
+        public UserNotLoggedInException() {
+
+        }
+    }
 }

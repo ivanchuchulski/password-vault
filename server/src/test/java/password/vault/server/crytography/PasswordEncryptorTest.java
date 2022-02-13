@@ -3,7 +3,6 @@ package password.vault.server.crytography;
 import org.junit.Test;
 import password.vault.server.cryptography.EncryptedPassword;
 import password.vault.server.cryptography.PasswordEncryptor;
-import password.vault.server.exceptions.password.PasswordEncryptorException;
 
 import javax.crypto.SecretKey;
 
@@ -13,7 +12,8 @@ import static org.junit.Assert.assertEquals;
 
 public class PasswordEncryptorTest {
     @Test
-    public void testEncryptingAStringAndDecryptingItReturnsTheSameString() throws PasswordEncryptorException {
+    public void testEncryptingAStringAndDecryptingItReturnsTheSameString() throws
+            PasswordEncryptor.PasswordEncryptorException {
         String inputString = "testPassword1234";
         SecretKey key = PasswordEncryptor.getKeyFromString(inputString);
 
@@ -24,7 +24,8 @@ public class PasswordEncryptorTest {
     }
 
     @Test
-    public void testEncryptingAStringAndDecryptingItReturnsTheSameString2() throws PasswordEncryptorException {
+    public void testEncryptingAStringAndDecryptingItReturnsTheSameString2() throws
+            PasswordEncryptor.PasswordEncryptorException {
         String input = "_rrR~S>k$[8+Ps/x2WyaFv";
         SecretKey key = PasswordEncryptor.getKeyFromString(input);
 
@@ -35,7 +36,8 @@ public class PasswordEncryptorTest {
     }
 
     @Test
-    public void testEncryptingAStringAndDecryptingItReturnsTheSameString3() throws PasswordEncryptorException {
+    public void testEncryptingAStringAndDecryptingItReturnsTheSameString3() throws
+            PasswordEncryptor.PasswordEncryptorException {
         String input = "pass";
 
         byte[] salt = PasswordEncryptor.generateSixteenByteSalt();
@@ -53,7 +55,7 @@ public class PasswordEncryptorTest {
     }
 
     @Test
-    public void testEncryptionWithMasterPassword() throws PasswordEncryptorException {
+    public void testEncryptionWithMasterPassword() throws PasswordEncryptor.PasswordEncryptorException {
         String password = "pass1234";
         String masterPass = "themasterPass";
 

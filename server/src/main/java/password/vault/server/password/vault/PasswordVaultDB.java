@@ -4,10 +4,6 @@ import password.vault.server.cryptography.EncryptedPassword;
 import password.vault.server.cryptography.PasswordEncryptor;
 import password.vault.server.db.DatabaseConnector;
 import password.vault.server.db.DatabaseConnectorException;
-import password.vault.server.exceptions.password.CredentialNotFoundException;
-import password.vault.server.exceptions.password.CredentialsAlreadyAddedException;
-import password.vault.server.exceptions.password.PasswordEncryptorException;
-import password.vault.server.exceptions.password.UsernameNotHavingCredentialsException;
 
 import java.util.List;
 
@@ -20,7 +16,7 @@ public class PasswordVaultDB implements PasswordVault {
 
     @Override
     public void addPassword(String username, WebsiteCredential websiteCredential, String masterPassword) throws
-            CredentialsAlreadyAddedException, PasswordEncryptorException,
+            CredentialsAlreadyAddedException, PasswordEncryptor.PasswordEncryptorException,
             DatabaseConnectorException {
         if (databaseConnector.isCredentialAdded(username, websiteCredential.getCredentialIdentifier())) {
             throw new CredentialsAlreadyAddedException();
@@ -36,7 +32,7 @@ public class PasswordVaultDB implements PasswordVault {
     @Override
     public void removePassword(String username, String website, String usernameForSite, String masterPassword) throws
             UsernameNotHavingCredentialsException, CredentialNotFoundException, DatabaseConnectorException,
-            CredentialRemovalFailure {
+            CredentialRemovalException {
         CredentialIdentifier credentialIdentifier = new CredentialIdentifier(website, usernameForSite);
         if (!databaseConnector.doesUserHaveAnyCredentials(username)) {
             throw new UsernameNotHavingCredentialsException();
@@ -49,13 +45,14 @@ public class PasswordVaultDB implements PasswordVault {
         boolean removalSuccess = databaseConnector.deleteCredential(username, new CredentialIdentifier(website,
                                                                                                        usernameForSite));
         if (!removalSuccess) {
-            throw new CredentialRemovalFailure("unable to remove credentials");
+            throw new CredentialRemovalException("unable to remove credentials");
         }
     }
 
     @Override
     public String retrieveCredentials(String username, String website, String usernameForSite, String masterPassword) throws
-            UsernameNotHavingCredentialsException, CredentialNotFoundException, PasswordEncryptorException,
+            UsernameNotHavingCredentialsException, CredentialNotFoundException,
+            PasswordEncryptor.PasswordEncryptorException,
             DatabaseConnectorException {
         CredentialIdentifier credentialIdentifier = new CredentialIdentifier(website, usernameForSite);
 
@@ -88,4 +85,5 @@ public class PasswordVaultDB implements PasswordVault {
             DatabaseConnectorException {
         return databaseConnector.isCredentialAdded(username, new CredentialIdentifier(website, usernameForSite));
     }
+
 }

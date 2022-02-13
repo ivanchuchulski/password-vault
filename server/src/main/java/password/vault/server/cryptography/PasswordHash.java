@@ -1,7 +1,5 @@
 package password.vault.server.cryptography;
 
-import password.vault.server.exceptions.HashException;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -11,11 +9,11 @@ public final class PasswordHash {
     private final byte[] passwordBytes;
     private final byte[] salt;
 
-    public PasswordHash(String text) throws HashException {
+    public PasswordHash(String text) throws PasswordEncryptor.HashException {
         this(text, PasswordEncryptor.generateSixteenByteSalt());
     }
 
-    public PasswordHash(String text, byte[] salt) throws HashException {
+    public PasswordHash(String text, byte[] salt) throws PasswordEncryptor.HashException {
         try {
             byte[] textBytes = text.getBytes(StandardCharsets.UTF_8);
             this.salt = salt;
@@ -24,7 +22,7 @@ public final class PasswordHash {
 
             this.passwordBytes = PasswordHasher.computeSHA512HashWithSalt(concatenated);
         } catch (IOException e) {
-            throw new HashException("error building hash", e);
+            throw new PasswordEncryptor.HashException("error building hash", e);
         }
     }
 

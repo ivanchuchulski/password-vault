@@ -5,31 +5,15 @@ import password.vault.api.ServerCommand;
 import password.vault.api.ServerResponses;
 import password.vault.server.communication.CommandResponse;
 import password.vault.server.communication.UserRequest;
+import password.vault.server.cryptography.PasswordEncryptor;
 import password.vault.server.db.DatabaseConnectorException;
 import password.vault.server.dto.PasswordGeneratorResponse;
 import password.vault.server.dto.PasswordSafetyResponse;
-import password.vault.server.exceptions.HashException;
-import password.vault.server.exceptions.InvalidUsernameForSiteException;
-import password.vault.server.exceptions.InvalidWebsiteException;
-import password.vault.server.exceptions.password.CredentialNotFoundException;
-import password.vault.server.exceptions.password.CredentialsAlreadyAddedException;
-import password.vault.server.exceptions.password.PasswordEncryptorException;
-import password.vault.server.exceptions.password.PasswordGeneratorException;
-import password.vault.server.exceptions.password.PasswordSafetyCheckerException;
-import password.vault.server.exceptions.password.UsernameNotHavingCredentialsException;
-import password.vault.server.exceptions.user.repository.InvalidUsernameException;
-import password.vault.server.exceptions.user.repository.LoginException;
-import password.vault.server.exceptions.user.repository.LogoutException;
-import password.vault.server.exceptions.user.repository.RegisterException;
-import password.vault.server.exceptions.user.repository.UserAlreadyLoggedInException;
-import password.vault.server.exceptions.user.repository.UserAlreadyRegisteredException;
-import password.vault.server.exceptions.user.repository.UserNotFoundException;
-import password.vault.server.exceptions.user.repository.UserNotLoggedInException;
 import password.vault.server.password.generator.PasswordGenerator;
 import password.vault.server.password.safety.checker.PasswordSafetyChecker;
 import password.vault.server.password.vault.CredentialIdentifier;
-import password.vault.server.password.vault.CredentialRemovalFailure;
 import password.vault.server.password.vault.PasswordVault;
+import password.vault.server.password.vault.PasswordVaultDB;
 import password.vault.server.password.vault.WebsiteCredential;
 import password.vault.server.session.ChannelUsernameMapper;
 import password.vault.server.session.UserActionsLog;
@@ -135,10 +119,10 @@ public class CommandExecutor {
             userActionsLog.removeUserSession(channelUsername);
 
             return new Response(ServerResponses.DISCONNECTED, "successfully logged out");
-        } catch (UserNotLoggedInException e) {
+        } catch (UserRepository.UserNotLoggedInException e) {
             System.out.println("a non-logged in user disconnected");
             return new Response(ServerResponses.DISCONNECTED, "successfully logged out");
-        } catch (LogoutException e) {
+        } catch (UserRepository.LogoutException e) {
             return new Response(ServerResponses.LOGOUT_ERROR, "unable to process logout request");
         }
     }
@@ -158,11 +142,11 @@ public class CommandExecutor {
 
             return new Response(ServerResponses.REGISTRATION_SUCCESS,
                                 "username %s registered successfully".formatted(username));
-        } catch (InvalidUsernameException e) {
+        } catch (UserRepository.InvalidUsernameException e) {
             return new Response(ServerResponses.REGISTRATION_ERROR, "invalid username provided");
-        } catch (UserAlreadyRegisteredException e) {
+        } catch (UserRepository.UserAlreadyRegisteredException e) {
             return new Response(ServerResponses.REGISTRATION_ERROR, "user already registered");
-        } catch (HashException | DatabaseConnectorException | RegisterException e) {
+        } catch (PasswordEncryptor.HashException | DatabaseConnectorException | UserRepository.RegisterException e) {
             return new Response(ServerResponses.REGISTRATION_ERROR, "unable to complete your request, try again");
         }
     }
@@ -178,11 +162,11 @@ public class CommandExecutor {
             userActionsLog.addUserActionTimeStamp(username);
 
             return new Response(ServerResponses.LOGIN_SUCCESS, "sucess logging in user %s".formatted(username));
-        } catch (LoginException | HashException e) {
+        } catch (UserRepository.LoginException | PasswordEncryptor.HashException e) {
             return new Response(ServerResponses.LOGIN_ERROR, "unable to complete your logout request, try again ");
-        } catch (UserAlreadyLoggedInException e) {
+        } catch (UserRepository.UserAlreadyLoggedInException e) {
             return new Response(ServerResponses.USER_ALREADY_LOGGED, "you are already logged in");
-        } catch (UserNotFoundException e) {
+        } catch (UserRepository.UserNotFoundException e) {
             return new Response(ServerResponses.USER_DOES_NOT_EXIST, "wrong username/password combination");
         }
     }
@@ -196,9 +180,9 @@ public class CommandExecutor {
             userActionsLog.removeUserSession(usernameForChannel);
 
             return new Response(ServerResponses.LOGOUT_SUCCESS, "success logging out");
-        } catch (UserNotLoggedInException e) {
+        } catch (UserRepository.UserNotLoggedInException e) {
             return new Response(ServerResponses.USER_NOT_LOGGED_IN, "you are not logged in");
-        } catch (LogoutException e) {
+        } catch (UserRepository.LogoutException e) {
             return new Response(ServerResponses.LOGOUT_ERROR, "unable to process logout request");
         }
     }
@@ -220,13 +204,13 @@ public class CommandExecutor {
             passwordVault.addPassword(username, websiteCredential, SAMPLE_MASTER_PASSWORD);
 
             return new Response(ServerResponses.CREDENTIAL_ADDITION_SUCCESS, "added password successfully");
-        } catch (CredentialsAlreadyAddedException e) {
+        } catch (PasswordVaultDB.CredentialsAlreadyAddedException e) {
             return new Response(ServerResponses.CREDENTIAL_ADDITION_ERROR, "credential already added");
-        } catch (PasswordEncryptorException | PasswordSafetyCheckerException | DatabaseConnectorException e) {
+        } catch (PasswordEncryptor.PasswordEncryptorException | PasswordSafetyChecker.PasswordSafetyCheckerException | DatabaseConnectorException e) {
             return new Response(ServerResponses.CREDENTIAL_ADDITION_ERROR, "couldn't complete your request, try again");
-        } catch (InvalidWebsiteException e) {
+        } catch (WebsiteCredential.InvalidWebsiteException e) {
             return new Response(ServerResponses.WRONG_COMMAND_ARGUMENT, "website is invalid");
-        } catch (InvalidUsernameForSiteException e) {
+        } catch (WebsiteCredential.InvalidUsernameForSiteException e) {
             return new Response(ServerResponses.WRONG_COMMAND_ARGUMENT, "username is invalid");
         }
     }
@@ -239,11 +223,11 @@ public class CommandExecutor {
             passwordVault.removePassword(username, website, usernameForSite, SAMPLE_MASTER_PASSWORD);
 
             return new Response(ServerResponses.CREDENTIAL_REMOVAL_SUCCESS, "credentials removed");
-        } catch (UsernameNotHavingCredentialsException e) {
+        } catch (PasswordVault.UsernameNotHavingCredentialsException e) {
             return new Response(ServerResponses.NO_CREDENTIALS_ADDED, "you don't have any credential");
-        } catch (CredentialNotFoundException e) {
+        } catch (PasswordVault.CredentialNotFoundException e) {
             return new Response(ServerResponses.NO_SUCH_CREDENTIAL, "no such credential");
-        } catch (DatabaseConnectorException | CredentialRemovalFailure e) {
+        } catch (DatabaseConnectorException | PasswordVaultDB.CredentialRemovalException e) {
             return new Response(ServerResponses.CREDENTIAL_REMOVAL_ERROR, "couldn't complete your request, try again");
         }
     }
@@ -257,12 +241,11 @@ public class CommandExecutor {
                                                                          SAMPLE_MASTER_PASSWORD);
 
             return new Response(ServerResponses.CREDENTIAL_RETRIEVAL_SUCCESS, retrievedPassword);
-        } catch (UsernameNotHavingCredentialsException e) {
+        } catch (PasswordVault.UsernameNotHavingCredentialsException e) {
             return new Response(ServerResponses.NO_CREDENTIALS_ADDED, "you don't have any credentials");
-        } catch (CredentialNotFoundException e) {
+        } catch (PasswordVault.CredentialNotFoundException e) {
             return new Response(ServerResponses.NO_SUCH_CREDENTIAL, "no such credential");
-        } catch (PasswordEncryptorException | DatabaseConnectorException e) {
-            e.printStackTrace();
+        } catch (PasswordEncryptor.PasswordEncryptorException | DatabaseConnectorException e) {
             return new Response(ServerResponses.CREDENTIAL_RETRIEVAL_ERROR, "unable to retrieve credential, try again");
         }
     }
@@ -281,7 +264,7 @@ public class CommandExecutor {
             }
 
             return new Response(ServerResponses.CREDENTIAL_RETRIEVAL_SUCCESS, sb.toString());
-        } catch (UsernameNotHavingCredentialsException e) {
+        } catch (PasswordVault.UsernameNotHavingCredentialsException e) {
             return new Response(ServerResponses.CREDENTIAL_REMOVAL_ERROR, "you do not have any credentials added");
         } catch (DatabaseConnectorException e) {
             return new Response(ServerResponses.CREDENTIAL_RETRIEVAL_ERROR, "unable to retrieve credential, try again");
@@ -313,15 +296,15 @@ public class CommandExecutor {
                                       SAMPLE_MASTER_PASSWORD);
 
             return new Response(ServerResponses.CREDENTIAL_GENERATION_SUCCESS, generatedPassword);
-        } catch (PasswordGeneratorException | PasswordEncryptorException | DatabaseConnectorException e) {
+        } catch (PasswordGenerator.PasswordGeneratorException | PasswordEncryptor.PasswordEncryptorException | DatabaseConnectorException e) {
             return new Response(ServerResponses.PASSWORD_GENERATION_ERROR, "unable to generate password");
-        } catch (CredentialsAlreadyAddedException e) {
+        } catch (PasswordVaultDB.CredentialsAlreadyAddedException e) {
             return new Response(ServerResponses.CREDENTIAL_ADDITION_ERROR, "credential already added");
         } catch (NumberFormatException e) {
             return new Response(ServerResponses.WRONG_COMMAND_NUMBER_OF_ARGUMENTS, "incorrect arguments");
-        } catch (InvalidWebsiteException e) {
+        } catch (WebsiteCredential.InvalidWebsiteException e) {
             return new Response(ServerResponses.WRONG_COMMAND_ARGUMENT, "website is invalid");
-        } catch (InvalidUsernameForSiteException e) {
+        } catch (WebsiteCredential.InvalidUsernameForSiteException e) {
             return new Response(ServerResponses.WRONG_COMMAND_ARGUMENT, "username is invalid");
         }
     }
@@ -338,7 +321,7 @@ public class CommandExecutor {
             }
 
             return new Response(ServerResponses.SAFE_PASSWORD, "password is safe, we found zero exposures");
-        } catch (PasswordSafetyCheckerException e) {
+        } catch (PasswordSafetyChecker.PasswordSafetyCheckerException e) {
             return new Response(ServerResponses.PASSWORD_SAFETY_SERVICE_ERROR,
                                 "unable to complete your request, please try again later");
         }

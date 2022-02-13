@@ -1,8 +1,5 @@
 package password.vault.server.password.vault;
 
-import password.vault.server.exceptions.InvalidUsernameForSiteException;
-import password.vault.server.exceptions.InvalidWebsiteException;
-
 import java.util.Objects;
 
 public final class WebsiteCredential {
@@ -74,5 +71,17 @@ public final class WebsiteCredential {
 
     private boolean isUsernameForSiteValid(String usernameForSite) {
         return usernameForSite.matches(USERNAME_FOR_SITE_PATTERN);
+    }
+
+    public static class InvalidUsernameForSiteException extends Exception{
+        public InvalidUsernameForSiteException(String message) {
+            super(message);
+        }
+    }
+
+    public static class InvalidWebsiteException extends Exception {
+        public InvalidWebsiteException(String message) {
+            super(message);
+        }
     }
 }

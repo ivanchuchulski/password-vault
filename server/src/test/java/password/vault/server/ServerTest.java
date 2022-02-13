@@ -13,8 +13,6 @@ import password.vault.api.ServerCommand;
 import password.vault.api.ServerResponses;
 import password.vault.server.dto.PasswordGeneratorResponse;
 import password.vault.server.dto.PasswordSafetyResponse;
-import password.vault.server.exceptions.password.PasswordGeneratorException;
-import password.vault.server.exceptions.password.PasswordSafetyCheckerException;
 import password.vault.server.password.generator.PasswordGenerator;
 import password.vault.server.password.safety.checker.PasswordSafetyChecker;
 import password.vault.server.password.vault.PasswordVault;
@@ -65,8 +63,8 @@ public class ServerTest {
     private static final int SAFE_PASSWORD_LENGTH = SAMPLE_SAFE_PASSWORD.length();
 
     @BeforeClass
-    public static void setUpBeforeClass() throws IOException, PasswordGeneratorException,
-            PasswordSafetyCheckerException {
+    public static void setUpBeforeClass() throws IOException, PasswordGenerator.PasswordGeneratorException,
+            PasswordSafetyChecker.PasswordSafetyCheckerException {
         Files.deleteIfExists(REGISTERED_USERS_FILE);
         UserRepository userRepository = new UserRepositoryInMemory(REGISTERED_USERS_FILE);
 

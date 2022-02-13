@@ -1,7 +1,5 @@
 package password.vault.server.cryptography;
 
-import password.vault.server.exceptions.HashException;
-
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -16,23 +14,24 @@ public class PasswordHasher {
     public static final String SHA256_MESSAGE_DIGEST_INSTANCE = "SHA-256";
     public static final String SHA512_MESSAGE_DIGEST_INSTANCE = "SHA-512";
 
-    public static String computeHash(String password, String messageDigestInstance) throws HashException {
+    public static String computeHash(String password, String messageDigestInstance) throws
+            PasswordEncryptor.HashException {
         try {
             MessageDigest messageDigest = MessageDigest.getInstance(messageDigestInstance);
 
             return hashString(password, messageDigest);
         } catch (NoSuchAlgorithmException noSuchAlgorithmException) {
-            throw new HashException(String.format("error : no such message digest algorithm found %s ",
-                                                     messageDigestInstance), noSuchAlgorithmException);
+            throw new PasswordEncryptor.HashException(String.format("error : no such message digest algorithm found %s ",
+                                                                    messageDigestInstance), noSuchAlgorithmException);
         }
     }
 
-    public static byte[] computeSHA512HashWithSalt(byte[] text) throws HashException {
+    public static byte[] computeSHA512HashWithSalt(byte[] text) throws PasswordEncryptor.HashException {
         try {
             MessageDigest messageDigest = MessageDigest.getInstance(SHA512_MESSAGE_DIGEST_INSTANCE);
             return messageDigest.digest(text);
         } catch (NoSuchAlgorithmException noSuchAlgorithmException) {
-            throw new HashException("error : no message digest algorithm found for sha-512", noSuchAlgorithmException);
+            throw new PasswordEncryptor.HashException("error : no message digest algorithm found for sha-512", noSuchAlgorithmException);
         }
     }
 

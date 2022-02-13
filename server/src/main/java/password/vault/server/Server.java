@@ -5,7 +5,6 @@ import password.vault.api.Response;
 import password.vault.api.ServerCommand;
 import password.vault.server.communication.CommandResponse;
 import password.vault.server.communication.UserRequest;
-import password.vault.server.exceptions.SocketChannelReadException;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -193,5 +192,15 @@ public class Server {
     private void writeResponseToSocketChannel(SocketChannel socketChannel) throws IOException {
         messageBuffer.flip(); // switch to reading mode
         socketChannel.write(messageBuffer);
+    }
+
+    public static class SocketChannelReadException extends Exception {
+        public SocketChannelReadException(String message) {
+            super(message);
+        }
+
+        public SocketChannelReadException(String message, Throwable cause) {
+            super(message, cause);
+        }
     }
 }

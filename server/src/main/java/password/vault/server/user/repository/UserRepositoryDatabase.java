@@ -1,17 +1,9 @@
 package password.vault.server.user.repository;
 
+import password.vault.server.cryptography.PasswordEncryptor;
 import password.vault.server.cryptography.PasswordHash;
 import password.vault.server.db.DatabaseConnector;
 import password.vault.server.db.DatabaseConnectorException;
-import password.vault.server.exceptions.HashException;
-import password.vault.server.exceptions.user.repository.InvalidUsernameException;
-import password.vault.server.exceptions.user.repository.LoginException;
-import password.vault.server.exceptions.user.repository.LogoutException;
-import password.vault.server.exceptions.user.repository.RegisterException;
-import password.vault.server.exceptions.user.repository.UserAlreadyLoggedInException;
-import password.vault.server.exceptions.user.repository.UserAlreadyRegisteredException;
-import password.vault.server.exceptions.user.repository.UserNotFoundException;
-import password.vault.server.exceptions.user.repository.UserNotLoggedInException;
 import password.vault.server.requests.RegistrationRequest;
 
 public class UserRepositoryDatabase implements UserRepository {
@@ -24,7 +16,7 @@ public class UserRepositoryDatabase implements UserRepository {
     }
 
     public void registerUser(RegistrationRequest registrationRequest) throws UserAlreadyRegisteredException,
-            HashException, DatabaseConnectorException,
+            PasswordEncryptor.HashException, DatabaseConnectorException,
             InvalidUsernameException, RegisterException {
         if (!registrationRequest.username().matches(VALID_USERNAME_PATTERN)) {
             throw new InvalidUsernameException();
@@ -48,13 +40,13 @@ public class UserRepositoryDatabase implements UserRepository {
 
     @Override
     public void registerUser(String username, String password, String email) throws InvalidUsernameException,
-            UserAlreadyRegisteredException, HashException, DatabaseConnectorException, RegisterException {
+            UserAlreadyRegisteredException, PasswordEncryptor.HashException, DatabaseConnectorException, RegisterException {
         registerUser(new RegistrationRequest(username, email, password));
     }
 
     @Override
     public void logInUser(String username, String password) throws UserNotFoundException, UserAlreadyLoggedInException,
-            LoginException, HashException {
+            LoginException, PasswordEncryptor.HashException {
         try {
             PasswordHash retrievedHash = databaseConnector.getPasswordForUser(username);
             byte[] salt = retrievedHash.getSalt();

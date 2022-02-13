@@ -3,9 +3,9 @@ package password.vault.server.db;
 import password.vault.server.MyConfig;
 import password.vault.server.cryptography.EncryptedPassword;
 import password.vault.server.cryptography.PasswordHash;
-import password.vault.server.exceptions.password.CredentialNotFoundException;
-import password.vault.server.exceptions.user.repository.UserNotFoundException;
 import password.vault.server.password.vault.CredentialIdentifier;
+import password.vault.server.password.vault.PasswordVault;
+import password.vault.server.user.repository.UserRepository;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -90,14 +90,14 @@ public class DatabaseConnector {
         }
     }
 
-    public PasswordHash getPasswordForUser(String username) throws UserNotFoundException, DatabaseConnectorException {
+    public PasswordHash getPasswordForUser(String username) throws UserRepository.UserNotFoundException, DatabaseConnectorException {
         try (PreparedStatement preparedStatement =
                      connection.prepareStatement(DMLQueries.SELECT_USER_PASSWORD.getQueryText())) {
             preparedStatement.setString(1, username);
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (!resultSet.next()) {
-                    throw new UserNotFoundException();
+                    throw new UserRepository.UserNotFoundException();
                 }
                 return new PasswordHash(resultSet.getBytes("password"), resultSet.getBytes("salt"));
             }
@@ -176,7 +176,7 @@ public class DatabaseConnector {
     }
 
     public EncryptedPassword getCredential(String username, CredentialIdentifier credentialIdentifier) throws
-            CredentialNotFoundException {
+            PasswordVault.CredentialNotFoundException {
         try (PreparedStatement preparedStatement =
                      connection.prepareStatement(DMLQueries.SELECT_CREDENTIAL.getQueryText())) {
             preparedStatement.setString(1, username);
@@ -185,7 +185,7 @@ public class DatabaseConnector {
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (!resultSet.next()) {
-                    throw new CredentialNotFoundException("credential not found");
+                    throw new PasswordVault.CredentialNotFoundException("credential not found");
                 }
 
                 return new EncryptedPassword(resultSet.getBytes("password"),
@@ -195,7 +195,7 @@ public class DatabaseConnector {
 
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new CredentialNotFoundException("credential not found");
+            throw new PasswordVault.CredentialNotFoundException("credential not found");
         }
     }
 

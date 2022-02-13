@@ -1,7 +1,5 @@
 package password.vault.server.cryptography;
 
-import password.vault.server.exceptions.password.PasswordEncryptorException;
-
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
@@ -166,5 +164,21 @@ public class PasswordEncryptor {
         // SecureRandom sha1PRGNG = SecureRandom.getInstance("SHA1PRGNG");
         new SecureRandom().nextBytes(salt);
         return salt;
+    }
+
+    public static class PasswordEncryptorException extends Exception {
+        public PasswordEncryptorException(String message, Throwable cause) {
+            super(message, cause);
+        }
+    }
+
+    public static class HashException extends Exception {
+        public HashException(String message) {
+            super(message);
+        }
+
+        public HashException(String message, Throwable cause) {
+            super(message, cause);
+        }
     }
 }

@@ -6,10 +6,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import password.vault.server.dto.CredentialDTO;
-import password.vault.server.exceptions.password.CredentialNotFoundException;
-import password.vault.server.exceptions.password.CredentialsAlreadyAddedException;
-import password.vault.server.exceptions.password.PasswordEncryptorException;
-import password.vault.server.exceptions.password.UsernameNotHavingCredentialsException;
 import password.vault.server.cryptography.PasswordEncryptor;
 
 import javax.crypto.SecretKey;
@@ -102,7 +98,7 @@ public class PasswordVaultInMemoryTest {
     a CredentialsAlreadyAddedException is thrown when we try to add the same <website, usernameForWebsite> tuple for
     given username
      */
-    @Test(expected = CredentialsAlreadyAddedException.class)
+    @Test(expected = PasswordVaultDB.CredentialsAlreadyAddedException.class)
     public void testAddingAPasswordForTheSameSiteAndUsernameThrowsException() throws Exception {
         passwordVault.addPassword(uniqueUsername, new WebsiteCredential(WEBSITE_FOR_TESTING, usernameForWebsite,
                                                                         PASSWORD_FOR_TESTING), PASSWORD_FOR_TESTING);
@@ -111,7 +107,7 @@ public class PasswordVaultInMemoryTest {
                                                                         PASSWORD_FOR_TESTING), PASSWORD_FOR_TESTING);
     }
 
-    @Test(expected = CredentialNotFoundException.class)
+    @Test(expected = PasswordVault.CredentialNotFoundException.class)
     public void testRemovingAPasswordRemovesIt() throws Exception {
         passwordVault.addPassword(uniqueUsername, new WebsiteCredential(WEBSITE_FOR_TESTING, usernameForWebsite,
                                                                         PASSWORD_FOR_TESTING), PASSWORD_FOR_TESTING);
@@ -121,12 +117,12 @@ public class PasswordVaultInMemoryTest {
         passwordVault.retrieveCredentials(uniqueUsername, WEBSITE_FOR_TESTING, usernameForWebsite, "");
     }
 
-    @Test(expected = UsernameNotHavingCredentialsException.class)
+    @Test(expected = PasswordVault.UsernameNotHavingCredentialsException.class)
     public void testRemovingAPasswordForNonAddedUser() throws Exception {
         passwordVault.removePassword(uniqueUsername, WEBSITE_FOR_TESTING, usernameForWebsite, "");
     }
 
-    @Test(expected = CredentialNotFoundException.class)
+    @Test(expected = PasswordVault.CredentialNotFoundException.class)
     public void testRemovingAPasswordForNonAddedWebsiteAndUsername() throws Exception {
         passwordVault.addPassword(uniqueUsername, new WebsiteCredential(WEBSITE_FOR_TESTING, usernameForWebsite,
                                                                         PASSWORD_FOR_TESTING), PASSWORD_FOR_TESTING);
@@ -147,7 +143,7 @@ public class PasswordVaultInMemoryTest {
         return usernamesForTesting.remove(random.nextInt(usernamesForTesting.size()));
     }
 
-    private static void addOneCredentialToCredentialsFile() throws PasswordEncryptorException {
+    private static void addOneCredentialToCredentialsFile() throws PasswordEncryptor.PasswordEncryptorException {
         SecretKey secretKey = PasswordEncryptor
                 .getKeyFromString(INITIALLY_ADDED_USERNAME + INITIALLY_ADDED_USERNAME_FOR_SITE);
 
