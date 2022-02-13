@@ -55,7 +55,9 @@ public class ServerTest {
     private static List<String> usernamesForTesting;
     private static Random random;
     private static final String PASSWORD_FOR_TESTING = "1234";
+    private static final String MASTER_PASSWORD_FOR_TESTING = "4567";
     private static final String WEBSITE_FOR_TESTING = "facebook.com";
+    private static final String MAIL_FOR_TESTING = "example@example.com";
 
     private static final int NUMBER_OF_GENERATED_SAFE_PASSWORDS = 1;
 
@@ -163,7 +165,9 @@ public class ServerTest {
         String username = getUniqueUsername();
 
         Response response = sendRequestAndGetResponse(registerCommand(username, PASSWORD_FOR_TESTING,
-                                                                      PASSWORD_FOR_TESTING));
+                                                                      PASSWORD_FOR_TESTING,
+                                                                      MASTER_PASSWORD_FOR_TESTING,
+                                                                      MASTER_PASSWORD_FOR_TESTING, MAIL_FOR_TESTING));
 
         assertEquals("valid registration should return a success response",
                      ServerResponses.REGISTRATION_SUCCESS,
@@ -174,7 +178,9 @@ public class ServerTest {
     public void testValidLogin() throws IOException {
         String username = getUniqueUsername();
 
-        sendRequestAndGetResponse(registerCommand(username, PASSWORD_FOR_TESTING, PASSWORD_FOR_TESTING));
+        sendRequestAndGetResponse(registerCommand(username, PASSWORD_FOR_TESTING, PASSWORD_FOR_TESTING,
+                                                  MASTER_PASSWORD_FOR_TESTING, MASTER_PASSWORD_FOR_TESTING,
+                                                  MAIL_FOR_TESTING));
         Response response = sendRequestAndGetResponse(loginCommand(username, PASSWORD_FOR_TESTING));
 
         assertEquals("valid login should return a success response",
@@ -186,7 +192,9 @@ public class ServerTest {
     public void testValidLogout() throws IOException {
         String username = getUniqueUsername();
 
-        sendRequestAndGetResponse(registerCommand(username, PASSWORD_FOR_TESTING, PASSWORD_FOR_TESTING));
+        sendRequestAndGetResponse(registerCommand(username, PASSWORD_FOR_TESTING, PASSWORD_FOR_TESTING,
+                                                  MASTER_PASSWORD_FOR_TESTING, MASTER_PASSWORD_FOR_TESTING,
+                                                  MAIL_FOR_TESTING));
         sendRequestAndGetResponse(loginCommand(username, PASSWORD_FOR_TESTING));
         Response response = sendRequestAndGetResponse(logoutCommand());
 
@@ -199,7 +207,9 @@ public class ServerTest {
     public void testLoggingInWhenAlreadyLoggedIn() throws IOException {
         String username = getUniqueUsername();
 
-        sendRequestAndGetResponse(registerCommand(username, PASSWORD_FOR_TESTING, PASSWORD_FOR_TESTING));
+        sendRequestAndGetResponse(registerCommand(username, PASSWORD_FOR_TESTING, PASSWORD_FOR_TESTING,
+                                                  MASTER_PASSWORD_FOR_TESTING, MASTER_PASSWORD_FOR_TESTING,
+                                                  MAIL_FOR_TESTING));
         sendRequestAndGetResponse(loginCommand(username, PASSWORD_FOR_TESTING));
 
         Response response = sendRequestAndGetResponse(loginCommand(username, PASSWORD_FOR_TESTING));
@@ -223,7 +233,9 @@ public class ServerTest {
         String username = getUniqueUsername();
 
         Response response = sendRequestAndGetResponse(registerCommand(username, PASSWORD_FOR_TESTING,
-                                                                      new String(PASSWORD_FOR_TESTING + "1234")));
+                                                                      new String(PASSWORD_FOR_TESTING + "1234"),
+                                                                      MASTER_PASSWORD_FOR_TESTING,
+                                                                      MASTER_PASSWORD_FOR_TESTING, MAIL_FOR_TESTING));
 
         assertEquals("when trying to register with non matching passwords and error message should be returned",
                      ServerResponses.PASSWORD_DO_NOT_MATCH,
@@ -235,11 +247,17 @@ public class ServerTest {
         String username = getUniqueUsername();
         String usernameForSite = buildUsernameForSiteFromUsername(username);
 
-        sendRequestAndGetResponse(registerCommand(username, PASSWORD_FOR_TESTING, PASSWORD_FOR_TESTING));
-        sendRequestAndGetResponse(loginCommand(username, PASSWORD_FOR_TESTING));
-        sendRequestAndGetResponse(addPassword(WEBSITE_FOR_TESTING, usernameForSite, PASSWORD_FOR_TESTING));
+        sendRequestAndGetResponse(registerCommand(username, PASSWORD_FOR_TESTING, PASSWORD_FOR_TESTING,
+                                                  MASTER_PASSWORD_FOR_TESTING, MASTER_PASSWORD_FOR_TESTING,
+                                                  MAIL_FOR_TESTING));
 
-        Response response = sendRequestAndGetResponse(retrieveCredentials(WEBSITE_FOR_TESTING, usernameForSite));
+        sendRequestAndGetResponse(loginCommand(username, PASSWORD_FOR_TESTING));
+
+        sendRequestAndGetResponse(addPassword(WEBSITE_FOR_TESTING, usernameForSite, PASSWORD_FOR_TESTING,
+                                              MASTER_PASSWORD_FOR_TESTING));
+
+        Response response = sendRequestAndGetResponse(retrieveCredentials(WEBSITE_FOR_TESTING, usernameForSite,
+                                                                          MASTER_PASSWORD_FOR_TESTING));
         sendRequestAndGetResponse(logoutCommand());
 
         assertEquals("incorrect response returned",
@@ -256,11 +274,15 @@ public class ServerTest {
         String username = getUniqueUsername();
         String usernameForSite = buildUsernameForSiteFromUsername(username);
 
-        sendRequestAndGetResponse(registerCommand(username, PASSWORD_FOR_TESTING, PASSWORD_FOR_TESTING));
+        sendRequestAndGetResponse(registerCommand(username, PASSWORD_FOR_TESTING, PASSWORD_FOR_TESTING,
+                                                  MASTER_PASSWORD_FOR_TESTING, MASTER_PASSWORD_FOR_TESTING,
+                                                  MAIL_FOR_TESTING));
         sendRequestAndGetResponse(loginCommand(username, PASSWORD_FOR_TESTING));
-        sendRequestAndGetResponse(addPassword(WEBSITE_FOR_TESTING, usernameForSite, PASSWORD_FOR_TESTING));
+        sendRequestAndGetResponse(addPassword(WEBSITE_FOR_TESTING, usernameForSite, PASSWORD_FOR_TESTING,
+                                              MASTER_PASSWORD_FOR_TESTING));
 
-        Response response = sendRequestAndGetResponse(removePassword(WEBSITE_FOR_TESTING, usernameForSite));
+        Response response = sendRequestAndGetResponse(removePassword(WEBSITE_FOR_TESTING, usernameForSite,
+                                                                     MASTER_PASSWORD_FOR_TESTING));
         sendRequestAndGetResponse(logoutCommand());
 
         assertEquals("when removing a previously added password the response should be successful removal",
@@ -273,11 +295,26 @@ public class ServerTest {
         String username = getUniqueUsername();
         String usernameForSite = buildUsernameForSiteFromUsername(username);
 
-        sendRequestAndGetResponse(registerCommand(username, PASSWORD_FOR_TESTING, PASSWORD_FOR_TESTING));
-        sendRequestAndGetResponse(loginCommand(username, PASSWORD_FOR_TESTING));
-        sendRequestAndGetResponse(generatePassword(WEBSITE_FOR_TESTING, usernameForSite, SAFE_PASSWORD_LENGTH));
+        sendRequestAndGetResponse(registerCommand(username, PASSWORD_FOR_TESTING, PASSWORD_FOR_TESTING,
+                                                  MASTER_PASSWORD_FOR_TESTING, MASTER_PASSWORD_FOR_TESTING,
+                                                  MAIL_FOR_TESTING));
 
-        Response response = sendRequestAndGetResponse(retrieveCredentials(WEBSITE_FOR_TESTING, usernameForSite));
+        sendRequestAndGetResponse(loginCommand(username, PASSWORD_FOR_TESTING));
+
+        Response generationResponse = sendRequestAndGetResponse(generatePassword(WEBSITE_FOR_TESTING, usernameForSite,
+                                                                                 SAFE_PASSWORD_LENGTH,
+                                                                                 MASTER_PASSWORD_FOR_TESTING));
+
+        assertEquals("response should be success",
+                     ServerResponses.CREDENTIAL_GENERATION_SUCCESS,
+                     generationResponse.serverResponse());
+
+        assertEquals("generated password should be the sample mocked password",
+                     SAMPLE_SAFE_PASSWORD,
+                     generationResponse.message());
+
+        Response response = sendRequestAndGetResponse(retrieveCredentials(WEBSITE_FOR_TESTING, usernameForSite,
+                                                                          MASTER_PASSWORD_FOR_TESTING));
         sendRequestAndGetResponse(disconnectCommand());
 
         assertEquals("response should be success",
@@ -285,8 +322,8 @@ public class ServerTest {
                      response.serverResponse());
 
         assertEquals("generated password should be the sample mocked password",
-                     ServerResponses.CREDENTIAL_RETRIEVAL_SUCCESS,
-                     response.serverResponse());
+                     SAMPLE_SAFE_PASSWORD,
+                     response.message());
     }
 
     @Test
@@ -295,7 +332,7 @@ public class ServerTest {
         String usernameForSite = buildUsernameForSiteFromUsername(username);
 
         Response response = sendRequestAndGetResponse(addPassword(WEBSITE_FOR_TESTING, usernameForSite,
-                                                                PASSWORD_FOR_TESTING));
+                                                                  PASSWORD_FOR_TESTING, MASTER_PASSWORD_FOR_TESTING));
 
         assertEquals("when trying to add a password for non-logged user an error response is expected",
                      ServerResponses.NOT_LOGGED_IN,
@@ -324,9 +361,11 @@ public class ServerTest {
         return String.format("%s_%s_1234", username, username);
     }
 
-    private String registerCommand(String username, String password, String repeatedPassword) {
-        return String.format("%s %s %s %s %s",
-                             ServerCommand.REGISTER.getCommandText(), username, "", password, repeatedPassword);
+    private String registerCommand(String username, String password, String repeatedPassword, String masterPassword,
+                                   String repeatedMasterPassword, String email) {
+        return String.format("%s %s %s %s %s %s %s",
+                             ServerCommand.REGISTER.getCommandText(), username, email, password, repeatedPassword,
+                             masterPassword, repeatedMasterPassword);
     }
 
     private String loginCommand(String username, String password) {
@@ -345,22 +384,25 @@ public class ServerTest {
         return ServerCommand.HELP.getCommandText();
     }
 
-    private String addPassword(String website, String usernameForSite, String password) {
-        return String
-                .format("%s %s %s %s", ServerCommand.ADD_PASSWORD.getCommandText(), website, usernameForSite, password);
+    private String addPassword(String website, String usernameForSite, String password, String masterPassword) {
+        return String.format("%s %s %s %s %s",
+                             ServerCommand.ADD_PASSWORD.getCommandText(), website, usernameForSite, password, masterPassword);
     }
 
-    private String removePassword(String website, String usernameForSite) {
-        return String.format("%s %s %s", ServerCommand.REMOVE_PASSWORD.getCommandText(), website, usernameForSite);
+    private String removePassword(String website, String usernameForSite, String masterPassword) {
+        return String.format("%s %s %s %s",
+                             ServerCommand.REMOVE_PASSWORD.getCommandText(), website, usernameForSite, masterPassword);
     }
 
-    private String retrieveCredentials(String website, String usernameForSite) {
-        return String
-                .format("%s %s %s", ServerCommand.RETRIEVE_CREDENTIALS.getCommandText(), website, usernameForSite);
+    private String retrieveCredentials(String website, String usernameForSite, String masterPassword) {
+        return String.format("%s %s %s %s",
+                             ServerCommand.RETRIEVE_CREDENTIAL.getCommandText(), website, usernameForSite,
+                             masterPassword);
     }
 
-    private String generatePassword(String website, String usernameForSite, int safePasswordLength) {
-        return String.format("%s %s %s %s", ServerCommand.GENERATE_PASSWORD.getCommandText(), website,
-                             usernameForSite, safePasswordLength);
+    private String generatePassword(String website, String usernameForSite, int safePasswordLength, String masterPassword) {
+        return String.format("%s %s %s %s %s",
+                             ServerCommand.GENERATE_PASSWORD.getCommandText(), website,
+                             usernameForSite, safePasswordLength, masterPassword);
     }
 }

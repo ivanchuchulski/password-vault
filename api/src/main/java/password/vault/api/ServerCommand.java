@@ -6,18 +6,18 @@ import java.util.Locale;
 import java.util.Map;
 
 public enum ServerCommand {
-    REGISTER("register", 4, "register <user> <email> <password> <password-repeat>"),
+    REGISTER("register", 6, "register <user> <email> <password> <password-repeat> <master-password> " +
+            "<master-password-repeated>"),
     LOGIN("login", 2, "login <user> <password>"),
     LOGOUT("logout", 0, "logout"),
     DISCONNECT("disconnect", 0, "disconnect"),
 
-    ADD_PASSWORD("add-password", 3, "add-password <website> <user> <password>"),
-    REMOVE_PASSWORD("remove-password", 2, "remove-password <website> <user>"),
-    // UPDATE_PASSWORD("update-password", 4, "update-password <website> <user> <oldpass> <newpass>"),
-    RETRIEVE_CREDENTIALS("get-password", 2, "get-password <website> <user>"),
-    GET_ALL_CREDENTIALS("get-all-credentials", 0, "get-all-credentials"),
+    ADD_PASSWORD("add-password", 4, "add-password <website> <user> <password> <master-password>"),
+    REMOVE_PASSWORD("remove-password", 3, "remove-password <website> <user> <master-password>"),
+    RETRIEVE_CREDENTIAL("get-password", 3, "get-password <website> <user> <master-password>"),
+    GET_ALL_CREDENTIALS("get-all-credentials", 1, "get-all-credentials <master-password>"),
 
-    GENERATE_PASSWORD("generate-password", 3, "generate-password <website> <user> <passwordLength>"),
+    GENERATE_PASSWORD("generate-password", 4, "generate-password <website> <user> <passwordLength> <master-password>"),
     CHECK_PASSWORD_SAFETY("check-password", 1, "check-password <password>"),
 
     HELP("help", 0, "help"),

@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import password.vault.server.cryptography.PasswordHasher;
 import password.vault.server.db.DatabaseConnectorException;
 import password.vault.server.cryptography.PasswordEncryptor;
 import password.vault.server.user.repository.User;
@@ -67,41 +68,41 @@ public class UserRepositoryInMemoryTest {
 
     @Test
     public void testRegisteringNonRegisteredUsernameRegistersIt() throws UserRepository.RegisterException,
-            PasswordEncryptor.HashException,
+            PasswordHasher.HashException,
             DatabaseConnectorException, UserRepository.InvalidUsernameException,
             UserRepository.UserAlreadyRegisteredException {
         String username = getUniqueUsername();
         String password = PASSWORD_FOR_TESTING;
 
-        userRepository.registerUser(username, password, "");
+        userRepository.registerUser(username, password, "", "");
 
         assertTrue(userRepository.isUsernameRegistered(username));
     }
 
     @Test(expected = UserRepository.InvalidUsernameException.class)
     public void testRegisteringWithInvalidUsername() throws UserRepository.RegisterException,
-            PasswordEncryptor.HashException,
+            PasswordHasher.HashException,
             DatabaseConnectorException, UserRepository.InvalidUsernameException,
             UserRepository.UserAlreadyRegisteredException {
         String username = "@###";
         String password = PASSWORD_FOR_TESTING;
-        userRepository.registerUser(username, password, "");
+        userRepository.registerUser(username, password, "", "");
     }
 
     @Test(expected = UserRepository.UserAlreadyRegisteredException.class)
     public void testRegisteringAnAlreadyRegisteredUser() throws UserRepository.RegisterException,
-            PasswordEncryptor.HashException,
+            PasswordHasher.HashException,
             DatabaseConnectorException, UserRepository.InvalidUsernameException,
             UserRepository.UserAlreadyRegisteredException {
         String username = getUniqueUsername();
         String password = PASSWORD_FOR_TESTING;
 
-        userRepository.registerUser(username, password, "");
-        userRepository.registerUser(username, password, "");
+        userRepository.registerUser(username, password, "", "");
+        userRepository.registerUser(username, password, "", "");
     }
 
     @Test(expected = UserRepository.UserNotFoundException.class)
-    public void testLoginNonRegisteredUser() throws UserRepository.LoginException, PasswordEncryptor.HashException,
+    public void testLoginNonRegisteredUser() throws UserRepository.LoginException, PasswordHasher.HashException,
             UserRepository.UserAlreadyLoggedInException,
             UserRepository.UserNotFoundException {
         String username = getUniqueUsername();
@@ -112,28 +113,28 @@ public class UserRepositoryInMemoryTest {
 
     @Test(expected = UserRepository.UserAlreadyLoggedInException.class)
     public void testLoginAlreadyLoggedInUser() throws UserRepository.LoginException, UserRepository.RegisterException,
-            PasswordEncryptor.HashException,
+            PasswordHasher.HashException,
             DatabaseConnectorException, UserRepository.InvalidUsernameException,
             UserRepository.UserAlreadyRegisteredException,
             UserRepository.UserAlreadyLoggedInException, UserRepository.UserNotFoundException {
         String username = getUniqueUsername();
         String password = PASSWORD_FOR_TESTING;
 
-        userRepository.registerUser(username, password, "");
+        userRepository.registerUser(username, password, "", "");
         userRepository.logInUser(username, password);
         userRepository.logInUser(username, password);
     }
 
     @Test
     public void testLoginARegisteredUserLogsHimIn() throws UserRepository.RegisterException,
-            UserRepository.LoginException, PasswordEncryptor.HashException,
+            UserRepository.LoginException, PasswordHasher.HashException,
             DatabaseConnectorException, UserRepository.InvalidUsernameException,
             UserRepository.UserAlreadyRegisteredException,
             UserRepository.UserAlreadyLoggedInException, UserRepository.UserNotFoundException {
         String username = getUniqueUsername();
         String password = PASSWORD_FOR_TESTING;
 
-        userRepository.registerUser(username, password, "");
+        userRepository.registerUser(username, password, "", "");
         userRepository.logInUser(username, password);
 
         assertTrue(userRepository.isUsernameLoggedIn(username));
@@ -149,7 +150,7 @@ public class UserRepositoryInMemoryTest {
 
     @Test
     public void testLogOutALoggedInUser() throws UserRepository.RegisterException, UserRepository.LoginException,
-            UserRepository.LogoutException, PasswordEncryptor.HashException,
+            UserRepository.LogoutException, PasswordHasher.HashException,
             DatabaseConnectorException, UserRepository.InvalidUsernameException,
             UserRepository.UserAlreadyRegisteredException,
             UserRepository.UserAlreadyLoggedInException, UserRepository.UserNotLoggedInException,
@@ -157,7 +158,7 @@ public class UserRepositoryInMemoryTest {
         String username = getUniqueUsername();
         String password = PASSWORD_FOR_TESTING;
 
-        userRepository.registerUser(username, password, "");
+        userRepository.registerUser(username, password, "", "");
         userRepository.logInUser(username, password);
         userRepository.logOutUser(username);
 

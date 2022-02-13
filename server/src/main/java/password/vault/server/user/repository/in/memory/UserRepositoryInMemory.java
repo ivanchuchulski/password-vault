@@ -1,7 +1,7 @@
 package password.vault.server.user.repository.in.memory;
 
 import com.google.gson.Gson;
-import password.vault.server.cryptography.PasswordEncryptor;
+import password.vault.server.cryptography.PasswordHash;
 import password.vault.server.cryptography.PasswordHasher;
 import password.vault.server.user.repository.User;
 import password.vault.server.user.repository.UserRepository;
@@ -20,6 +20,8 @@ import java.util.Set;
 public class UserRepositoryInMemory implements UserRepository {
     private final static String VALID_USERNAME_PATTERN = "[a-zA-Z0-9-_]{3,}";
 
+    private static final String MASTER_PASSWORD_FOR_TESTING = "4567";
+
     private final Set<User> registeredUsers;
     private final Set<String> loggedInUsernames;
     private final Path registeredUsersFile;
@@ -35,8 +37,8 @@ public class UserRepositoryInMemory implements UserRepository {
     }
 
     @Override
-    public void registerUser(String username, String password, String email)
-            throws InvalidUsernameException, UserAlreadyRegisteredException, PasswordEncryptor.HashException {
+    public void registerUser(String username, String password, String email, String masterPassword)
+            throws InvalidUsernameException, UserAlreadyRegisteredException, PasswordHasher.HashException {
         User user = new User(username, hashPassword(password));
 
         if (!isUsernameCorrect(user.username())) {
@@ -54,7 +56,7 @@ public class UserRepositoryInMemory implements UserRepository {
 
     @Override
     public void logInUser(String username, String password) throws UserNotFoundException, UserAlreadyLoggedInException,
-            PasswordEncryptor.HashException {
+            PasswordHasher.HashException {
         User user = new User(username, hashPassword(password));
 
         if (!isUserRegistered(user)) {
@@ -83,6 +85,16 @@ public class UserRepositoryInMemory implements UserRepository {
     }
 
     @Override
+    public PasswordHash getMasterPassword(String username) {
+        try {
+            return new PasswordHash(MASTER_PASSWORD_FOR_TESTING);
+        } catch (PasswordHasher.HashException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @Override
     public boolean isUsernameRegistered(String username) {
         return registeredUsers.stream()
                               .map(User::username)
@@ -97,7 +109,7 @@ public class UserRepositoryInMemory implements UserRepository {
         return registeredUsers.contains(user);
     }
 
-    private String hashPassword(String password) throws PasswordEncryptor.HashException {
+    private String hashPassword(String password) throws PasswordHasher.HashException {
         return PasswordHasher.computeHash(password, PasswordHasher.SHA256_MESSAGE_DIGEST_INSTANCE);
     }
 

@@ -43,7 +43,7 @@ public class PasswordVaultInMemory implements PasswordVault {
 
     @Override
     public void addPassword(String username, WebsiteCredential websiteCredential, String masterPassword) throws
-            PasswordVaultDB.CredentialsAlreadyAddedException, PasswordEncryptor.PasswordEncryptorException {
+            PasswordVault.CredentialsAlreadyAddedException, PasswordEncryptor.PasswordEncryptorException {
         if (!credentialsForUser.containsKey(username)) {
             credentialsForUser.put(username, new UserCredentials());
         }

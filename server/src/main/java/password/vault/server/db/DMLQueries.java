@@ -3,9 +3,12 @@ package password.vault.server.db;
 public enum DMLQueries {
     SELECT_USER_BY_USERNAME("SELECT username FROM user WHERE username = ?"),
 
-    INSERT_USER("INSERT INTO user(username, email, password, salt) VALUES(?, ?, ?, ?)"),
+    INSERT_USER("INSERT INTO user(username, email, password, salt, master_password, master_password_salt) " +
+                        "VALUES(?, ?, ?, ?, ?, ?)"),
 
     SELECT_USER_PASSWORD("SELECT password, salt FROM user WHERE username = ?"),
+
+    SELECT_MASTER_PASSWORD("SELECT master_password, master_password_salt FROM session WHERE username = ?"),
 
     LOGIN_USER("INSERT INTO session(username) VALUES(?)"),
 
@@ -22,6 +25,7 @@ public enum DMLQueries {
     DELETE_CREDENTIAL("DELETE FROM credential WHERE username = ? AND website = ? AND site_username = ?"),
 
     SELECT_LOGGED_IN_USER("SELECT * FROM session WHERE username = ?"),
+
     ;
 
     private final String queryText;

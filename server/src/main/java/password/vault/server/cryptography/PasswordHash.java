@@ -9,11 +9,11 @@ public final class PasswordHash {
     private final byte[] passwordBytes;
     private final byte[] salt;
 
-    public PasswordHash(String text) throws PasswordEncryptor.HashException {
+    public PasswordHash(String text) throws PasswordHasher.HashException {
         this(text, PasswordEncryptor.generateSixteenByteSalt());
     }
 
-    public PasswordHash(String text, byte[] salt) throws PasswordEncryptor.HashException {
+    public PasswordHash(String text, byte[] salt) throws PasswordHasher.HashException {
         try {
             byte[] textBytes = text.getBytes(StandardCharsets.UTF_8);
             this.salt = salt;
@@ -22,7 +22,7 @@ public final class PasswordHash {
 
             this.passwordBytes = PasswordHasher.computeSHA512HashWithSalt(concatenated);
         } catch (IOException e) {
-            throw new PasswordEncryptor.HashException("error building hash", e);
+            throw new PasswordHasher.HashException("error building hash", e);
         }
     }
 

@@ -15,23 +15,23 @@ public class PasswordHasher {
     public static final String SHA512_MESSAGE_DIGEST_INSTANCE = "SHA-512";
 
     public static String computeHash(String password, String messageDigestInstance) throws
-            PasswordEncryptor.HashException {
+            HashException {
         try {
             MessageDigest messageDigest = MessageDigest.getInstance(messageDigestInstance);
 
             return hashString(password, messageDigest);
         } catch (NoSuchAlgorithmException noSuchAlgorithmException) {
-            throw new PasswordEncryptor.HashException(String.format("error : no such message digest algorithm found %s ",
-                                                                    messageDigestInstance), noSuchAlgorithmException);
+            throw new HashException(String.format("error : no such message digest algorithm found %s ",
+                                                  messageDigestInstance), noSuchAlgorithmException);
         }
     }
 
-    public static byte[] computeSHA512HashWithSalt(byte[] text) throws PasswordEncryptor.HashException {
+    public static byte[] computeSHA512HashWithSalt(byte[] text) throws HashException {
         try {
             MessageDigest messageDigest = MessageDigest.getInstance(SHA512_MESSAGE_DIGEST_INSTANCE);
             return messageDigest.digest(text);
         } catch (NoSuchAlgorithmException noSuchAlgorithmException) {
-            throw new PasswordEncryptor.HashException("error : no message digest algorithm found for sha-512", noSuchAlgorithmException);
+            throw new HashException("error : no message digest algorithm found for sha-512", noSuchAlgorithmException);
         }
     }
 
@@ -47,5 +47,15 @@ public class PasswordHasher {
         }
 
         return stringBuilder.toString();
+    }
+
+    public static class HashException extends Exception {
+        public HashException(String message) {
+            super(message);
+        }
+
+        public HashException(String message, Throwable cause) {
+            super(message, cause);
+        }
     }
 }

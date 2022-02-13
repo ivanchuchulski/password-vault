@@ -13,10 +13,12 @@ GRANT ALL
 
 CREATE TABLE `user`
 (
-    `username` VARCHAR(255)   NOT NULL,
-    `email`    VARCHAR(255)   NOT NULL,
-    `password` VARBINARY(255) NOT NULL,
-    `salt`     VARBINARY(255) NOT NULL,
+    `username`             VARCHAR(255)   NOT NULL,
+    `email`                VARCHAR(255)   NOT NULL,
+    `password`             VARBINARY(255) NOT NULL,
+    `salt`                 VARBINARY(255) NOT NULL,
+    `master_password`      VARBINARY(255) NOT NULL,
+    `master_password_salt` VARBINARY(255) NOT NULL,
     CONSTRAINT PRIMARY KEY (`username`)
 );
 

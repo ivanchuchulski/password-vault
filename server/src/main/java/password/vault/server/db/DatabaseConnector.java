@@ -5,7 +5,6 @@ import password.vault.server.cryptography.EncryptedPassword;
 import password.vault.server.cryptography.PasswordHash;
 import password.vault.server.password.vault.CredentialIdentifier;
 import password.vault.server.password.vault.PasswordVault;
-import password.vault.server.user.repository.UserRepository;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -20,7 +19,7 @@ public class DatabaseConnector {
     private static final String DB_USER = MyConfig.DB_USER;
     private static final String DB_PASSWORD = MyConfig.DB_PASSWORD;
 
-    private Connection connection;
+    private final Connection connection;
 
     public DatabaseConnector() {
         try {
@@ -34,13 +33,16 @@ public class DatabaseConnector {
         connection.close();
     }
 
-    public boolean insertUser(String username, String email, byte[] passwordHash, byte[] salt) throws
+    public boolean insertUser(String username, String email, PasswordHash passwordHash,
+                              PasswordHash masterPasswordHash) throws
             DatabaseConnectorException {
         try (PreparedStatement preparedStatement = connection.prepareStatement(DMLQueries.INSERT_USER.getQueryText())) {
             preparedStatement.setString(1, username);
             preparedStatement.setString(2, email);
-            preparedStatement.setBytes(3, passwordHash);
-            preparedStatement.setBytes(4, salt);
+            preparedStatement.setBytes(3, passwordHash.getPasswordBytes());
+            preparedStatement.setBytes(4, passwordHash.getSalt());
+            preparedStatement.setBytes(5, masterPasswordHash.getPasswordBytes());
+            preparedStatement.setBytes(6, masterPasswordHash.getSalt());
 
             int insertSuccess = preparedStatement.executeUpdate();
 
@@ -90,19 +92,15 @@ public class DatabaseConnector {
         }
     }
 
-    public PasswordHash getPasswordForUser(String username) throws UserRepository.UserNotFoundException, DatabaseConnectorException {
+    public PasswordHash getPasswordForUser(String username) throws DatabaseConnectorException {
         try (PreparedStatement preparedStatement =
                      connection.prepareStatement(DMLQueries.SELECT_USER_PASSWORD.getQueryText())) {
             preparedStatement.setString(1, username);
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                if (!resultSet.next()) {
-                    throw new UserRepository.UserNotFoundException();
-                }
                 return new PasswordHash(resultSet.getBytes("password"), resultSet.getBytes("salt"));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
             throw new DatabaseConnectorException("unable to get user password", e);
         }
     }
@@ -135,7 +133,6 @@ public class DatabaseConnector {
                                     EncryptedPassword encryptedPassword) {
         try (PreparedStatement preparedStatement =
                      connection.prepareStatement(DMLQueries.INSERT_CREDENTIAL.getQueryText())) {
-
             preparedStatement.setString(1, username);
             preparedStatement.setString(2, website);
             preparedStatement.setString(3, usernameForWebsite);
@@ -146,8 +143,6 @@ public class DatabaseConnector {
             int insertSuccess = preparedStatement.executeUpdate();
             return insertSuccess == 1;
         } catch (SQLException e) {
-
-            e.printStackTrace();
             return false;
         }
     }
@@ -194,7 +189,6 @@ public class DatabaseConnector {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
             throw new PasswordVault.CredentialNotFoundException("credential not found");
         }
     }
@@ -215,7 +209,6 @@ public class DatabaseConnector {
                 return credentialIdentifiers;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
             throw new DatabaseConnectorException("unable to get all credentials");
         }
     }
@@ -233,7 +226,6 @@ public class DatabaseConnector {
                 return resultSet.next();
             }
         } catch (SQLException e) {
-            e.printStackTrace();
             throw new DatabaseConnectorException("unable to select credential");
         }
     }
@@ -249,8 +241,21 @@ public class DatabaseConnector {
                 return resultSet.next();
             }
         } catch (SQLException e) {
-            e.printStackTrace();
             throw new DatabaseConnectorException("unable to select credential");
+        }
+    }
+
+    public PasswordHash getMasterPassword(String username) throws DatabaseConnectorException {
+        try (PreparedStatement preparedStatement =
+                     connection.prepareStatement(DMLQueries.SELECT_MASTER_PASSWORD.getQueryText())) {
+            preparedStatement.setString(1, username);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                return new PasswordHash(resultSet.getBytes("master_password"),
+                                        resultSet.getBytes("master_password_salt"));
+            }
+
+        } catch (SQLException e) {
+            throw new DatabaseConnectorException("unable to retrive master password");
         }
     }
 }

@@ -6,6 +6,8 @@ import password.vault.api.ServerResponses;
 import password.vault.server.communication.CommandResponse;
 import password.vault.server.communication.UserRequest;
 import password.vault.server.cryptography.PasswordEncryptor;
+import password.vault.server.cryptography.PasswordHash;
+import password.vault.server.cryptography.PasswordHasher;
 import password.vault.server.db.DatabaseConnectorException;
 import password.vault.server.dto.PasswordGeneratorResponse;
 import password.vault.server.dto.PasswordSafetyResponse;
@@ -13,7 +15,6 @@ import password.vault.server.password.generator.PasswordGenerator;
 import password.vault.server.password.safety.checker.PasswordSafetyChecker;
 import password.vault.server.password.vault.CredentialIdentifier;
 import password.vault.server.password.vault.PasswordVault;
-import password.vault.server.password.vault.PasswordVaultDB;
 import password.vault.server.password.vault.WebsiteCredential;
 import password.vault.server.session.ChannelUsernameMapper;
 import password.vault.server.session.UserActionsLog;
@@ -22,7 +23,6 @@ import password.vault.server.user.repository.UserRepository;
 import java.util.List;
 
 public class CommandExecutor {
-    private static final String SAMPLE_MASTER_PASSWORD = "1234";
     private final UserActionsLog userActionsLog;
     private final ChannelUsernameMapper channelUsernameMapper;
 
@@ -55,8 +55,8 @@ public class CommandExecutor {
 
         if (commandHasIncorrectNumberOfArguments(userRequest, serverCommand)) {
             return new CommandResponse(false,
-                                       new Response(ServerResponses.WRONG_COMMAND_NUMBER_OF_ARGUMENTS, "your command " +
-                                               "has incorrect number of arguments"));
+                                       new Response(ServerResponses.WRONG_COMMAND_NUMBER_OF_ARGUMENTS,
+                                                    "your command has incorrect number of arguments, correct is %s".formatted(serverCommand.getCommandOverview())));
         }
 
         if (serverCommand.equals(ServerCommand.DISCONNECT)) {
@@ -94,7 +94,7 @@ public class CommandExecutor {
                 switch (serverCommand) {
                     case ADD_PASSWORD -> addPassword(username, userRequest.arguments());
                     case REMOVE_PASSWORD -> removePassword(username, userRequest.arguments());
-                    case RETRIEVE_CREDENTIALS -> retrieveCredentials(username, userRequest.arguments());
+                    case RETRIEVE_CREDENTIAL -> retrieveCredentials(username, userRequest.arguments());
                     case GENERATE_PASSWORD -> generatePassword(username, userRequest.arguments());
                     case GET_ALL_CREDENTIALS -> getAllCredentials(username);
                     case CHECK_PASSWORD_SAFETY -> checkPasswordSafety(userRequest.arguments());
@@ -133,12 +133,18 @@ public class CommandExecutor {
             String email = userRequest.arguments()[1];
             String password = userRequest.arguments()[2];
             String repeatedPassword = userRequest.arguments()[3];
+            String masterPassword = userRequest.arguments()[4];
+            String masterPasswordRepeated = userRequest.arguments()[5];
 
             if (!password.equals(repeatedPassword)) {
                 return new Response(ServerResponses.PASSWORD_DO_NOT_MATCH, "passwords do not match");
             }
 
-            userRepository.registerUser(username, password, email);
+            if (!masterPassword.equals(masterPasswordRepeated)) {
+                return new Response(ServerResponses.PASSWORD_DO_NOT_MATCH, "master password do not match");
+            }
+
+            userRepository.registerUser(username, password, email, masterPassword);
 
             return new Response(ServerResponses.REGISTRATION_SUCCESS,
                                 "username %s registered successfully".formatted(username));
@@ -146,7 +152,7 @@ public class CommandExecutor {
             return new Response(ServerResponses.REGISTRATION_ERROR, "invalid username provided");
         } catch (UserRepository.UserAlreadyRegisteredException e) {
             return new Response(ServerResponses.REGISTRATION_ERROR, "user already registered");
-        } catch (PasswordEncryptor.HashException | DatabaseConnectorException | UserRepository.RegisterException e) {
+        } catch (PasswordHasher.HashException | DatabaseConnectorException | UserRepository.RegisterException e) {
             return new Response(ServerResponses.REGISTRATION_ERROR, "unable to complete your request, try again");
         }
     }
@@ -162,7 +168,7 @@ public class CommandExecutor {
             userActionsLog.addUserActionTimeStamp(username);
 
             return new Response(ServerResponses.LOGIN_SUCCESS, "sucess logging in user %s".formatted(username));
-        } catch (UserRepository.LoginException | PasswordEncryptor.HashException e) {
+        } catch (UserRepository.LoginException | PasswordHasher.HashException e) {
             return new Response(ServerResponses.LOGIN_ERROR, "unable to complete your logout request, try again ");
         } catch (UserRepository.UserAlreadyLoggedInException e) {
             return new Response(ServerResponses.USER_ALREADY_LOGGED, "you are already logged in");
@@ -192,6 +198,7 @@ public class CommandExecutor {
             String website = arguments[0];
             String usernameForSite = arguments[1];
             String passwordForSite = arguments[2];
+            String masterPassword = arguments[3];
 
             PasswordSafetyResponse passwordSafetyResponse = passwordSafetyChecker.checkPassword(passwordForSite);
 
@@ -200,13 +207,17 @@ public class CommandExecutor {
                                     "password was exposed %d times".formatted(passwordSafetyResponse.getTimesExposed()));
             }
 
+            if (!checkIfMasterPasswordsMatch(username, masterPassword)) {
+                return new Response(ServerResponses.CREDENTIAL_ADDITION_ERROR, "master password doesn't match");
+            }
+
             WebsiteCredential websiteCredential = new WebsiteCredential(website, usernameForSite, passwordForSite);
-            passwordVault.addPassword(username, websiteCredential, SAMPLE_MASTER_PASSWORD);
+            passwordVault.addPassword(username, websiteCredential, masterPassword);
 
             return new Response(ServerResponses.CREDENTIAL_ADDITION_SUCCESS, "added password successfully");
-        } catch (PasswordVaultDB.CredentialsAlreadyAddedException e) {
+        } catch (PasswordVault.CredentialsAlreadyAddedException e) {
             return new Response(ServerResponses.CREDENTIAL_ADDITION_ERROR, "credential already added");
-        } catch (PasswordEncryptor.PasswordEncryptorException | PasswordSafetyChecker.PasswordSafetyCheckerException | DatabaseConnectorException e) {
+        } catch (PasswordEncryptor.PasswordEncryptorException | PasswordSafetyChecker.PasswordSafetyCheckerException | DatabaseConnectorException | PasswordHasher.HashException e) {
             return new Response(ServerResponses.CREDENTIAL_ADDITION_ERROR, "couldn't complete your request, try again");
         } catch (WebsiteCredential.InvalidWebsiteException e) {
             return new Response(ServerResponses.WRONG_COMMAND_ARGUMENT, "website is invalid");
@@ -219,33 +230,44 @@ public class CommandExecutor {
         try {
             String website = arguments[0];
             String usernameForSite = arguments[1];
+            String masterPassword = arguments[2];
 
-            passwordVault.removePassword(username, website, usernameForSite, SAMPLE_MASTER_PASSWORD);
+            if (!checkIfMasterPasswordsMatch(username, masterPassword)) {
+                return new Response(ServerResponses.CREDENTIAL_REMOVAL_ERROR, "master password doesn't match");
+            }
+
+            passwordVault.removePassword(username, website, usernameForSite, masterPassword);
 
             return new Response(ServerResponses.CREDENTIAL_REMOVAL_SUCCESS, "credentials removed");
         } catch (PasswordVault.UsernameNotHavingCredentialsException e) {
             return new Response(ServerResponses.NO_CREDENTIALS_ADDED, "you don't have any credential");
         } catch (PasswordVault.CredentialNotFoundException e) {
             return new Response(ServerResponses.NO_SUCH_CREDENTIAL, "no such credential");
-        } catch (DatabaseConnectorException | PasswordVaultDB.CredentialRemovalException e) {
+        } catch (DatabaseConnectorException | PasswordVault.CredentialRemovalException | PasswordHasher.HashException e) {
             return new Response(ServerResponses.CREDENTIAL_REMOVAL_ERROR, "couldn't complete your request, try again");
         }
     }
+
 
     private Response retrieveCredentials(String username, String[] arguments) {
         try {
             String website = arguments[0];
             String usernameForSite = arguments[1];
+            String masterPassword = arguments[2];
+
+            if (!checkIfMasterPasswordsMatch(username, masterPassword)) {
+                return new Response(ServerResponses.CREDENTIAL_RETRIEVAL_ERROR, "master password does not match");
+            }
 
             String retrievedPassword = passwordVault.retrieveCredentials(username, website, usernameForSite,
-                                                                         SAMPLE_MASTER_PASSWORD);
+                                                                         masterPassword);
 
             return new Response(ServerResponses.CREDENTIAL_RETRIEVAL_SUCCESS, retrievedPassword);
         } catch (PasswordVault.UsernameNotHavingCredentialsException e) {
             return new Response(ServerResponses.NO_CREDENTIALS_ADDED, "you don't have any credentials");
         } catch (PasswordVault.CredentialNotFoundException e) {
             return new Response(ServerResponses.NO_SUCH_CREDENTIAL, "no such credential");
-        } catch (PasswordEncryptor.PasswordEncryptorException | DatabaseConnectorException e) {
+        } catch (PasswordEncryptor.PasswordEncryptorException | DatabaseConnectorException | PasswordHasher.HashException e) {
             return new Response(ServerResponses.CREDENTIAL_RETRIEVAL_ERROR, "unable to retrieve credential, try again");
         }
     }
@@ -277,9 +299,14 @@ public class CommandExecutor {
             String website = arguments[0];
             String usernameForSite = arguments[1];
             int passwordLength = Integer.parseInt(arguments[2]);
+            String masterPassword = arguments[3];
+
+            if (!checkIfMasterPasswordsMatch(username, masterPassword)) {
+                return new Response(ServerResponses.CREDENTIAL_GENERATION_ERROR, "master password does not match");
+            }
 
             if (passwordVault.userHasCredentialsForSiteAndUsername(username, website, usernameForSite)) {
-                return new Response(ServerResponses.CREDENTIAL_ADDITION_ERROR, "credential already added");
+                return new Response(ServerResponses.CREDENTIAL_GENERATION_ERROR, "credential already added");
             }
 
             PasswordGeneratorResponse passwordGeneratorResponse =
@@ -293,12 +320,12 @@ public class CommandExecutor {
             String generatedPassword = passwordGeneratorResponse.getPassword();
 
             passwordVault.addPassword(username, new WebsiteCredential(website, usernameForSite, generatedPassword),
-                                      SAMPLE_MASTER_PASSWORD);
+                                      masterPassword);
 
             return new Response(ServerResponses.CREDENTIAL_GENERATION_SUCCESS, generatedPassword);
-        } catch (PasswordGenerator.PasswordGeneratorException | PasswordEncryptor.PasswordEncryptorException | DatabaseConnectorException e) {
+        } catch (PasswordGenerator.PasswordGeneratorException | PasswordEncryptor.PasswordEncryptorException | DatabaseConnectorException | PasswordHasher.HashException e) {
             return new Response(ServerResponses.PASSWORD_GENERATION_ERROR, "unable to generate password");
-        } catch (PasswordVaultDB.CredentialsAlreadyAddedException e) {
+        } catch (PasswordVault.CredentialsAlreadyAddedException e) {
             return new Response(ServerResponses.CREDENTIAL_ADDITION_ERROR, "credential already added");
         } catch (NumberFormatException e) {
             return new Response(ServerResponses.WRONG_COMMAND_NUMBER_OF_ARGUMENTS, "incorrect arguments");
@@ -325,5 +352,15 @@ public class CommandExecutor {
             return new Response(ServerResponses.PASSWORD_SAFETY_SERVICE_ERROR,
                                 "unable to complete your request, please try again later");
         }
+    }
+
+    private boolean checkIfMasterPasswordsMatch(String username, String masterPassword) throws
+            DatabaseConnectorException,
+            PasswordHasher.HashException {
+        PasswordHash retrievedMasterPasswordHash = userRepository.getMasterPassword(username);
+        byte[] salt = retrievedMasterPasswordHash.getSalt();
+        PasswordHash givenMasterPasswordHash = new PasswordHash(masterPassword, salt);
+
+        return givenMasterPasswordHash.equals(retrievedMasterPasswordHash);
     }
 }

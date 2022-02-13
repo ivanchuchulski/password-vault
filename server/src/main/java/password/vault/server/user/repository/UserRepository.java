@@ -1,20 +1,23 @@
 package password.vault.server.user.repository;
 
-import password.vault.server.cryptography.PasswordEncryptor;
+import password.vault.server.cryptography.PasswordHash;
+import password.vault.server.cryptography.PasswordHasher;
 import password.vault.server.db.DatabaseConnectorException;
 
 public interface UserRepository {
-    void registerUser(String username, String password, String email) throws InvalidUsernameException,
-            UserAlreadyRegisteredException, PasswordEncryptor.HashException, DatabaseConnectorException, RegisterException;
+    void registerUser(String username, String password, String email, String masterPassword) throws InvalidUsernameException,
+            UserAlreadyRegisteredException, PasswordHasher.HashException, DatabaseConnectorException, RegisterException;
 
     void logInUser(String username, String password) throws UserNotFoundException, UserAlreadyLoggedInException,
-            PasswordEncryptor.HashException, LoginException;
+            PasswordHasher.HashException, LoginException;
 
     void logOutUser(String username) throws UserNotLoggedInException, LogoutException;
 
     boolean isUsernameRegistered(String username);
 
     boolean isUsernameLoggedIn(String username);
+
+    PasswordHash getMasterPassword(String username) throws DatabaseConnectorException;
 
     class InvalidUsernameException extends Exception {
         public InvalidUsernameException(String message) {

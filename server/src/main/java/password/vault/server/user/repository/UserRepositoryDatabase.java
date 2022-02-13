@@ -1,7 +1,7 @@
 package password.vault.server.user.repository;
 
-import password.vault.server.cryptography.PasswordEncryptor;
 import password.vault.server.cryptography.PasswordHash;
+import password.vault.server.cryptography.PasswordHasher;
 import password.vault.server.db.DatabaseConnector;
 import password.vault.server.db.DatabaseConnectorException;
 import password.vault.server.requests.RegistrationRequest;
@@ -16,7 +16,7 @@ public class UserRepositoryDatabase implements UserRepository {
     }
 
     public void registerUser(RegistrationRequest registrationRequest) throws UserAlreadyRegisteredException,
-            PasswordEncryptor.HashException, DatabaseConnectorException,
+            PasswordHasher.HashException, DatabaseConnectorException,
             InvalidUsernameException, RegisterException {
         if (!registrationRequest.username().matches(VALID_USERNAME_PATTERN)) {
             throw new InvalidUsernameException();
@@ -28,26 +28,32 @@ public class UserRepositoryDatabase implements UserRepository {
         }
 
         PasswordHash passwordHash = new PasswordHash(registrationRequest.password());
+        PasswordHash masterPasswordHash = new PasswordHash(registrationRequest.masterPassword());
 
         boolean insertUserSuccess = databaseConnector.insertUser(registrationRequest.username(),
                                                                  registrationRequest.email(),
-                                                                 passwordHash.getPasswordBytes(),
-                                                                 passwordHash.getSalt());
+                                                                 passwordHash, masterPasswordHash);
         if (!insertUserSuccess) {
             throw new RegisterException("unable to insert user data");
         }
     }
 
     @Override
-    public void registerUser(String username, String password, String email) throws InvalidUsernameException,
-            UserAlreadyRegisteredException, PasswordEncryptor.HashException, DatabaseConnectorException, RegisterException {
-        registerUser(new RegistrationRequest(username, email, password));
+    public void registerUser(String username, String password, String email, String masterPassword) throws
+            InvalidUsernameException,
+            UserAlreadyRegisteredException, PasswordHasher.HashException, DatabaseConnectorException,
+            RegisterException {
+        registerUser(new RegistrationRequest(username, email, password, masterPassword));
     }
 
     @Override
     public void logInUser(String username, String password) throws UserNotFoundException, UserAlreadyLoggedInException,
-            LoginException, PasswordEncryptor.HashException {
+            LoginException, PasswordHasher.HashException {
         try {
+            if (!databaseConnector.isUserRegistered(username)) {
+                throw new UserNotFoundException("user with username %s is not registered".formatted(username));
+            }
+
             PasswordHash retrievedHash = databaseConnector.getPasswordForUser(username);
             byte[] salt = retrievedHash.getSalt();
             PasswordHash computedHash = new PasswordHash(password, salt);
@@ -99,5 +105,10 @@ public class UserRepositoryDatabase implements UserRepository {
         } catch (DatabaseConnectorException e) {
             return false;
         }
+    }
+
+    @Override
+    public PasswordHash getMasterPassword(String username) throws DatabaseConnectorException {
+        return databaseConnector.getMasterPassword(username);
     }
 }
