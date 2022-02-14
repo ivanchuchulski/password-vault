@@ -10,7 +10,7 @@ public final class PasswordHash {
     private final byte[] salt;
 
     public PasswordHash(String text) throws PasswordHasher.HashException {
-        this(text, PasswordEncryptor.generateSixteenByteSalt());
+        this(text, PasswordEncryptor.generateRandomSixteenBytes());
     }
 
     public PasswordHash(String text, byte[] salt) throws PasswordHasher.HashException {

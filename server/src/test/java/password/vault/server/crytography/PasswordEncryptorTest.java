@@ -40,8 +40,8 @@ public class PasswordEncryptorTest {
             PasswordEncryptor.PasswordEncryptorException {
         String input = "pass";
 
-        byte[] salt = PasswordEncryptor.generateSixteenByteSalt();
-        byte[] ivBytes = PasswordEncryptor.generateSixteenByteSalt();
+        byte[] salt = PasswordEncryptor.generateRandomSixteenBytes();
+        byte[] ivBytes = PasswordEncryptor.generateRandomSixteenBytes();
 
         // the key can be derived differently
         SecretKey key = PasswordEncryptor.getKeyFromString(input + Arrays.toString(salt));

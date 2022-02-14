@@ -103,8 +103,8 @@ public class PasswordEncryptor {
     public static EncryptedPassword encryptWithMasterPassword(String password, String masterPassword) throws
             PasswordEncryptorException {
         try {
-            byte[] salt = PasswordEncryptor.generateSixteenByteSalt();
-            byte[] ivBytes = PasswordEncryptor.generateSixteenByteSalt();
+            byte[] salt = PasswordEncryptor.generateRandomSixteenBytes();
+            byte[] ivBytes = PasswordEncryptor.generateRandomSixteenBytes();
             IvParameterSpec ivParameterSpec = PasswordEncryptor.generateIv(ivBytes);
 
             SecretKey key = getKeyFromString(masterPassword, salt);
@@ -159,7 +159,7 @@ public class PasswordEncryptor {
         return new IvParameterSpec(iv);
     }
 
-    public static byte[] generateSixteenByteSalt() {
+    public static byte[] generateRandomSixteenBytes() {
         byte[] salt = new byte[16];
         // SecureRandom sha1PRGNG = SecureRandom.getInstance("SHA1PRGNG");
         new SecureRandom().nextBytes(salt);

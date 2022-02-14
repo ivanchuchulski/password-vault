@@ -48,7 +48,7 @@ public class PasswordHasherTest {
     @Test
     public void testComputeSHA512HashWithSalt() throws PasswordHasher.HashException, IOException {
         String text = "superSecretText";
-        byte[] salt = PasswordEncryptor.generateSixteenByteSalt();
+        byte[] salt = PasswordEncryptor.generateRandomSixteenBytes();
 
         byte[] textBytes = text.getBytes(StandardCharsets.UTF_8);
 
