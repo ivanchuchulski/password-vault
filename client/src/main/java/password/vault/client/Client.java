@@ -8,6 +8,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.nio.channels.Channels;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
@@ -18,7 +19,6 @@ public class Client {
     private static final int SERVER_PORT = 7777;
 
     private static final ServerResponses DISCONNECTED_FROM_SERVER_REPLY = ServerResponses.DISCONNECTED;
-    private static final String USER_QUIT_COMMAND = "quit";
 
     private final SocketChannel socketChannel;
     private final BufferedReader reader;
@@ -61,10 +61,17 @@ public class Client {
         socketChannel.close();
     }
 
+    public void printConnectionInfo() {
+        Socket socket = socketChannel.socket();
+        System.out.printf("created socket at %s:%d%n", socket.getLocalAddress(), socket.getLocalPort());
+        System.out.printf("connected to socket at %s:%d%n", socket.getRemoteSocketAddress(), socket.getPort());
+    }
+
     public static void main(String[] args) {
         Client client = new Client();
 
         System.out.println("connected to the server.");
+        client.printConnectionInfo();
 
         try (Scanner scanner = new Scanner(System.in)) {
             while (true) {

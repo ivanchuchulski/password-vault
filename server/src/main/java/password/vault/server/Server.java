@@ -8,6 +8,7 @@ import password.vault.server.communication.UserRequest;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.ServerSocket;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -51,7 +52,8 @@ public class Server {
     }
 
     public void start() {
-        System.out.println("started server...");
+        printStartMessage();
+
         while (runServer) {
             try {
                 int readyChannels = selector.select();
@@ -73,7 +75,7 @@ public class Server {
                     }
                 }
             } catch (IOException ioException) {
-                System.out.println("caught exception during ");
+                System.out.println("caught i/o exception during communication");
                 ioException.printStackTrace();
             }
         }
@@ -92,10 +94,15 @@ public class Server {
         }
     }
 
-    private void acceptConnection(SelectionKey key) throws IOException {
-        ServerSocketChannel serverSocketChannel = (ServerSocketChannel) key.channel();
+    private void printStartMessage() {
+        ServerSocket serverSocket = serverSocketChannel.socket();
+        System.out.println("started server at " + serverSocket.getLocalSocketAddress());
+    }
 
-        SocketChannel clientSocketChannel = serverSocketChannel.accept();
+    private void acceptConnection(SelectionKey key) throws IOException {
+        ServerSocketChannel serverSocketChannelReadyToAccept = (ServerSocketChannel) key.channel();
+
+        SocketChannel clientSocketChannel = serverSocketChannelReadyToAccept.accept();
 
         clientSocketChannel.configureBlocking(false);
         clientSocketChannel.register(selector, SelectionKey.OP_READ);
@@ -116,10 +123,6 @@ public class Server {
 
         writeResponseToClient(socketChannel, commandResponse.response());
 
-        // if (clientUserRequest.command().equals(ServerCommand.DISCONNECT.getCommandText())) {
-        //     socketChannel.close();
-        // }
-
         if (commandResponse.toDisconnect()) {
             socketChannel.close();
         }
@@ -139,11 +142,8 @@ public class Server {
             // removing the line separator at the end
             return messageFromBuffer.replace(System.lineSeparator(), "");
         } catch (SocketChannelReadException socketChannelReadException) {
-
             commandExecutor.executeCommand(new UserRequest(socketChannel, ServerCommand.LOGOUT.getCommandText()));
-
             socketChannel.close();
-
             return null;
         }
     }
