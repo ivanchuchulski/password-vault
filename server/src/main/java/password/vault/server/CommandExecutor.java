@@ -169,6 +169,7 @@ public class CommandExecutor {
 
             return new Response(ServerResponses.LOGIN_SUCCESS, "success logging in user %s".formatted(username));
         } catch (UserRepository.LoginException | PasswordHasher.HashException e) {
+            e.printStackTrace();
             return new Response(ServerResponses.LOGIN_ERROR, "unable to complete your login request, try again ");
         } catch (UserRepository.UserAlreadyLoggedInException e) {
             return new Response(ServerResponses.USER_ALREADY_LOGGED, "you are already logged in");
@@ -179,6 +180,10 @@ public class CommandExecutor {
 
     private Response logoutUser(UserRequest userRequest) {
         try {
+            if (!channelUsernameMapper.isUsernameAddedForChannel(userRequest.getSocketChannel())) {
+                return new Response(ServerResponses.USER_NOT_LOGGED_IN, "you are not logged in");
+            }
+
             String usernameForChannel = channelUsernameMapper.getUsernameForChannel(userRequest.getSocketChannel());
 
             userRepository.logOutUser(usernameForChannel);
