@@ -13,6 +13,8 @@ public enum ServerCommand {
     DISCONNECT("disconnect", 0, "disconnect"),
 
     ADD_PASSWORD("add-password", 4, "add-password <website> <user> <password> <master-password>"),
+    ADD_PASSWORD_WITH_CHECK("add-password-with-check", 4, "add-password-with-check <website> <user> <password> " +
+            "<master-password>"),
     REMOVE_PASSWORD("remove-password", 3, "remove-password <website> <user> <master-password>"),
     RETRIEVE_CREDENTIAL("get-password", 3, "get-password <website> <user> <master-password>"),
     GET_ALL_CREDENTIALS("get-all-credentials", 1, "get-all-credentials <master-password>"),

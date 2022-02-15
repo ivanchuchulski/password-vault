@@ -3,8 +3,8 @@ package password.vault.server.password.vault;
 import java.util.Objects;
 
 public final class WebsiteCredential {
-    private static final String WEBSITE_PATTERN = "[a-zA-Z0-9]+\\.[a-zA-Z]+";
-    private static final String USERNAME_FOR_SITE_PATTERN = "[a-zA-Z0-9-_]{3,}";
+    private static final String WEBSITE_PATTERN = "[a-zA-Z0-9]{2,20}\\.[a-zA-Z]{2,10}";
+    private static final String USERNAME_FOR_SITE_PATTERN = "[a-zA-Z0-9-_]{3,20}";
 
     private final String website;
     private final String usernameForSite;

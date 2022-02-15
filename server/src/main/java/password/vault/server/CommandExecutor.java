@@ -79,19 +79,21 @@ public class CommandExecutor {
         String username = channelUsernameMapper.getUsernameForChannel(userRequest.getSocketChannel());
 
         if (!userRepository.isUsernameLoggedIn(username)) {
-            return new CommandResponse(false, new Response(ServerResponses.NOT_LOGGED_IN, "you are not logged in"));
+            return new CommandResponse(false, new Response(ServerResponses.NOT_LOGGED_IN,
+                                                           "please log in to execute that command"));
         }
 
         if (!userActionsLog.userHasValidSession(username)) {
             logoutUser(userRequest);
             return new CommandResponse(false, new Response(ServerResponses.SESSION_EXPIRED,
-                                                           "your session has expired, you have to log in again"));
+                                                           "your session has expired, please log in again"));
         }
 
         userActionsLog.addUserActionTimeStamp(username);
 
         Response response =
                 switch (serverCommand) {
+                    case ADD_PASSWORD_WITH_CHECK -> addPasswordWithCheck(username, userRequest.arguments());
                     case ADD_PASSWORD -> addPassword(username, userRequest.arguments());
                     case REMOVE_PASSWORD -> removePassword(username, userRequest.arguments());
                     case RETRIEVE_CREDENTIAL -> retrieveCredentials(username, userRequest.arguments());
@@ -198,12 +200,14 @@ public class CommandExecutor {
         }
     }
 
-    private Response addPassword(String username, String[] arguments) {
+    private Response addPasswordWithCheck(String username, String[] arguments) {
         try {
-            String website = arguments[0];
-            String usernameForSite = arguments[1];
             String passwordForSite = arguments[2];
             String masterPassword = arguments[3];
+
+            if (!checkIfMasterPasswordsMatch(username, masterPassword)) {
+                return new Response(ServerResponses.CREDENTIAL_ADDITION_ERROR, "master password doesn't match");
+            }
 
             PasswordSafetyResponse passwordSafetyResponse = passwordSafetyChecker.checkPassword(passwordForSite);
 
@@ -211,6 +215,19 @@ public class CommandExecutor {
                 return new Response(ServerResponses.UNSAFE_PASSWORD,
                                     "password was exposed %d times".formatted(passwordSafetyResponse.getTimesExposed()));
             }
+
+            return addPassword(username, arguments);
+        } catch (PasswordSafetyChecker.PasswordSafetyCheckerException | DatabaseConnectorException | PasswordHasher.HashException e) {
+            return new Response(ServerResponses.CREDENTIAL_ADDITION_ERROR, "couldn't complete your request, try again");
+        }
+    }
+
+    private Response addPassword(String username, String[] arguments) {
+        try {
+            String website = arguments[0];
+            String usernameForSite = arguments[1];
+            String passwordForSite = arguments[2];
+            String masterPassword = arguments[3];
 
             if (!checkIfMasterPasswordsMatch(username, masterPassword)) {
                 return new Response(ServerResponses.CREDENTIAL_ADDITION_ERROR, "master password doesn't match");
@@ -221,8 +238,8 @@ public class CommandExecutor {
 
             return new Response(ServerResponses.CREDENTIAL_ADDITION_SUCCESS, "added password successfully");
         } catch (PasswordVault.CredentialsAlreadyAddedException e) {
-            return new Response(ServerResponses.CREDENTIAL_ADDITION_ERROR, "credential already added");
-        } catch (PasswordEncryptor.PasswordEncryptorException | PasswordSafetyChecker.PasswordSafetyCheckerException | DatabaseConnectorException | PasswordHasher.HashException e) {
+            return new Response(ServerResponses.CREDENTIAL_ADDITION_ERROR, "credential for that site and username already added ");
+        } catch (PasswordEncryptor.PasswordEncryptorException | DatabaseConnectorException | PasswordHasher.HashException e) {
             return new Response(ServerResponses.CREDENTIAL_ADDITION_ERROR, "couldn't complete your request, try again");
         } catch (WebsiteCredential.InvalidWebsiteException e) {
             return new Response(ServerResponses.WRONG_COMMAND_ARGUMENT, "website is invalid");
@@ -311,7 +328,7 @@ public class CommandExecutor {
             }
 
             if (passwordVault.userHasCredentialsForSiteAndUsername(username, website, usernameForSite)) {
-                return new Response(ServerResponses.CREDENTIAL_GENERATION_ERROR, "credential already added");
+                return new Response(ServerResponses.CREDENTIAL_GENERATION_ERROR, "credential for that site and username already added ");
             }
 
             PasswordGeneratorResponse passwordGeneratorResponse =
@@ -331,7 +348,7 @@ public class CommandExecutor {
         } catch (PasswordGenerator.PasswordGeneratorException | PasswordEncryptor.PasswordEncryptorException | DatabaseConnectorException | PasswordHasher.HashException e) {
             return new Response(ServerResponses.PASSWORD_GENERATION_ERROR, "unable to generate password");
         } catch (PasswordVault.CredentialsAlreadyAddedException e) {
-            return new Response(ServerResponses.CREDENTIAL_ADDITION_ERROR, "credential already added");
+            return new Response(ServerResponses.CREDENTIAL_ADDITION_ERROR, "credential for that site and username already added ");
         } catch (NumberFormatException e) {
             return new Response(ServerResponses.WRONG_COMMAND_NUMBER_OF_ARGUMENTS, "incorrect arguments");
         } catch (WebsiteCredential.InvalidWebsiteException e) {
@@ -349,7 +366,6 @@ public class CommandExecutor {
             if (passwordSafetyResponse.wasPasswordExposed()) {
                 return new Response(ServerResponses.UNSAFE_PASSWORD,
                                     "the password is unsafe, it was was exposed %d times".formatted(passwordSafetyResponse.getTimesExposed()));
-
             }
 
             return new Response(ServerResponses.SAFE_PASSWORD, "password is safe, we found zero exposures");

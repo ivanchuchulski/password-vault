@@ -63,14 +63,15 @@ public class Client {
 
     public void printConnectionInfo() {
         Socket socket = socketChannel.socket();
+        System.out.println("connected to the server at ");
         System.out.printf("created socket at %s:%d%n", socket.getLocalAddress(), socket.getLocalPort());
-        System.out.printf("connected to socket at %s:%d%n", socket.getRemoteSocketAddress(), socket.getPort());
+        System.out.printf("connected to socket at %s%n", socket.getRemoteSocketAddress());
     }
 
     public static void main(String[] args) {
         Client client = new Client();
 
-        System.out.println("connected to the server.");
+        System.out.println("connected to the server successfully!");
         client.printConnectionInfo();
 
         try (Scanner scanner = new Scanner(System.in)) {

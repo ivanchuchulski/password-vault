@@ -264,8 +264,8 @@ public class ServerTest {
         PasswordHash masterPasswordHash = new PasswordHash(MASTER_PASSWORD_FOR_TESTING);
         when(userRepository.getMasterPassword(username)).thenReturn(masterPasswordHash);
 
-        sendRequestAndGetResponse(addPassword(WEBSITE_FOR_TESTING, usernameForSite, PASSWORD_FOR_TESTING,
-                                              MASTER_PASSWORD_FOR_TESTING));
+        sendRequestAndGetResponse(addPasswordWithCheck(WEBSITE_FOR_TESTING, usernameForSite, PASSWORD_FOR_TESTING,
+                                                       MASTER_PASSWORD_FOR_TESTING));
 
 
         when(passwordVault.retrieveCredentials(username, WEBSITE_FOR_TESTING, usernameForSite,
@@ -300,8 +300,8 @@ public class ServerTest {
         PasswordHash masterPasswordHash = new PasswordHash(MASTER_PASSWORD_FOR_TESTING);
         when(userRepository.getMasterPassword(username)).thenReturn(masterPasswordHash);
 
-        sendRequestAndGetResponse(addPassword(WEBSITE_FOR_TESTING, usernameForSite, PASSWORD_FOR_TESTING,
-                                              MASTER_PASSWORD_FOR_TESTING));
+        sendRequestAndGetResponse(addPasswordWithCheck(WEBSITE_FOR_TESTING, usernameForSite, PASSWORD_FOR_TESTING,
+                                                       MASTER_PASSWORD_FOR_TESTING));
 
         Response response = sendRequestAndGetResponse(removePassword(WEBSITE_FOR_TESTING, usernameForSite,
                                                                      MASTER_PASSWORD_FOR_TESTING));
@@ -361,8 +361,8 @@ public class ServerTest {
         String username = getUniqueUsername();
         String usernameForSite = buildUsernameForSiteFromUsername(username);
 
-        Response response = sendRequestAndGetResponse(addPassword(WEBSITE_FOR_TESTING, usernameForSite,
-                                                                  PASSWORD_FOR_TESTING, MASTER_PASSWORD_FOR_TESTING));
+        Response response = sendRequestAndGetResponse(addPasswordWithCheck(WEBSITE_FOR_TESTING, usernameForSite,
+                                                                           PASSWORD_FOR_TESTING, MASTER_PASSWORD_FOR_TESTING));
 
         assertEquals("when trying to add a password for non-logged user an error response is expected",
                      ServerResponses.NOT_LOGGED_IN,
@@ -415,9 +415,9 @@ public class ServerTest {
         return ServerCommand.HELP.getCommandText();
     }
 
-    private String addPassword(String website, String usernameForSite, String password, String masterPassword) {
+    private String addPasswordWithCheck(String website, String usernameForSite, String password, String masterPassword) {
         return String.format("%s %s %s %s %s",
-                             ServerCommand.ADD_PASSWORD.getCommandText(), website, usernameForSite, password,
+                             ServerCommand.ADD_PASSWORD_WITH_CHECK.getCommandText(), website, usernameForSite, password,
                              masterPassword);
     }
 
