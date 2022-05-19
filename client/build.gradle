@@ -16,7 +16,7 @@ dependencies {
 
 application {
     // Define the main class for the application.
-    mainClass = 'password.vault.client.Client'
+    mainClass = 'password.vault.client.Main'
 }
 
 run {
