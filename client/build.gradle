@@ -1,5 +1,7 @@
 plugins {
     id 'application'
+
+    id 'org.openjfx.javafxplugin' version '0.0.8'
 }
 
 repositories {
@@ -21,4 +23,9 @@ application {
 
 run {
     standardInput = System.in
+}
+
+javafx {
+    version = "14"
+    modules = ['javafx.controls', 'javafx.fxml', 'javafx.graphics']
 }
