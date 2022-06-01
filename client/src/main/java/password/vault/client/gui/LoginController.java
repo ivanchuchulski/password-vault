@@ -3,6 +3,7 @@ package password.vault.client.gui;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
@@ -12,6 +13,7 @@ import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
 import password.vault.api.Response;
 import password.vault.api.ServerCommand;
+import password.vault.api.ServerTextCommandsFactory;
 import password.vault.client.Client;
 
 import java.io.IOException;
@@ -53,10 +55,13 @@ public class LoginController {
             return;
         }
 
-        client.sendRequest(loginCommand(username, password));
         try {
+            client.sendRequest(ServerTextCommandsFactory.loginCommand(username, password));
             Response response = client.receiveResponse();
             showAlertMessage(Alert.AlertType.INFORMATION, response.message(), "");
+
+        //    TODO : change pages here
+        //    set the Client and username
         } catch (IOException e) {
             e.printStackTrace();
             showAlertMessage(Alert.AlertType.WARNING, "Couldn't complete your request!", "");
@@ -74,6 +79,16 @@ public class LoginController {
 
         result.ifPresent(buttonType -> {
             if (buttonType == ButtonType.OK) {
+
+                client.sendRequest(ServerTextCommandsFactory.disconnectCommand());
+                try {
+                    Response response = client.receiveResponse();
+                    client.closeConnection();
+                    showAlertMessage(Alert.AlertType.INFORMATION, response.message(), "");
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
                 Platform.exit();
                 System.exit(0);
             }
@@ -86,10 +101,6 @@ public class LoginController {
         alert.setContentText(context);
 
         alert.showAndWait();
-    }
-
-    private String loginCommand(String username, String password) {
-        return String.format("%s %s %s", ServerCommand.LOGIN.getCommandText(), username, password);
     }
 
 }

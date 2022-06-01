@@ -1,6 +1,7 @@
 package password.vault.client;
 
 import javafx.application.Application;
+import password.vault.client.console.ConsoleClient;
 import password.vault.client.gui.GUIClient;
 
 public class Main {

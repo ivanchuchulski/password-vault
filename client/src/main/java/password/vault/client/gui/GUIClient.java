@@ -6,8 +6,10 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import password.vault.api.ServerTextCommandsFactory;
 import password.vault.client.Client;
 
+import java.io.IOException;
 import java.net.URL;
 
 public class GUIClient extends Application {
@@ -41,6 +43,15 @@ public class GUIClient extends Application {
         primaryStage.setScene(scene);
         primaryStage.setTitle("Password Vault");
         primaryStage.setOnCloseRequest(event -> {
+            try {
+                client.sendRequest(ServerTextCommandsFactory.disconnectCommand());
+                client.closeConnection();
+            } catch (IOException e) {
+                Platform.exit();
+                System.exit(0);
+                throw new RuntimeException("unable to close connection", e);
+            }
+
             Platform.exit();
             System.exit(0);
         });

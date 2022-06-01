@@ -120,10 +120,10 @@ public class CommandExecutor {
             channelUsernameMapper.removeUsernameForChannel(userRequest.getSocketChannel());
             userActionsLog.removeUserSession(channelUsername);
 
-            return new Response(ServerResponses.DISCONNECTED, "successfully logged out");
+            return new Response(ServerResponses.DISCONNECTED, "successfully logged out and disconnecting...");
         } catch (UserRepository.UserNotLoggedInException e) {
             System.out.println("a non-logged in user disconnected");
-            return new Response(ServerResponses.DISCONNECTED, "successfully logged out");
+            return new Response(ServerResponses.DISCONNECTED, "successfully disconnected");
         } catch (UserRepository.LogoutException e) {
             return new Response(ServerResponses.LOGOUT_ERROR, "unable to process logout request");
         }
