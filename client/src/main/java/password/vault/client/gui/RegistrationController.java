@@ -1,19 +1,25 @@
 package password.vault.client.gui;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
-import javafx.stage.Stage;
+import password.vault.api.Response;
+import password.vault.api.ServerTextCommandsFactory;
 import password.vault.client.Client;
 
-public class RegistrationController {
-    private Client client;
+import java.io.IOException;
+import java.util.Optional;
 
-    private Stage primaryStage;
+public class RegistrationController {
+
+    private Client client;
 
     @FXML
     private TabPane tabPane;
@@ -49,8 +55,43 @@ public class RegistrationController {
     private Button btnExit;
 
     @FXML
-    void btnExitClicked(ActionEvent event) {
+    private Button btnBackToLogin;
 
+    public RegistrationController() {
+        this.client = Context.getInstance().getClient();
+    }
+
+    @FXML
+    void btnBackToLoginClicked(ActionEvent event) {
+        StageManager stageManager = Context.getInstance().getStageManager();
+        stageManager.switchScene(FXMLScenes.LOGIN);
+    }
+
+    @FXML
+    void btnExitClicked(ActionEvent event) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Quit confirmation");
+        alert.setHeaderText("Quitting Password Vault");
+        alert.setContentText("Are you sure you want to exit?");
+
+        Optional<ButtonType> result = alert.showAndWait();
+
+        result.ifPresent(buttonType -> {
+            if (buttonType == ButtonType.OK) {
+
+                client.sendRequest(ServerTextCommandsFactory.disconnectCommand());
+                try {
+                    Response response = client.receiveResponse();
+                    client.closeConnection();
+                    showAlertMessage(Alert.AlertType.INFORMATION, response.message(), "");
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+                Platform.exit();
+                System.exit(0);
+            }
+        });
     }
 
     @FXML
@@ -58,4 +99,12 @@ public class RegistrationController {
 
     }
 
+    private void showAlertMessage(Alert.AlertType type, String header, String context) {
+        Alert alert = new Alert(type);
+        alert.setHeaderText(header);
+        alert.setContentText(context);
+
+        alert.showAndWait();
+    }
 }
+

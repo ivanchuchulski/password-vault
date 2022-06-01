@@ -12,7 +12,6 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-
 <AnchorPane prefHeight="720.0" prefWidth="1280.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="password.vault.client.gui.RegistrationController">
    <children>
       <TabPane fx:id="tabPane" prefHeight="720.0" prefWidth="1280.0" tabClosingPolicy="UNAVAILABLE">
@@ -76,7 +75,7 @@
                                     <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                                  </VBox.margin>
                               </PasswordField>
-                              <Button fx:id="btnRegister" alignment="CENTER" mnemonicParsing="false" onAction="#btnRegisterClicked" prefWidth="98.0" text="Register">
+                              <Button fx:id="btnRegister" alignment="CENTER" mnemonicParsing="false" onAction="#btnRegisterClicked" prefHeight="45.0" prefWidth="150.0" text="Register">
                                  <VBox.margin>
                                     <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                                  </VBox.margin>
@@ -88,7 +87,12 @@
                         </VBox>
                         <CheckBox fx:id="chBoxShowMasterPassword" layoutX="970.0" layoutY="407.0" mnemonicParsing="false" text="Show/Hide master password" />
                         <CheckBox fx:id="chBoxShowPassword" layoutX="970.0" layoutY="269.0" mnemonicParsing="false" text="Show/Hide password" />
-                        <Button fx:id="btnExit" layoutX="1187.0" layoutY="640.0" mnemonicParsing="false" onAction="#btnExitClicked" prefHeight="22.0" prefWidth="79.0" text="Exit">
+                        <Button fx:id="btnExit" layoutX="1141.0" layoutY="640.0" mnemonicParsing="false" onAction="#btnExitClicked" prefHeight="40.0" prefWidth="125.0" text="Exit">
+                           <padding>
+                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                           </padding>
+                        </Button>
+                        <Button fx:id="btnBackToLogin" layoutX="14.0" layoutY="640.0" mnemonicParsing="false" onAction="#btnBackToLoginClicked" prefHeight="40.0" prefWidth="125.0" text="Back to login">
                            <padding>
                               <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                            </padding>

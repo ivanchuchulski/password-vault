@@ -3,9 +3,6 @@ package password.vault.client.gui;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
@@ -22,7 +19,6 @@ import password.vault.api.ServerTextCommandsFactory;
 import password.vault.client.Client;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.Optional;
 
 public class LoginController {
@@ -53,17 +49,9 @@ public class LoginController {
     @FXML
     private Hyperlink hypRegistration;
 
-    public void setClient(Client client) {
-        this.client = client;
-    }
-
-    public void setPrimaryStage(Stage primaryStage) {
-        this.primaryStage = primaryStage;
-    }
-
     public LoginController() {
         System.out.println("constructor first");
-        // this.client = Context.getInstance().getClient();
+        this.client = Context.getInstance().getClient();
     }
 
     @FXML
@@ -138,7 +126,8 @@ public class LoginController {
 
     @FXML
     void hypRegistrationPressed(ActionEvent event) {
-
+        StageManager stageManager = Context.getInstance().getStageManager();
+        stageManager.switchScene(FXMLScenes.REGISTRATION);
     }
 
     private void showAlertMessage(Alert.AlertType type, String header, String context) {
@@ -150,23 +139,13 @@ public class LoginController {
     }
 
 
-    private void switchToIndexScene(String username) throws IOException {
-        URL rootSceneURL = getClass().getResource(FXMLScenes.INDEX.getFxmlFilename());
+    private void switchToIndexScene(String username) {
+        Context context = Context.getInstance();
 
-        if (rootSceneURL == null) {
-            throw new RuntimeException("could not load index scene fxml");
-        }
+        context.setLoggedInUsername(username);
 
-        FXMLLoader rootSceneLoader = new FXMLLoader(rootSceneURL);
-
-        Parent root = rootSceneLoader.load();
-        IndexController indexController = rootSceneLoader.getController();
-        indexController.setPrimaryStage(primaryStage);
-        indexController.setClient(client);
-        indexController.setUsername(username);
-
-        Scene scene = new Scene(root);
-        primaryStage.setScene(scene);
+        StageManager stageManager = context.getStageManager();
+        stageManager.switchScene(FXMLScenes.INDEX);
     }
 }
 

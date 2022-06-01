@@ -2,28 +2,20 @@ package password.vault.client.gui;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
-import javafx.stage.Stage;
 import password.vault.api.Response;
 import password.vault.api.ServerTextCommandsFactory;
 import password.vault.client.Client;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.Optional;
 
 public class IndexController {
-    public static final String ROOT_SCENE_FXML_FILENAME = "index.fxml";
     private Client client;
     private String username;
-
-    private Stage primaryStage;
 
     @FXML
     private Button btnLogout;
@@ -31,16 +23,11 @@ public class IndexController {
     @FXML
     private Label lblWelcome;
 
-    public void setPrimaryStage(Stage primaryStage) {
-        this.primaryStage = primaryStage;
-    }
+    public IndexController() {
+        Context context = Context.getInstance();
 
-    public void setClient(Client client) {
-        this.client = client;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
+        this.client = context.getClient();
+        this.username = context.getLoggedInUsername();
     }
 
     @FXML
@@ -70,25 +57,11 @@ public class IndexController {
     }
 
     private void switchToLoginScene() {
-        try {
-            URL rootSceneURL = getClass().getResource(LoginController.ROOT_SCENE_FXML_FILENAME);
+        Context context = Context.getInstance();
 
-            if (rootSceneURL == null) {
-                throw new RuntimeException("could not load index scene fxml");
-            }
-
-            FXMLLoader rootSceneLoader = new FXMLLoader(rootSceneURL);
-            Parent root = rootSceneLoader.load();
-
-            LoginController loginController = rootSceneLoader.getController();
-            loginController.setPrimaryStage(primaryStage);
-            loginController.setClient(client);
-
-            Scene scene = new Scene(root);
-            primaryStage.setScene(scene);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        context.setLoggedInUsername("");
+        StageManager stageManager = context.getStageManager();
+        stageManager.switchScene(FXMLScenes.LOGIN);
     }
 
     private void showAlertMessage(Alert.AlertType type, String header, String context) {
