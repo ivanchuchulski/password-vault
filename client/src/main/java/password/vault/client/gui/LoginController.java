@@ -3,7 +3,6 @@ package password.vault.client.gui;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Hyperlink;
@@ -12,7 +11,6 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
-import javafx.stage.Stage;
 import password.vault.api.Response;
 import password.vault.api.ServerResponses;
 import password.vault.api.ServerTextCommandsFactory;
@@ -23,10 +21,7 @@ import java.util.Optional;
 
 public class LoginController {
 
-    public static final String ROOT_SCENE_FXML_FILENAME = "login.fxml";
-
-    private Client client;
-    private Stage primaryStage;
+    private final Client client;
 
     @FXML
     private TabPane tabPane;
@@ -74,7 +69,7 @@ public class LoginController {
         String password = txtPassword.getText();
 
         if (username.length() == 0 || password.length() == 0) {
-            showAlertMessage(Alert.AlertType.WARNING, "Fields are necessary!", "");
+            CommonUIElements.getErrorAlert("Fields are necessary!").showAndWait();
             return;
         }
 
@@ -86,41 +81,40 @@ public class LoginController {
             System.out.println(response);
 
             if (serverResponses.equals(ServerResponses.LOGIN_SUCCESS)) {
-                showAlertMessage(Alert.AlertType.INFORMATION, response.message(), "login success");
+                CommonUIElements.getInformationAlert(response.message(), "login success").showAndWait();
                 switchToIndexScene(username);
             } else {
-                showAlertMessage(Alert.AlertType.ERROR, response.message(), "");
+                CommonUIElements.getErrorAlert(response.message()).showAndWait();
             }
         } catch (IOException e) {
             e.printStackTrace();
-            showAlertMessage(Alert.AlertType.WARNING, "Couldn't complete your request!", "");
+            CommonUIElements.getFailedRequestWarningAlert();
         }
     }
 
     @FXML
     void btnExitClicked(ActionEvent event) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Quit confirmation");
-        alert.setHeaderText("Quitting Password Vault");
-        alert.setContentText("Are you sure you want to exit?");
-
-        Optional<ButtonType> result = alert.showAndWait();
+        Optional<ButtonType> result = CommonUIElements.getQuitAlert().showAndWait();
 
         result.ifPresent(buttonType -> {
-            if (buttonType == ButtonType.OK) {
-
-                client.sendRequest(ServerTextCommandsFactory.disconnectCommand());
-                try {
-                    Response response = client.receiveResponse();
-                    client.closeConnection();
-                    showAlertMessage(Alert.AlertType.INFORMATION, response.message(), "");
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-
-                Platform.exit();
-                System.exit(0);
+            if (buttonType != ButtonType.OK) {
+                return;
             }
+
+            try {
+                client.sendRequest(ServerTextCommandsFactory.disconnectCommand());
+                Response response = client.receiveResponse();
+                client.closeConnection();
+
+                // this could be removed
+                CommonUIElements.getInformationAlert(response.message(), "").showAndWait();
+            } catch (IOException e) {
+                e.printStackTrace();
+                CommonUIElements.getFailedRequestWarningAlert().showAndWait();
+            }
+
+            Platform.exit();
+            System.exit(0);
         });
     }
 
@@ -128,14 +122,6 @@ public class LoginController {
     void hypRegistrationPressed(ActionEvent event) {
         StageManager stageManager = Context.getInstance().getStageManager();
         stageManager.switchScene(FXMLScenes.REGISTRATION);
-    }
-
-    private void showAlertMessage(Alert.AlertType type, String header, String context) {
-        Alert alert = new Alert(type);
-        alert.setHeaderText(header);
-        alert.setContentText(context);
-
-        alert.showAndWait();
     }
 
 
@@ -148,4 +134,3 @@ public class LoginController {
         stageManager.switchScene(FXMLScenes.INDEX);
     }
 }
-

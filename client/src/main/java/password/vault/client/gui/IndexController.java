@@ -14,8 +14,8 @@ import java.io.IOException;
 import java.util.Optional;
 
 public class IndexController {
-    private Client client;
-    private String username;
+    private final Client client;
+    private final String username;
 
     @FXML
     private Button btnLogout;
@@ -31,29 +31,30 @@ public class IndexController {
     }
 
     @FXML
-    void btnLogoutClicked(ActionEvent event) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Quit confirmation");
-        alert.setHeaderText("Quitting Password Vault");
-        alert.setContentText("Are you sure you want to exit?");
+    void initialize() {
+        lblWelcome.setText(lblWelcome.getText() + username + "!");
+    }
 
+    @FXML
+    void btnLogoutClicked(ActionEvent event) {
+        Alert alert = CommonUIElements.getQuitAlert();
         Optional<ButtonType> result = alert.showAndWait();
 
         result.ifPresent(buttonType -> {
             if (buttonType == ButtonType.OK) {
                 try {
                     client.sendRequest(ServerTextCommandsFactory.logoutCommand());
+
                     Response response = client.receiveResponse();
-                    showAlertMessage(Alert.AlertType.INFORMATION, response.message(), "");
 
+                    CommonUIElements.getInformationAlert(response.message(), "").showAndWait();
                     switchToLoginScene();
-
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    e.printStackTrace();
+                    CommonUIElements.getFailedRequestWarningAlert();
                 }
             }
         });
-
     }
 
     private void switchToLoginScene() {
@@ -62,13 +63,5 @@ public class IndexController {
         context.setLoggedInUsername("");
         StageManager stageManager = context.getStageManager();
         stageManager.switchScene(FXMLScenes.LOGIN);
-    }
-
-    private void showAlertMessage(Alert.AlertType type, String header, String context) {
-        Alert alert = new Alert(type);
-        alert.setHeaderText(header);
-        alert.setContentText(context);
-
-        alert.showAndWait();
     }
 }
