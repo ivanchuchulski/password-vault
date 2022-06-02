@@ -51,16 +51,7 @@ public class LoginController {
 
     @FXML
     void initialize() {
-        System.out.println("init method second");
-
-        // make pressing enter fire the login button
-        btnLogin.setDefaultButton(true);
-
-        btnExit.setOnKeyPressed(keyEvent -> {
-            if (keyEvent.getCode().equals(KeyCode.ENTER)) {
-                btnLogin.fire();
-            }
-        });
+        makeLoginDefaultButton();
     }
 
     @FXML
@@ -124,6 +115,15 @@ public class LoginController {
         stageManager.switchScene(FXMLScenes.REGISTRATION);
     }
 
+    private void makeLoginDefaultButton() {
+        btnLogin.setDefaultButton(true);
+
+        btnLogin.setOnKeyPressed(keyEvent -> {
+            if (keyEvent.getCode().equals(KeyCode.ENTER)) {
+                btnLogin.fire();
+            }
+        });
+    }
 
     private void switchToIndexScene(String username) {
         Context context = Context.getInstance();

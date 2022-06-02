@@ -9,6 +9,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
 import password.vault.api.Response;
 import password.vault.api.ServerResponses;
 import password.vault.api.ServerTextCommandsFactory;
@@ -20,7 +21,7 @@ import java.util.Optional;
 
 public class RegistrationController {
 
-    private Client client;
+    private final Client client;
 
     @FXML
     private TabPane tabPane;
@@ -30,6 +31,9 @@ public class RegistrationController {
 
     @FXML
     private TextField txtEmail;
+
+    @FXML
+    private TextField txtPasswordShown;
 
     @FXML
     private PasswordField txtPassword;
@@ -60,6 +64,12 @@ public class RegistrationController {
 
     public RegistrationController() {
         this.client = Context.getInstance().getClient();
+    }
+
+    @FXML
+    void initialize() {
+        setupDefaultButton();
+        setupShowHidePasswordCheckbox();
     }
 
     @FXML
@@ -123,6 +133,40 @@ public class RegistrationController {
         } catch (RegistrationRequest.RegistrationRequestException e) {
             CommonUIElements.getErrorAlert(e.getMessage()).showAndWait();
         }
+    }
+
+    @FXML
+    void chBoxShowPassword(ActionEvent event) {
+    }
+
+    @FXML
+    void chBoxShowMasterPassword(ActionEvent event) {
+    }
+
+    private void setupDefaultButton() {
+        btnRegister.setDefaultButton(true);
+
+        btnRegister.setOnKeyPressed(keyEvent -> {
+            if (keyEvent.getCode().equals(KeyCode.ENTER)) {
+                btnRegister.fire();
+            }
+        });
+    }
+
+
+    /**
+     * source : <a href="https://stackoverflow.com/a/17014524/9127495">...</a>
+     */
+    private void setupShowHidePasswordCheckbox() {
+        txtPasswordShown.setVisible(false);
+        txtPasswordShown.setManaged(false);
+        txtPasswordShown.textProperty().bindBidirectional(txtPassword.textProperty());
+
+        txtPasswordShown.managedProperty().bind(chBoxShowPassword.selectedProperty());
+        txtPasswordShown.visibleProperty().bind(chBoxShowPassword.selectedProperty());
+
+        txtPassword.managedProperty().bind(chBoxShowPassword.selectedProperty().not());
+        txtPassword.visibleProperty().bind(chBoxShowPassword.selectedProperty().not());
     }
 
     private void switchToLoginScene() {
