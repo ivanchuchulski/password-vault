@@ -4,7 +4,7 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.stage.Stage;
 import password.vault.api.ServerTextCommandsFactory;
-import password.vault.client.Client;
+import password.vault.client.communication.Client;
 
 import java.io.IOException;
 

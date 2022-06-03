@@ -1,4 +1,4 @@
-package password.vault.client.gui;
+package password.vault.client.gui.controllers;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -8,7 +8,11 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import password.vault.api.Response;
 import password.vault.api.ServerTextCommandsFactory;
-import password.vault.client.Client;
+import password.vault.client.communication.Client;
+import password.vault.client.gui.CommonUIElements;
+import password.vault.client.gui.Context;
+import password.vault.client.gui.FXMLScenes;
+import password.vault.client.gui.StageManager;
 
 import java.io.IOException;
 import java.util.Optional;

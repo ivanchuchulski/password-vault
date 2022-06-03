@@ -1,4 +1,4 @@
-package password.vault.client;
+package password.vault.client.communication;
 
 import com.google.gson.Gson;
 import password.vault.api.Response;

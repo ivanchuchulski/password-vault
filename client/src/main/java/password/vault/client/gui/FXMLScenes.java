@@ -3,9 +3,9 @@ package password.vault.client.gui;
 import java.net.URL;
 
 public enum FXMLScenes {
-    LOGIN("login.fxml"),
-    REGISTRATION("registration.fxml"),
-    INDEX("index.fxml");
+    LOGIN("/password/vault/client/gui/controllers/login.fxml"),
+    REGISTRATION("/password/vault/client/gui/controllers/registration.fxml"),
+    INDEX("/password/vault/client/gui/controllers/index.fxml");
 
     private final String fxmlFilename;
     FXMLScenes(String fxmlFilename) {

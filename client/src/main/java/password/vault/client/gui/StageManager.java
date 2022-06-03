@@ -27,14 +27,13 @@ public class StageManager {
             Scene scene = new Scene(root);
             primaryStage.setScene(scene);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("unable to change scenes, ", e);
         }
     }
 
     public Object getSceneController(FXMLScenes applicationFXMLScene) throws IOException {
         FXMLLoader rootSceneLoader = new FXMLLoader(applicationFXMLScene.getFileURL());
-        Parent root = rootSceneLoader.load();
-        return  rootSceneLoader.getController();
+        return rootSceneLoader.getController();
     }
 
     public void displayStartingScene() {

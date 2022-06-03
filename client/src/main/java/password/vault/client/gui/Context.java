@@ -1,6 +1,6 @@
 package password.vault.client.gui;
 
-import password.vault.client.Client;
+import password.vault.client.communication.Client;
 
 public class Context {
     private Client client;

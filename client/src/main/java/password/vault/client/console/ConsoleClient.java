@@ -2,7 +2,7 @@ package password.vault.client.console;
 
 import password.vault.api.Response;
 import password.vault.api.ServerResponses;
-import password.vault.client.Client;
+import password.vault.client.communication.Client;
 
 import java.io.IOException;
 import java.util.Scanner;
