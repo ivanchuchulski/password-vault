@@ -94,9 +94,13 @@ public class Server {
         }
     }
 
-    private void printStartMessage() {
+    public void printStartMessage() {
         ServerSocket serverSocket = serverSocketChannel.socket();
         System.out.println("started server at " + serverSocket.getLocalSocketAddress());
+    }
+
+    public boolean isAlive() {
+        return runServer;
     }
 
     private void acceptConnection(SelectionKey key) throws IOException {
