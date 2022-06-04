@@ -162,22 +162,6 @@ public class RegistrationController {
         });
     }
 
-
-    /**
-     * source : <a href="https://stackoverflow.com/a/17014524/9127495">...</a>
-     */
-    private void setupShowHidePasswordCheckbox() {
-        txtPasswordShown.setVisible(false);
-        txtPasswordShown.setManaged(false);
-        txtPasswordShown.textProperty().bindBidirectional(txtPassword.textProperty());
-
-        txtPasswordShown.managedProperty().bind(chBoxShowPassword.selectedProperty());
-        txtPasswordShown.visibleProperty().bind(chBoxShowPassword.selectedProperty());
-
-        txtPassword.managedProperty().bind(chBoxShowPassword.selectedProperty().not());
-        txtPassword.visibleProperty().bind(chBoxShowPassword.selectedProperty().not());
-    }
-
     /**
      * source : <a href="https://stackoverflow.com/a/17014524/9127495">...</a>
      */
