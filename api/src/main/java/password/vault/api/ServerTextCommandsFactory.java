@@ -49,5 +49,9 @@ public class ServerTextCommandsFactory {
                              ServerCommand.GENERATE_PASSWORD.getCommandText(), website,
                              usernameForSite, safePasswordLength, masterPassword);
     }
+
+    public static String getAllCredentials() {
+        return new String(ServerCommand.GET_ALL_CREDENTIALS.getCommandText());
+    }
 }
 

@@ -37,6 +37,14 @@ public class IndexController {
     @FXML
     void initialize() {
         lblWelcome.setText(lblWelcome.getText() + username + "!");
+
+        try {
+            client.sendRequest(ServerTextCommandsFactory.getAllCredentials());
+            Response response = client.receiveResponse();
+            System.out.println(response.message());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @FXML

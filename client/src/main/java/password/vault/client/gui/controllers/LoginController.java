@@ -5,6 +5,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.Tab;
@@ -37,25 +38,31 @@ public class LoginController {
     private TextField txtUsername;
 
     @FXML
+    private TextField txtPasswordShown;
+
+    @FXML
     private PasswordField txtPassword;
+
+    @FXML
+    private CheckBox chBoxShowPassword;
 
     @FXML
     private Button btnLogin;
 
     @FXML
-    private Button btnExit;
-
-    @FXML
     private Hyperlink hypRegistration;
 
+    @FXML
+    private Button btnExit;
+
     public LoginController() {
-        System.out.println("constructor first");
         this.client = Context.getInstance().getClient();
     }
 
     @FXML
     void initialize() {
         makeLoginDefaultButton();
+        setupShowHidePasswordCheckbox(txtPasswordShown, txtPassword, chBoxShowPassword);
     }
 
     @FXML
@@ -72,8 +79,6 @@ public class LoginController {
             client.sendRequest(ServerTextCommandsFactory.loginCommand(username, password));
             Response response = client.receiveResponse();
             ServerResponses serverResponses = response.serverResponse();
-
-            System.out.println(response);
 
             if (serverResponses.equals(ServerResponses.LOGIN_SUCCESS)) {
                 CommonUIElements.getInformationAlert(response.message(), "login success").showAndWait();
@@ -119,6 +124,11 @@ public class LoginController {
         stageManager.switchScene(FXMLScenes.REGISTRATION);
     }
 
+    @FXML
+    void chBoxShowPassword(ActionEvent event) {
+
+    }
+
     private void makeLoginDefaultButton() {
         btnLogin.setDefaultButton(true);
 
@@ -136,5 +146,21 @@ public class LoginController {
 
         StageManager stageManager = context.getStageManager();
         stageManager.switchScene(FXMLScenes.INDEX);
+    }
+
+    /**
+     * source : <a href="https://stackoverflow.com/a/17014524/9127495">...</a>
+     */
+    private void setupShowHidePasswordCheckbox(TextField textField, PasswordField passwordField,
+                                               CheckBox showCheckbox) {
+        textField.setVisible(false);
+        textField.setManaged(false);
+        textField.textProperty().bindBidirectional(passwordField.textProperty());
+
+        textField.managedProperty().bind(showCheckbox.selectedProperty());
+        textField.visibleProperty().bind(showCheckbox.selectedProperty());
+
+        passwordField.managedProperty().bind(showCheckbox.selectedProperty().not());
+        passwordField.visibleProperty().bind(showCheckbox.selectedProperty().not());
     }
 }
