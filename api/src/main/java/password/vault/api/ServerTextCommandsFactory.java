@@ -53,5 +53,9 @@ public class ServerTextCommandsFactory {
     public static String getAllCredentials() {
         return new String(ServerCommand.GET_ALL_CREDENTIALS.getCommandText());
     }
+
+    public static String getAllCredentialsJSON() {
+        return new String(ServerCommand.GET_ALL_CREDENTIALS_JSON.getCommandText());
+    }
 }
 

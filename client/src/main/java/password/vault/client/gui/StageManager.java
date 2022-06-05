@@ -31,7 +31,7 @@ public class StageManager {
         }
     }
 
-    public Object getSceneController(FXMLScenes applicationFXMLScene) throws IOException {
+    public Object getSceneController(FXMLScenes applicationFXMLScene) {
         FXMLLoader rootSceneLoader = new FXMLLoader(applicationFXMLScene.getFileURL());
         return rootSceneLoader.getController();
     }

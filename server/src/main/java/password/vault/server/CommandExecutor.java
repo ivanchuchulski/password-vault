@@ -105,13 +105,15 @@ public class CommandExecutor {
                     case REMOVE_PASSWORD -> removePassword(username, userRequest.arguments());
                     case RETRIEVE_CREDENTIAL -> retrieveCredentials(username, userRequest.arguments());
                     case GENERATE_PASSWORD -> generatePassword(username, userRequest.arguments());
-                    case GET_ALL_CREDENTIALS -> getAllCredentials(username);
+                    case GET_ALL_CREDENTIALS -> getAllCredentials(username, true);
+                    case GET_ALL_CREDENTIALS_JSON -> getAllCredentials(username, false);
                     case CHECK_PASSWORD_SAFETY -> checkPasswordSafety(userRequest.arguments());
                     default -> new Response(ServerResponses.HELP_COMMAND, ServerCommand.printHelp());
                 };
 
         return new CommandResponse(false, response);
     }
+
 
     private boolean commandHasIncorrectNumberOfArguments(UserRequest clientUserRequest, ServerCommand serverCommand) {
         return serverCommand.getNumberOfArguments() != clientUserRequest.numberOfArguments();
@@ -306,17 +308,23 @@ public class CommandExecutor {
         }
     }
 
-    private Response getAllCredentials(String username) {
+    private Response getAllCredentials(String username, boolean formatted) {
         try {
             List<CredentialIdentifier> allCredentials = passwordVault.getAllCredentials(username);
-            List<CredentialIdentifierDTO> credentialIdentifierDTOS = new LinkedList<>();
 
-            for (CredentialIdentifier credentialIdentifier : allCredentials) {
-                credentialIdentifierDTOS.add(new CredentialIdentifierDTO(credentialIdentifier.website(),
-                                                                         credentialIdentifier.usernameForWebsite()));
+            if (formatted) {
+                String allCredentialsFormatted = allCredentialsAsSingleString(username, allCredentials);
+                return new Response(ServerResponses.CREDENTIAL_RETRIEVAL_SUCCESS, allCredentialsFormatted);
+            } else {
+                List<CredentialIdentifierDTO> credentialIdentifierDTOS = new LinkedList<>();
+
+                for (CredentialIdentifier credentialIdentifier : allCredentials) {
+                    credentialIdentifierDTOS.add(new CredentialIdentifierDTO(credentialIdentifier.website(),
+                                                                             credentialIdentifier.usernameForWebsite()));
+                }
+
+                return new Response(ServerResponses.CREDENTIAL_RETRIEVAL_SUCCESS, gson.toJson(credentialIdentifierDTOS));
             }
-
-            return new Response(ServerResponses.CREDENTIAL_RETRIEVAL_SUCCESS, gson.toJson(credentialIdentifierDTOS));
         } catch (PasswordVault.UsernameNotHavingCredentialsException e) {
             return new Response(ServerResponses.CREDENTIAL_REMOVAL_ERROR, "you do not have any credentials added");
         } catch (DatabaseConnectorException e) {

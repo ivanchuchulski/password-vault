@@ -47,7 +47,7 @@ public class IndexController {
         lblWelcome.setText(lblWelcome.getText() + username + "!");
 
         try {
-            client.sendRequest(ServerTextCommandsFactory.getAllCredentials());
+            client.sendRequest(ServerTextCommandsFactory.getAllCredentialsJSON());
             Response response = client.receiveResponse();
             System.out.println(response.message());
 
