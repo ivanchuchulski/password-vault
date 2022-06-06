@@ -9,6 +9,8 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.FlowPane;
 import password.vault.api.CredentialIdentifierDTO;
 import password.vault.api.Response;
@@ -26,6 +28,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
+// TODO : handle session expiration
 public class IndexController {
     private final Client client;
 
@@ -68,14 +71,12 @@ public class IndexController {
         }.getType();
         List<CredentialIdentifierDTO> credentials = gson.fromJson(response.message(), listType);
 
-        System.out.println(credentials);
 
         List<Credential> guiCredentials = new LinkedList<>();
         for (CredentialIdentifierDTO credential : credentials) {
             Credential guiCredential = new Credential();
-
-            guiCredential.getLblDomain().setText(credential.getWebsite());
-            guiCredential.getLblUsername().setText(credential.getUsernameForWebsite());
+            guiCredential.setIndexController(this);
+            guiCredential.setCredentialIdentifierDTO(credential);
 
             guiCredentials.add(guiCredential);
         }
@@ -108,6 +109,35 @@ public class IndexController {
         });
     }
 
+    public void fetchPassword(CredentialIdentifierDTO credentialIdentifierDTO, String masterPassword) {
+        try {
+
+            System.out.println("sending fetch password request...");
+            client.sendRequest(ServerTextCommandsFactory.retrieveCredentials(credentialIdentifierDTO.getWebsite(),
+                                                                             credentialIdentifierDTO.getUsernameForWebsite(),
+                                                                             masterPassword));
+            Response response = client.receiveResponse();
+
+            if (!response.serverResponse().equals(ServerResponses.CREDENTIAL_RETRIEVAL_SUCCESS)) {
+                CommonUIElements.getErrorAlert(response.message()).showAndWait();
+                return;
+            }
+
+            String cleartextPassword = response.message();
+            System.out.println("password is : " + cleartextPassword);
+
+            copyPasswordToClipboard(cleartextPassword);
+            CommonUIElements.getInformationAlert("Credential retrieval success!", "").showAndWait();
+        } catch (IOException e) {
+            e.printStackTrace();
+            CommonUIElements.getErrorAlert("error fetching data from server").showAndWait();
+        }
+    }
+
+    public void removePassword(CredentialIdentifierDTO credentialIdentifierDTO, String masterPassword) {
+        CommonUIElements.getErrorAlert("Not implemented yet!").showAndWait();
+    }
+
     private void switchToLoginScene() {
         Context context = Context.getInstance();
 
@@ -119,14 +149,19 @@ public class IndexController {
     private Response fetchCredentials() {
         try {
             client.sendRequest(ServerTextCommandsFactory.getAllCredentialsJSON());
-            Response response = client.receiveResponse();
-            System.out.println(response.message());
-
-            return response;
+            return client.receiveResponse();
         } catch (IOException e) {
             e.printStackTrace();
             CommonUIElements.getErrorAlert("error fetching data from server");
             return null;
         }
+    }
+
+    private void copyPasswordToClipboard(String cleartextPassword) {
+        ClipboardContent content = new ClipboardContent();
+        content.putString(cleartextPassword);
+
+        Clipboard clipboard = Clipboard.getSystemClipboard();
+        clipboard.setContent(content);
     }
 }
