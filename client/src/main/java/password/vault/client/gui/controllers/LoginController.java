@@ -7,6 +7,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Hyperlink;
+import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -50,10 +51,14 @@ public class LoginController {
     private Button btnLogin;
 
     @FXML
+    private Label lblErrors;
+
+    @FXML
     private Hyperlink hypRegistration;
 
     @FXML
     private Button btnExit;
+
 
     public LoginController() {
         this.client = Context.getInstance().getClient();
@@ -71,7 +76,10 @@ public class LoginController {
         String password = txtPassword.getText();
 
         if (username.length() == 0 || password.length() == 0) {
-            CommonUIElements.getErrorAlert("Fields are necessary!").showAndWait();
+            String errorMessage = "Fields are necessary!";
+            // CommonUIElements.getErrorAlert(errorMessage).showAndWait();
+            lblErrors.setVisible(true);
+            lblErrors.setText(errorMessage);
             return;
         }
 
@@ -81,7 +89,7 @@ public class LoginController {
             ServerResponses serverResponses = response.serverResponse();
 
             if (serverResponses.equals(ServerResponses.LOGIN_SUCCESS)) {
-                CommonUIElements.getInformationAlert(response.message(), "login success").showAndWait();
+                // CommonUIElements.getInformationAlert(response.message(), "login success").showAndWait();
                 switchToIndexScene(username);
             } else {
                 CommonUIElements.getErrorAlert(response.message()).showAndWait();

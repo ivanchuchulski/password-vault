@@ -46,7 +46,6 @@ public class Credential extends VBox {
 
     public Credential() {
         try {
-            System.out.println("ctor");
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/password/vault/client/gui/controllers" +
                                                                                   "/credential.fxml"));
             fxmlLoader.setRoot(this);

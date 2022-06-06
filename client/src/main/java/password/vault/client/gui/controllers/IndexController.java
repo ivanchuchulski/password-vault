@@ -21,6 +21,7 @@ import password.vault.client.gui.CommonUIElements;
 import password.vault.client.gui.Context;
 import password.vault.client.gui.FXMLScenes;
 import password.vault.client.gui.StageManager;
+import password.vault.client.gui.model.CredentialAdditionRequest;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -85,6 +86,8 @@ public class IndexController {
         flowPane.setVgap(10);
         flowPane.setHgap(10);
         flowPane.getChildren().addAll(guiCredentials);
+
+        testCustomDialogPane();
     }
 
     @FXML
@@ -163,5 +166,15 @@ public class IndexController {
 
         Clipboard clipboard = Clipboard.getSystemClipboard();
         clipboard.setContent(content);
+    }
+
+    private void testCustomDialogPane() {
+
+        AddCredentialDialogPaneController addCredentialDialogPaneController =
+                new AddCredentialDialogPaneController(Context.getInstance().getStageManager().getCurrentStage());
+        Optional<CredentialAdditionRequest> credentialAdditionRequestOptional =
+                addCredentialDialogPaneController.showAndWait();
+
+        credentialAdditionRequestOptional.ifPresent(credentialAdditionRequest -> System.out.println(credentialAdditionRequest));
     }
 }

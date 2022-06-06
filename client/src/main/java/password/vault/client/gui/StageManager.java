@@ -4,6 +4,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 
 import java.io.IOException;
 import java.net.URL;
@@ -44,5 +45,9 @@ public class StageManager {
         URL rootSceneURL = getClass().getResource(applicationFXMLScene.getFxmlFilename());
         FXMLLoader rootSceneLoader = new FXMLLoader(rootSceneURL);
         return rootSceneLoader.load();
+    }
+
+    public Window getCurrentStage() {
+        return primaryStage;
     }
 }
