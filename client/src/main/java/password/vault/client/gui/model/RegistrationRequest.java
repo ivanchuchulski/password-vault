@@ -4,8 +4,6 @@ import java.util.Objects;
 
 public final class RegistrationRequest {
 
-    private static final String VALID_USERNAME_PATTERN = "[a-zA-Z0-9-_]{3,}";
-    private static final String VALID_EMAIL_PATTERN = "^[A-Za-z0-9]{2,32}@[A-Za-z]{2,16}\\.[A-Za-z]{2,7}$";
     private final String username;
     private final String email;
     private final String password;
@@ -23,11 +21,11 @@ public final class RegistrationRequest {
             throw new RegistrationRequestException("all fields are necessary!");
         }
 
-        if (!username.matches(VALID_USERNAME_PATTERN)) {
+        if (!username.matches(FieldConstraints.VALID_USERNAME_PATTERN)) {
             throw new RegistrationRequestException("username is not valid!");
         }
 
-        if (!email.matches(VALID_EMAIL_PATTERN)) {
+        if (!email.matches(FieldConstraints.VALID_EMAIL_PATTERN)) {
             throw new RegistrationRequestException("error : email is not valid!");
         }
 

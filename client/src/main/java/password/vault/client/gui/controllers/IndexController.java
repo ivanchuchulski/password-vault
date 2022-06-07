@@ -2,9 +2,11 @@ package password.vault.client.gui.controllers;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Orientation;
+import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
@@ -23,7 +25,6 @@ import password.vault.client.gui.Context;
 import password.vault.client.gui.FXMLScenes;
 import password.vault.client.gui.StageManager;
 import password.vault.client.gui.components.AddCredentialDialogController;
-import password.vault.client.gui.components.GetMasterPasswordDialogController;
 import password.vault.client.gui.dto.AddCredentialRequestDTO;
 import password.vault.client.gui.model.AddCredentialDialogResult;
 
@@ -40,6 +41,7 @@ public class IndexController {
     private final Gson gson;
     private final String username;
 
+
     @FXML
     private Button btnLogout;
 
@@ -51,6 +53,12 @@ public class IndexController {
 
     @FXML
     private Button btnAddCredential;
+
+    @FXML
+    private Button btnGenerateCredential;
+
+    @FXML
+    private Button btnCheckPassword;
 
     public IndexController() {
         Context context = Context.getInstance();
@@ -79,10 +87,8 @@ public class IndexController {
             return;
         }
 
-        GetMasterPasswordDialogController getMasterPasswordDialogController =
-                new GetMasterPasswordDialogController(Context.getInstance().getStageManager().getCurrentStage());
-
-        Optional<String> masterPasswordOptional = getMasterPasswordDialogController.showAndWait();
+        Dialog<String> getPasswordDialogController = CommonUIElements.getMasterPasswordDialog();
+        Optional<String> masterPasswordOptional = getPasswordDialogController.showAndWait();
         if (masterPasswordOptional.isEmpty()) {
             CommonUIElements.getErrorAlert("Please enter your master password to proceed!").showAndWait();
             return;
@@ -111,10 +117,8 @@ public class IndexController {
         }
 
         try {
-            System.out.println(command);
             client.sendRequest(command);
             Response response = client.receiveResponse();
-            System.out.println(response);
 
             checkResponseForValidSession(response);
 
@@ -128,6 +132,36 @@ public class IndexController {
             CommonUIElements.getFailedRequestWarningAlert();
         }
     }
+
+    @FXML
+    void btnCheckPasswordClicked(ActionEvent event) {
+        Dialog<String> passwordToCheckDialog = CommonUIElements.getPasswordToCheckDialog();
+        Optional<String> passwordOptional = passwordToCheckDialog.showAndWait();
+
+        if (passwordOptional.isEmpty()) {
+            return;
+        }
+
+        String passwordToCheck = passwordOptional.get();
+        try {
+            String command = ServerTextCommandsFactory.checkPasswordSafetyCommand(passwordToCheck);
+            client.sendRequest(command);
+            Response response = client.receiveResponse();
+
+            checkResponseForValidSession(response);
+
+            CommonUIElements.getInformationAlert(response.message(), "password check").showAndWait();
+        } catch (IOException e) {
+            e.printStackTrace();
+            CommonUIElements.getFailedRequestWarningAlert();
+        }
+    }
+
+    @FXML
+    void btnGenerateCredentialClicked(ActionEvent event) {
+
+    }
+
 
     @FXML
     void btnLogoutClicked(ActionEvent event) {
@@ -175,7 +209,24 @@ public class IndexController {
     }
 
     public void removePassword(CredentialIdentifierDTO credentialIdentifierDTO, String masterPassword) {
-        CommonUIElements.getErrorAlert("Not implemented yet!").showAndWait();
+        try {
+            String request = ServerTextCommandsFactory.removePassword(credentialIdentifierDTO.getWebsite(),
+                                                                      credentialIdentifierDTO.getUsernameForWebsite(),
+                                                                      masterPassword);
+            client.sendRequest(request);
+            Response response = client.receiveResponse();
+
+            checkResponseForValidSession(response);
+
+            CommonUIElements.getInformationAlert(response.message(), "credential removal").showAndWait();
+
+            if (response.serverResponse().equals(ServerResponses.CREDENTIAL_REMOVAL_SUCCESS)) {
+                getCredentialForUser();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            CommonUIElements.getFailedRequestWarningAlert();
+        }
     }
 
     private void getCredentialForUser() {
@@ -206,8 +257,10 @@ public class IndexController {
         flowPane.setOrientation(Orientation.VERTICAL);
         flowPane.setVgap(10);
         flowPane.setHgap(10);
-        flowPane.getChildren().clear();
-        flowPane.getChildren().addAll(guiCredentials);
+
+        ObservableList<Node> flowPaneChildren = flowPane.getChildren();
+        flowPaneChildren.clear();
+        flowPaneChildren.addAll(guiCredentials);
     }
 
     private void switchToLoginScene() {

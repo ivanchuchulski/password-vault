@@ -20,6 +20,7 @@ import javafx.stage.Window;
 import password.vault.client.gui.CommonUIElements;
 import password.vault.client.gui.controllers.YesNoCheck;
 import password.vault.client.gui.model.AddCredentialDialogResult;
+import password.vault.client.gui.model.FieldConstraints;
 
 import java.io.IOException;
 
@@ -28,7 +29,7 @@ import java.io.IOException;
  */
 public class AddCredentialDialogController extends Dialog<AddCredentialDialogResult> {
 
-    private static final String ADD_CREDENTIALS_DIALOG_FILENAME = "/password/vault/client/gui/controllers" +
+    private static final String ADD_CREDENTIALS_DIALOG_FILENAME = "/password/vault/client/gui/components" +
             "/add_credential_dialog_pane.fxml";
     @FXML
     private DialogPane dialogAddCredentials;
@@ -94,6 +95,21 @@ public class AddCredentialDialogController extends Dialog<AddCredentialDialogRes
                     lblErrors.setVisible(true);
                     lblErrors.setText("error : all fields are necessary!");
                     actionEventFilter.consume();
+                    return;
+                }
+
+                if (!isUsernameValid()) {
+                    lblErrors.setVisible(true);
+                    lblErrors.setText("error : username is not valid");
+                    actionEventFilter.consume();
+                    return;
+                }
+
+                if (!isWebsiteValid()) {
+                    lblErrors.setVisible(true);
+                    lblErrors.setText("error : website is not valid");
+                    actionEventFilter.consume();
+                    return;
                 }
             });
 
@@ -118,4 +134,13 @@ public class AddCredentialDialogController extends Dialog<AddCredentialDialogRes
     private boolean fieldsAreValid() {
         return !txtWebsite.getText().isBlank() && !txtUsername.getText().isBlank() && !txtPassword.getText().isBlank();
     }
+
+    private boolean isWebsiteValid() {
+        return txtWebsite.getText().matches(FieldConstraints.WEBSITE_PATTERN);
+    }
+
+    private boolean isUsernameValid() {
+        return txtUsername.getText().matches(FieldConstraints.VALID_USERNAME_PATTERN);
+    }
+
 }

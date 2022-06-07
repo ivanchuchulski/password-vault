@@ -12,6 +12,7 @@ import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import password.vault.client.gui.components.GetPasswordDialogController;
 
 public class CommonUIElements {
     private static Alert getAlertMessage(Alert.AlertType type, String header, String context, String title) {
@@ -49,7 +50,7 @@ public class CommonUIElements {
      * source : <a href="https://stackoverflow.com/a/17014524/9127495">...</a>
      */
     public static void setupShowHidePasswordCheckbox(TextField textField, PasswordField passwordField,
-                                               CheckBox showCheckbox) {
+                                                     CheckBox showCheckbox) {
         textField.setVisible(false);
         textField.setManaged(false);
         textField.textProperty().bindBidirectional(passwordField.textProperty());
@@ -61,11 +62,10 @@ public class CommonUIElements {
         passwordField.visibleProperty().bind(showCheckbox.selectedProperty().not());
     }
 
-    public static TextInputDialog getMasterPasswordDialog() {
+    public static TextInputDialog getSimpleTextInputDialog(String header, String contextText) {
         TextInputDialog textInputDialog = new TextInputDialog();
-        textInputDialog.setTitle("");
-        textInputDialog.setHeaderText("Enter your Master password");
-        textInputDialog.setContentText("Master password:");
+        textInputDialog.setHeaderText(header);
+        textInputDialog.setContentText(contextText);
         return textInputDialog;
     }
 
@@ -96,5 +96,23 @@ public class CommonUIElements {
         });
 
         return dialog;
+    }
+
+    public static Dialog<String> getPasswordToCheckDialog() {
+        GetPasswordDialogController getPasswordDialogController
+                = new GetPasswordDialogController(Context.getInstance().getStageManager().getCurrentStage());
+
+        getPasswordDialogController.setLabels("Enter password to check", "Password to check:");
+
+        return getPasswordDialogController;
+    }
+
+    public static Dialog<String> getMasterPasswordDialog() {
+        GetPasswordDialogController getPasswordDialogController
+                = new GetPasswordDialogController(Context.getInstance().getStageManager().getCurrentStage());
+
+        getPasswordDialogController.setLabels("Enter master password", "Your master password:");
+
+        return getPasswordDialogController;
     }
 }

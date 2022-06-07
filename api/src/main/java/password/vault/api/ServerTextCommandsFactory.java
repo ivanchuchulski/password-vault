@@ -64,5 +64,9 @@ public class ServerTextCommandsFactory {
                              ServerCommand.ADD_PASSWORD.getCommandText(), website, usernameForSite, password,
                              masterPassword);
     }
+
+    public static String checkPasswordSafetyCommand(String password) {
+        return String.format("%s %s", ServerCommand.CHECK_PASSWORD_SAFETY.getCommandText(), password);
+    }
 }
 

@@ -1,5 +1,6 @@
 package password.vault.client.gui.components;
 
+
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -19,10 +20,11 @@ import password.vault.client.gui.CommonUIElements;
 
 import java.io.IOException;
 
-public class GetMasterPasswordDialogController extends Dialog<String> {
+public class GetPasswordDialogController extends Dialog<String> {
 
-    private static final String GET_MASTER_PASSWORD_DIALOG_FILENAME = "/password/vault/client/gui/controllers" +
-            "/get_master_password_dialog.fxml";
+    private static final String GET_PASSWORD_DIALOG_FILENAME = "/password/vault/client/gui/components" +
+            "/get_password_dialog.fxml";
+
     @FXML
     private DialogPane dialogGetMasterPassword;
 
@@ -30,7 +32,7 @@ public class GetMasterPasswordDialogController extends Dialog<String> {
     private GridPane gridData;
 
     @FXML
-    private Label lblMasterPassword;
+    private Label lblPassword;
 
     @FXML
     private TextField txtPasswordShown;
@@ -42,11 +44,14 @@ public class GetMasterPasswordDialogController extends Dialog<String> {
     private CheckBox chBoxShowPassword;
 
     @FXML
+    private Label lblHeading;
+
+    @FXML
     private Label lblErrors;
 
-    public GetMasterPasswordDialogController(Window owner) {
+    public GetPasswordDialogController(Window owner) {
         try {
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(GET_MASTER_PASSWORD_DIALOG_FILENAME));
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(GET_PASSWORD_DIALOG_FILENAME));
             fxmlLoader.setController(this);
 
             fxmlLoader.load();
@@ -84,5 +89,10 @@ public class GetMasterPasswordDialogController extends Dialog<String> {
 
     private boolean fieldsAreValid() {
         return !txtPassword.getText().isBlank();
+    }
+
+    public void setLabels(String heading, String prompt) {
+        lblHeading.setText(heading);
+        lblPassword.setText(prompt);
     }
 }

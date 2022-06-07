@@ -75,12 +75,12 @@
                         <Insets bottom="20.0" left="10.0" right="10.0" top="20.0" />
                      </HBox.margin>
                   </Button>
-                  <Button mnemonicParsing="false" text="Generate credential">
+                  <Button fx:id="btnGenerateCredential" mnemonicParsing="false" onAction="#btnGenerateCredentialClicked" text="Generate credential">
                      <HBox.margin>
                         <Insets bottom="20.0" left="10.0" right="10.0" top="20.0" />
                      </HBox.margin>
                   </Button>
-                  <Button mnemonicParsing="false" text="Check password">
+                  <Button fx:id="btnCheckPassword" mnemonicParsing="false" onAction="#btnCheckPasswordClicked" text="Check password">
                      <HBox.margin>
                         <Insets bottom="20.0" left="10.0" right="10.0" top="20.0" />
                      </HBox.margin>

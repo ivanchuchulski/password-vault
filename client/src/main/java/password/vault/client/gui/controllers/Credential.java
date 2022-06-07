@@ -4,6 +4,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Border;
@@ -14,8 +15,7 @@ import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import password.vault.api.CredentialIdentifierDTO;
-import password.vault.client.gui.Context;
-import password.vault.client.gui.components.GetMasterPasswordDialogController;
+import password.vault.client.gui.CommonUIElements;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -108,10 +108,9 @@ public class Credential extends VBox {
     }
 
     private String launchGetMasterPasswordDialog() {
-        GetMasterPasswordDialogController getMasterPasswordDialogController =
-                new GetMasterPasswordDialogController(Context.getInstance().getStageManager().getCurrentStage());
+        Dialog<String> getPasswordDialogController = CommonUIElements.getMasterPasswordDialog();
 
-        Optional<String> masterPasswordOptional = getMasterPasswordDialogController.showAndWait();
+        Optional<String> masterPasswordOptional = getPasswordDialogController.showAndWait();
         if (masterPasswordOptional.isEmpty()) {
             return null;
         }
