@@ -5,7 +5,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextInputDialog;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderStroke;
@@ -15,7 +14,7 @@ import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import password.vault.api.CredentialIdentifierDTO;
-import password.vault.client.gui.CommonUIElements;
+import password.vault.client.gui.Context;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -81,31 +80,19 @@ public class Credential extends VBox {
 
     @FXML
     void btnCopyPasswordClicked(ActionEvent event) {
-        TextInputDialog textInputDialog = CommonUIElements.getMasterPasswordDialog();
-        // Dialog<String> customPasswordDialog = getCustomPasswordDialog();
-
-        Optional<String> result = textInputDialog.showAndWait();
-
-        if (result.isEmpty()) {
+        String enteredMasterPassword = launchGetMasterPasswordDialog();
+        if (enteredMasterPassword == null) {
             return;
         }
-
-        String enteredMasterPassword = result.get();
         indexController.fetchPassword(credentialIdentifierDTO, enteredMasterPassword);
     }
 
     @FXML
     void btnRemovePasswordClicked(ActionEvent event) {
-        TextInputDialog textInputDialog = CommonUIElements.getMasterPasswordDialog();
-        // Dialog<String> customPasswordDialog = getCustomPasswordDialog();
-
-        Optional<String> result = textInputDialog.showAndWait();
-
-        if (result.isEmpty()) {
+        String enteredMasterPassword = launchGetMasterPasswordDialog();
+        if (enteredMasterPassword == null) {
             return;
         }
-
-        String enteredMasterPassword = result.get();
         indexController.removePassword(credentialIdentifierDTO, enteredMasterPassword);
     }
 
@@ -117,5 +104,17 @@ public class Credential extends VBox {
         this.setBorder(new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID,
                                                    CornerRadii.EMPTY,
                                                    BorderWidths.DEFAULT)));
+    }
+
+    private String launchGetMasterPasswordDialog() {
+        GetMasterPasswordDialogController getMasterPasswordDialogController =
+                new GetMasterPasswordDialogController(Context.getInstance().getStageManager().getCurrentStage());
+
+        Optional<String> masterPasswordOptional = getMasterPasswordDialogController.showAndWait();
+        if (masterPasswordOptional.isEmpty()) {
+            return null;
+        }
+
+        return masterPasswordOptional.get();
     }
 }

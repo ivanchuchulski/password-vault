@@ -185,7 +185,6 @@ public class IndexController {
         Dialog<CredentialAdditionRequest> addCredentialDialogPaneController =
                 new AddCredentialDialogPaneController(Context.getInstance().getStageManager().getCurrentStage());
 
-
         Optional<CredentialAdditionRequest> credentialAdditionRequestOptional =
                 addCredentialDialogPaneController.showAndWait();
 
@@ -193,16 +192,19 @@ public class IndexController {
             return;
         }
 
-        CredentialAdditionRequest credentialAdditionRequest = credentialAdditionRequestOptional.get();
-        System.out.println(credentialAdditionRequest);
+        GetMasterPasswordDialogController getMasterPasswordDialogController =
+                new GetMasterPasswordDialogController(Context.getInstance().getStageManager().getCurrentStage());
 
-        Optional<String> masterPasswordOptional = CommonUIElements.getMasterPasswordDialog().showAndWait();
+        Optional<String> masterPasswordOptional = getMasterPasswordDialogController.showAndWait();
         if (masterPasswordOptional.isEmpty()) {
-            CommonUIElements.getErrorAlert("please enter your master password to proceed");
+            CommonUIElements.getErrorAlert("Please enter your master password to proceed!").showAndWait();
             return;
         }
 
+        CredentialAdditionRequest credentialAdditionRequest = credentialAdditionRequestOptional.get();
         String masterPassword = masterPasswordOptional.get();
+
+        System.out.println(credentialAdditionRequest);
         System.out.println("master password : " + masterPassword);
     }
 }
