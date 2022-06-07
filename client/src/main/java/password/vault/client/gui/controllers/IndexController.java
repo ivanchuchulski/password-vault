@@ -8,6 +8,7 @@ import javafx.geometry.Orientation;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
@@ -182,8 +183,10 @@ public class IndexController {
 
     private void testCustomDialogPane() {
 
-        AddCredentialDialogPaneController addCredentialDialogPaneController =
+        Dialog<CredentialAdditionRequest> addCredentialDialogPaneController =
                 new AddCredentialDialogPaneController(Context.getInstance().getStageManager().getCurrentStage());
+
+
 
         Optional<CredentialAdditionRequest> credentialAdditionRequestOptional =
                 addCredentialDialogPaneController.showAndWait();

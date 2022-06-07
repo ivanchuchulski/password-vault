@@ -1,9 +1,11 @@
 package password.vault.client.gui.controllers;
 
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.HPos;
+import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Dialog;
@@ -66,6 +68,9 @@ public class AddCredentialDialogPaneController extends Dialog<CredentialAddition
     @FXML
     private CheckBox chBoxShowMasterPassword;
 
+    @FXML
+    private Label lblErrors;
+
     public AddCredentialDialogPaneController(Window owner) {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/password/vault/client/gui/controllers" +
@@ -83,6 +88,15 @@ public class AddCredentialDialogPaneController extends Dialog<CredentialAddition
                 return null;
             });
 
+            final Button okButton = (Button) dialogAddCredentials.lookupButton(ButtonType.OK);
+            okButton.addEventFilter(ActionEvent.ACTION, ae -> {
+                if (!fieldsAreValid()) {
+                    lblErrors.setVisible(true);
+                    lblErrors.setText("error : all fields are necessary!");
+                    ae.consume(); //not valid
+                }
+            });
+
             initOwner(owner);
             initModality(Modality.APPLICATION_MODAL);
             setOnShowing(dialogEvent -> Platform.runLater(() -> txtWebsite.requestFocus()));
@@ -90,6 +104,11 @@ public class AddCredentialDialogPaneController extends Dialog<CredentialAddition
         } catch (IOException exception) {
             throw new RuntimeException("unable to load custom add credential class", exception);
         }
+    }
+
+    private boolean fieldsAreValid() {
+        return !txtWebsite.getText().isBlank() && !txtUsername.getText().isBlank() && !txtPassword.getText().isBlank()
+                && !txtMasterPassword.getText().isBlank();
     }
 
     @FXML
