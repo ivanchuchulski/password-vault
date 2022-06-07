@@ -24,7 +24,8 @@ import password.vault.client.gui.FXMLScenes;
 import password.vault.client.gui.StageManager;
 import password.vault.client.gui.components.AddCredentialDialogController;
 import password.vault.client.gui.components.GetMasterPasswordDialogController;
-import password.vault.client.gui.model.CredentialAdditionRequest;
+import password.vault.client.gui.dto.AddCredentialRequestDTO;
+import password.vault.client.gui.model.AddCredentialDialogResult;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -63,42 +64,70 @@ public class IndexController {
     void initialize() {
         lblWelcome.setText(lblWelcome.getText() + username + "!");
 
-        Response response = fetchCredentials();
-
-        if (response == null) {
-            return;
-        }
-
-        if (!response.serverResponse().equals(ServerResponses.CREDENTIAL_RETRIEVAL_SUCCESS)) {
-            CommonUIElements.getErrorAlert("error fetching data from server" + response.message());
-            return;
-        }
-
-        Type listType = new TypeToken<List<CredentialIdentifierDTO>>() {
-        }.getType();
-        List<CredentialIdentifierDTO> credentials = gson.fromJson(response.message(), listType);
-
-
-        List<Credential> guiCredentials = new LinkedList<>();
-        for (CredentialIdentifierDTO credential : credentials) {
-            Credential guiCredential = new Credential();
-            guiCredential.setIndexController(this);
-            guiCredential.setCredentialIdentifierDTO(credential);
-
-            guiCredentials.add(guiCredential);
-        }
-
-        flowPane.setOrientation(Orientation.VERTICAL);
-        flowPane.setVgap(10);
-        flowPane.setHgap(10);
-        flowPane.getChildren().addAll(guiCredentials);
+        getCredentialForUser();
     }
 
     @FXML
     void btnAddCredentialClicked(ActionEvent event) {
-        testCustomDialogPane();
-    }
+        Dialog<AddCredentialDialogResult> addCredentialDialogPaneController =
+                new AddCredentialDialogController(Context.getInstance().getStageManager().getCurrentStage());
 
+        Optional<AddCredentialDialogResult> credentialAdditionRequestOptional =
+                addCredentialDialogPaneController.showAndWait();
+
+        if (credentialAdditionRequestOptional.isEmpty()) {
+            return;
+        }
+
+        GetMasterPasswordDialogController getMasterPasswordDialogController =
+                new GetMasterPasswordDialogController(Context.getInstance().getStageManager().getCurrentStage());
+
+        Optional<String> masterPasswordOptional = getMasterPasswordDialogController.showAndWait();
+        if (masterPasswordOptional.isEmpty()) {
+            CommonUIElements.getErrorAlert("Please enter your master password to proceed!").showAndWait();
+            return;
+        }
+
+        AddCredentialDialogResult addCredentialDialogResult = credentialAdditionRequestOptional.get();
+        String masterPassword = masterPasswordOptional.get();
+
+        AddCredentialRequestDTO addCredentialRequestDTO =
+                new AddCredentialRequestDTO(addCredentialDialogResult.website(),
+                                            addCredentialDialogResult.username(),
+                                            addCredentialDialogResult.password(),
+                                            masterPassword);
+
+        String command;
+        if (addCredentialDialogResult.yesNoCheck().equals(YesNoCheck.YES)) {
+            command = ServerTextCommandsFactory.addPasswordWithCheck(addCredentialRequestDTO.website(),
+                                                                     addCredentialRequestDTO.username(),
+                                                                     addCredentialRequestDTO.password(),
+                                                                     addCredentialRequestDTO.masterPassword());
+        } else {
+            command = ServerTextCommandsFactory.addPasswordWithoutCheck(addCredentialRequestDTO.website(),
+                                                                        addCredentialRequestDTO.username(),
+                                                                        addCredentialRequestDTO.password(),
+                                                                        addCredentialRequestDTO.masterPassword());
+        }
+
+        try {
+            System.out.println(command);
+            client.sendRequest(command);
+            Response response = client.receiveResponse();
+            System.out.println(response);
+
+            checkResponseForValidSession(response);
+
+            CommonUIElements.getInformationAlert(response.message(), "credential addition").showAndWait();
+
+            if (response.serverResponse().equals(ServerResponses.CREDENTIAL_ADDITION_SUCCESS)) {
+                getCredentialForUser();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            CommonUIElements.getFailedRequestWarningAlert();
+        }
+    }
 
     @FXML
     void btnLogoutClicked(ActionEvent event) {
@@ -149,6 +178,38 @@ public class IndexController {
         CommonUIElements.getErrorAlert("Not implemented yet!").showAndWait();
     }
 
+    private void getCredentialForUser() {
+        Response response = fetchCredentials();
+
+        if (response == null) {
+            return;
+        }
+
+        if (!response.serverResponse().equals(ServerResponses.CREDENTIAL_RETRIEVAL_SUCCESS)) {
+            CommonUIElements.getErrorAlert("error fetching data from server" + response.message());
+            return;
+        }
+
+        Type listType = new TypeToken<List<CredentialIdentifierDTO>>() {
+        }.getType();
+        List<CredentialIdentifierDTO> credentials = gson.fromJson(response.message(), listType);
+
+        List<Credential> guiCredentials = new LinkedList<>();
+        for (CredentialIdentifierDTO credential : credentials) {
+            Credential guiCredential = new Credential();
+            guiCredential.setIndexController(this);
+            guiCredential.setCredentialIdentifierDTO(credential);
+
+            guiCredentials.add(guiCredential);
+        }
+
+        flowPane.setOrientation(Orientation.VERTICAL);
+        flowPane.setVgap(10);
+        flowPane.setHgap(10);
+        flowPane.getChildren().clear();
+        flowPane.getChildren().addAll(guiCredentials);
+    }
+
     private void switchToLoginScene() {
         Context context = Context.getInstance();
 
@@ -183,30 +244,4 @@ public class IndexController {
         clipboard.setContent(content);
     }
 
-    private void testCustomDialogPane() {
-        Dialog<CredentialAdditionRequest> addCredentialDialogPaneController =
-                new AddCredentialDialogController(Context.getInstance().getStageManager().getCurrentStage());
-
-        Optional<CredentialAdditionRequest> credentialAdditionRequestOptional =
-                addCredentialDialogPaneController.showAndWait();
-
-        if (credentialAdditionRequestOptional.isEmpty()) {
-            return;
-        }
-
-        GetMasterPasswordDialogController getMasterPasswordDialogController =
-                new GetMasterPasswordDialogController(Context.getInstance().getStageManager().getCurrentStage());
-
-        Optional<String> masterPasswordOptional = getMasterPasswordDialogController.showAndWait();
-        if (masterPasswordOptional.isEmpty()) {
-            CommonUIElements.getErrorAlert("Please enter your master password to proceed!").showAndWait();
-            return;
-        }
-
-        CredentialAdditionRequest credentialAdditionRequest = credentialAdditionRequestOptional.get();
-        String masterPassword = masterPasswordOptional.get();
-
-        System.out.println(credentialAdditionRequest);
-        System.out.println("master password : " + masterPassword);
-    }
 }

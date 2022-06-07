@@ -1,6 +1,7 @@
 package password.vault.client.gui.components;
 
 import javafx.application.Platform;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -18,14 +19,14 @@ import javafx.stage.Modality;
 import javafx.stage.Window;
 import password.vault.client.gui.CommonUIElements;
 import password.vault.client.gui.controllers.YesNoCheck;
-import password.vault.client.gui.model.CredentialAdditionRequest;
+import password.vault.client.gui.model.AddCredentialDialogResult;
 
 import java.io.IOException;
 
 /**
  * source : <a href="https://stackoverflow.com/a/64967696/9127495">...</a>
  */
-public class AddCredentialDialogController extends Dialog<CredentialAdditionRequest> {
+public class AddCredentialDialogController extends Dialog<AddCredentialDialogResult> {
 
     private static final String ADD_CREDENTIALS_DIALOG_FILENAME = "/password/vault/client/gui/controllers" +
             "/add_credential_dialog_pane.fxml";
@@ -79,7 +80,7 @@ public class AddCredentialDialogController extends Dialog<CredentialAdditionRequ
             setResultConverter(dialogButton -> {
                 if (dialogButton == ButtonType.OK) {
 
-                    return new CredentialAdditionRequest(txtWebsite.getText(),
+                    return new AddCredentialDialogResult(txtWebsite.getText(),
                                                          txtUsername.getText(),
                                                          txtPassword.getText(),
                                                          choiceSecurityCheck.getSelectionModel().getSelectedItem());
@@ -108,7 +109,9 @@ public class AddCredentialDialogController extends Dialog<CredentialAdditionRequ
     void initialize() {
         CommonUIElements.setupShowHidePasswordCheckbox(txtPasswordShown, txtPassword, chBoxShowPassword);
 
-        choiceSecurityCheck.getItems().addAll(YesNoCheck.values());
+        ObservableList<YesNoCheck> items = choiceSecurityCheck.getItems();
+        items.add(YesNoCheck.NO);
+        items.add(YesNoCheck.YES);
         choiceSecurityCheck.getSelectionModel().selectFirst();
     }
 

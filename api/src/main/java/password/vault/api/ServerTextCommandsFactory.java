@@ -57,5 +57,12 @@ public class ServerTextCommandsFactory {
     public static String getAllCredentialsJSON() {
         return new String(ServerCommand.GET_ALL_CREDENTIALS_JSON.getCommandText());
     }
+
+    public static String addPasswordWithoutCheck(String website, String usernameForSite, String password,
+                                                 String masterPassword) {
+        return String.format("%s %s %s %s %s",
+                             ServerCommand.ADD_PASSWORD.getCommandText(), website, usernameForSite, password,
+                             masterPassword);
+    }
 }
 
