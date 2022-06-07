@@ -182,15 +182,27 @@ public class IndexController {
     }
 
     private void testCustomDialogPane() {
-
         Dialog<CredentialAdditionRequest> addCredentialDialogPaneController =
                 new AddCredentialDialogPaneController(Context.getInstance().getStageManager().getCurrentStage());
-
 
 
         Optional<CredentialAdditionRequest> credentialAdditionRequestOptional =
                 addCredentialDialogPaneController.showAndWait();
 
-        credentialAdditionRequestOptional.ifPresent(credentialAdditionRequest -> System.out.println(credentialAdditionRequest));
+        if (credentialAdditionRequestOptional.isEmpty()) {
+            return;
+        }
+
+        CredentialAdditionRequest credentialAdditionRequest = credentialAdditionRequestOptional.get();
+        System.out.println(credentialAdditionRequest);
+
+        Optional<String> masterPasswordOptional = CommonUIElements.getMasterPasswordDialog().showAndWait();
+        if (masterPasswordOptional.isEmpty()) {
+            CommonUIElements.getErrorAlert("please enter your master password to proceed");
+            return;
+        }
+
+        String masterPassword = masterPasswordOptional.get();
+        System.out.println("master password : " + masterPassword);
     }
 }

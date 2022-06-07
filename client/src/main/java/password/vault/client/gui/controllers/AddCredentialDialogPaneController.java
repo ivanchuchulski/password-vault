@@ -4,10 +4,10 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.HPos;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
@@ -26,6 +26,7 @@ import java.io.IOException;
  */
 public class AddCredentialDialogPaneController extends Dialog<CredentialAdditionRequest> {
 
+
     @FXML
     private DialogPane dialogAddCredentials;
 
@@ -42,7 +43,7 @@ public class AddCredentialDialogPaneController extends Dialog<CredentialAddition
     private Label lblPassword;
 
     @FXML
-    private Label lblMasterPassword;
+    private Label lblSecurityCheck;
 
     @FXML
     private TextField txtWebsite;
@@ -60,13 +61,7 @@ public class AddCredentialDialogPaneController extends Dialog<CredentialAddition
     private CheckBox chBoxShowPassword;
 
     @FXML
-    private TextField txtMasterPasswordShown;
-
-    @FXML
-    private PasswordField txtMasterPassword;
-
-    @FXML
-    private CheckBox chBoxShowMasterPassword;
+    private ChoiceBox<YesNoCheck> choiceSecurityCheck;
 
     @FXML
     private Label lblErrors;
@@ -82,8 +77,11 @@ public class AddCredentialDialogPaneController extends Dialog<CredentialAddition
             setDialogPane(dialogAddCredentials);
             setResultConverter(dialogButton -> {
                 if (dialogButton == ButtonType.OK) {
-                    return new CredentialAdditionRequest(txtWebsite.getText(), txtUsername.getText(),
-                                                         txtPassword.getText(), txtMasterPassword.getText());
+
+                    return new CredentialAdditionRequest(txtWebsite.getText(),
+                                                         txtUsername.getText(),
+                                                         txtPassword.getText(),
+                                                         choiceSecurityCheck.getSelectionModel().getSelectedItem());
                 }
                 return null;
             });
@@ -101,31 +99,24 @@ public class AddCredentialDialogPaneController extends Dialog<CredentialAddition
             initModality(Modality.APPLICATION_MODAL);
             setOnShowing(dialogEvent -> Platform.runLater(() -> txtWebsite.requestFocus()));
 
+            choiceSecurityCheck.getItems().addAll(YesNoCheck.values());
+            choiceSecurityCheck.getSelectionModel().selectFirst();
+
         } catch (IOException exception) {
             throw new RuntimeException("unable to load custom add credential class", exception);
         }
     }
 
     private boolean fieldsAreValid() {
-        return !txtWebsite.getText().isBlank() && !txtUsername.getText().isBlank() && !txtPassword.getText().isBlank()
-                && !txtMasterPassword.getText().isBlank();
+        return !txtWebsite.getText().isBlank() && !txtUsername.getText().isBlank() && !txtPassword.getText().isBlank();
     }
 
     @FXML
     void initialize() {
         CommonUIElements.setupShowHidePasswordCheckbox(txtPasswordShown, txtPassword, chBoxShowPassword);
-        CommonUIElements.setupShowHidePasswordCheckbox(txtMasterPasswordShown, txtMasterPassword,
-                                                       chBoxShowMasterPassword);
-        // center labels in their respective grid cell
-        // source : https://stackoverflow.com/a/35438985
-        GridPane.setHalignment(lblWebsite, HPos.RIGHT);
-        GridPane.setHalignment(lblUsername, HPos.RIGHT);
-        GridPane.setHalignment(lblPassword, HPos.RIGHT);
-        GridPane.setHalignment(lblMasterPassword, HPos.RIGHT);
     }
 
     public DialogPane getDialogAddCredentials() {
         return dialogAddCredentials;
     }
-
 }
