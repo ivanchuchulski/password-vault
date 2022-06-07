@@ -45,6 +45,9 @@ public class IndexController {
     @FXML
     private Label lblWelcome;
 
+    @FXML
+    private Button btnAddCredential;
+
     public IndexController() {
         Context context = Context.getInstance();
         this.client = context.getClient();
@@ -86,9 +89,13 @@ public class IndexController {
         flowPane.setVgap(10);
         flowPane.setHgap(10);
         flowPane.getChildren().addAll(guiCredentials);
+    }
 
+    @FXML
+    void btnAddCredentialClicked(ActionEvent event) {
         testCustomDialogPane();
     }
+
 
     @FXML
     void btnLogoutClicked(ActionEvent event) {
@@ -114,12 +121,12 @@ public class IndexController {
 
     public void fetchPassword(CredentialIdentifierDTO credentialIdentifierDTO, String masterPassword) {
         try {
-
-            System.out.println("sending fetch password request...");
             client.sendRequest(ServerTextCommandsFactory.retrieveCredentials(credentialIdentifierDTO.getWebsite(),
                                                                              credentialIdentifierDTO.getUsernameForWebsite(),
                                                                              masterPassword));
             Response response = client.receiveResponse();
+
+            checkResponseForValidSession(response);
 
             if (!response.serverResponse().equals(ServerResponses.CREDENTIAL_RETRIEVAL_SUCCESS)) {
                 CommonUIElements.getErrorAlert(response.message()).showAndWait();
@@ -127,8 +134,6 @@ public class IndexController {
             }
 
             String cleartextPassword = response.message();
-            System.out.println("password is : " + cleartextPassword);
-
             copyPasswordToClipboard(cleartextPassword);
             CommonUIElements.getInformationAlert("Credential retrieval success!", "").showAndWait();
         } catch (IOException e) {
@@ -160,6 +165,13 @@ public class IndexController {
         }
     }
 
+    private void checkResponseForValidSession(Response response) {
+        if (response.serverResponse().equals(ServerResponses.SESSION_EXPIRED)) {
+            CommonUIElements.getInformationAlert("Your session has expired, please log in again", "").showAndWait();
+            switchToLoginScene();
+        }
+    }
+
     private void copyPasswordToClipboard(String cleartextPassword) {
         ClipboardContent content = new ClipboardContent();
         content.putString(cleartextPassword);
@@ -172,6 +184,7 @@ public class IndexController {
 
         AddCredentialDialogPaneController addCredentialDialogPaneController =
                 new AddCredentialDialogPaneController(Context.getInstance().getStageManager().getCurrentStage());
+
         Optional<CredentialAdditionRequest> credentialAdditionRequestOptional =
                 addCredentialDialogPaneController.showAndWait();
 

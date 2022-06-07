@@ -92,7 +92,7 @@
                                     </PasswordField>
                                  </children>
                               </StackPane>
-                              <PasswordField fx:id="txttMasterPasswordRepeated" alignment="CENTER" promptText="Repeat master password">
+                              <PasswordField fx:id="txtMasterPasswordRepeated" alignment="CENTER" promptText="Repeat master password">
                                  <font>
                                     <Font size="14.0" />
                                  </font>
@@ -110,8 +110,8 @@
                               </Button>
                            </children>
                         </VBox>
-                        <CheckBox fx:id="chBoxShowMasterPassword" layoutX="970.0" layoutY="407.0" mnemonicParsing="false" onAction="#chBoxShowMasterPassword" text="Show/Hide master password" />
-                        <CheckBox fx:id="chBoxShowPassword" layoutX="970.0" layoutY="269.0" mnemonicParsing="false" onAction="#chBoxShowPassword" text="Show/Hide password" />
+                        <CheckBox fx:id="chBoxShowMasterPassword" layoutX="970.0" layoutY="398.0" mnemonicParsing="false" text="Show/Hide master password" />
+                        <CheckBox fx:id="chBoxShowPassword" layoutX="970.0" layoutY="246.0" mnemonicParsing="false" text="Show/Hide password" />
                         <Button fx:id="btnExit" layoutX="1141.0" layoutY="640.0" mnemonicParsing="false" onAction="#btnExitClicked" prefHeight="40.0" prefWidth="125.0" text="Exit">
                            <padding>
                               <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />

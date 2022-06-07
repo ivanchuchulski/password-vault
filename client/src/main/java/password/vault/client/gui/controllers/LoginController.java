@@ -67,7 +67,7 @@ public class LoginController {
     @FXML
     void initialize() {
         makeLoginDefaultButton();
-        setupShowHidePasswordCheckbox(txtPasswordShown, txtPassword, chBoxShowPassword);
+        CommonUIElements.setupShowHidePasswordCheckbox(txtPasswordShown, txtPassword, chBoxShowPassword);
     }
 
     @FXML
@@ -77,7 +77,6 @@ public class LoginController {
 
         if (username.length() == 0 || password.length() == 0) {
             String errorMessage = "Fields are necessary!";
-            // CommonUIElements.getErrorAlert(errorMessage).showAndWait();
             lblErrors.setVisible(true);
             lblErrors.setText(errorMessage);
             return;
@@ -89,7 +88,6 @@ public class LoginController {
             ServerResponses serverResponses = response.serverResponse();
 
             if (serverResponses.equals(ServerResponses.LOGIN_SUCCESS)) {
-                // CommonUIElements.getInformationAlert(response.message(), "login success").showAndWait();
                 switchToIndexScene(username);
             } else {
                 CommonUIElements.getErrorAlert(response.message()).showAndWait();
@@ -132,11 +130,6 @@ public class LoginController {
         stageManager.switchScene(FXMLScenes.REGISTRATION);
     }
 
-    @FXML
-    void chBoxShowPassword(ActionEvent event) {
-
-    }
-
     private void makeLoginDefaultButton() {
         btnLogin.setDefaultButton(true);
 
@@ -154,21 +147,5 @@ public class LoginController {
 
         StageManager stageManager = context.getStageManager();
         stageManager.switchScene(FXMLScenes.INDEX);
-    }
-
-    /**
-     * source : <a href="https://stackoverflow.com/a/17014524/9127495">...</a>
-     */
-    private void setupShowHidePasswordCheckbox(TextField textField, PasswordField passwordField,
-                                               CheckBox showCheckbox) {
-        textField.setVisible(false);
-        textField.setManaged(false);
-        textField.textProperty().bindBidirectional(passwordField.textProperty());
-
-        textField.managedProperty().bind(showCheckbox.selectedProperty());
-        textField.visibleProperty().bind(showCheckbox.selectedProperty());
-
-        passwordField.managedProperty().bind(showCheckbox.selectedProperty().not());
-        passwordField.visibleProperty().bind(showCheckbox.selectedProperty().not());
     }
 }

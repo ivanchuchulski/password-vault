@@ -3,14 +3,18 @@ package password.vault.client.gui.controllers;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.HPos;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
+import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.GridPane;
 import javafx.stage.Modality;
 import javafx.stage.Window;
+import password.vault.client.gui.CommonUIElements;
 import password.vault.client.gui.model.CredentialAdditionRequest;
 
 import java.io.IOException;
@@ -24,6 +28,27 @@ public class AddCredentialDialogPaneController extends Dialog<CredentialAddition
     private DialogPane dialogAddCredentials;
 
     @FXML
+    private GridPane gridData;
+
+    @FXML
+    private Label lblWebsite;
+
+    @FXML
+    private Label lblUsername;
+
+    @FXML
+    private Label lblPassword;
+
+    @FXML
+    private Label lblMasterPassword;
+
+    @FXML
+    private TextField txtWebsite;
+
+    @FXML
+    private TextField txtUsername;
+
+    @FXML
     private TextField txtPasswordShown;
 
     @FXML
@@ -31,12 +56,6 @@ public class AddCredentialDialogPaneController extends Dialog<CredentialAddition
 
     @FXML
     private CheckBox chBoxShowPassword;
-
-    @FXML
-    private TextField txtWebsite;
-
-    @FXML
-    private TextField txtUsername;
 
     @FXML
     private TextField txtMasterPasswordShown;
@@ -75,6 +94,15 @@ public class AddCredentialDialogPaneController extends Dialog<CredentialAddition
 
     @FXML
     void initialize() {
+        CommonUIElements.setupShowHidePasswordCheckbox(txtPasswordShown, txtPassword, chBoxShowPassword);
+        CommonUIElements.setupShowHidePasswordCheckbox(txtMasterPasswordShown, txtMasterPassword,
+                                                       chBoxShowMasterPassword);
+        // center labels in their respective grid cell
+        // source : https://stackoverflow.com/a/35438985
+        GridPane.setHalignment(lblWebsite, HPos.RIGHT);
+        GridPane.setHalignment(lblUsername, HPos.RIGHT);
+        GridPane.setHalignment(lblPassword, HPos.RIGHT);
+        GridPane.setHalignment(lblMasterPassword, HPos.RIGHT);
     }
 
     public DialogPane getDialogAddCredentials() {

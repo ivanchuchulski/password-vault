@@ -52,7 +52,7 @@ public class RegistrationController {
     private PasswordField txtMasterPassword;
 
     @FXML
-    private PasswordField txttMasterPasswordRepeated;
+    private PasswordField txtMasterPasswordRepeated;
 
     @FXML
     private Button btnRegister;
@@ -76,9 +76,8 @@ public class RegistrationController {
     @FXML
     void initialize() {
         setupDefaultButton();
-        // setupShowHidePasswordCheckbox();
-        setupShowHidePasswordCheckbox(txtPasswordShown, txtPassword, chBoxShowPassword);
-        setupShowHidePasswordCheckbox(txtMasterPasswordShown, txtMasterPassword, chBoxShowMasterPassword);
+        CommonUIElements.setupShowHidePasswordCheckbox(txtPasswordShown, txtPassword, chBoxShowPassword);
+        CommonUIElements.setupShowHidePasswordCheckbox(txtMasterPasswordShown, txtMasterPassword, chBoxShowMasterPassword);
     }
 
     @FXML
@@ -120,7 +119,7 @@ public class RegistrationController {
                                                                               txtPassword.getText(),
                                                                               txtPasswordRepeted.getText(),
                                                                               txtMasterPassword.getText(),
-                                                                              txttMasterPasswordRepeated.getText());
+                                                                              txtMasterPasswordRepeated.getText());
 
             client.sendRequest(ServerTextCommandsFactory.registerCommand(registrationRequest.username(),
                                                                          registrationRequest.email(),
@@ -144,14 +143,6 @@ public class RegistrationController {
         }
     }
 
-    @FXML
-    void chBoxShowPassword(ActionEvent event) {
-    }
-
-    @FXML
-    void chBoxShowMasterPassword(ActionEvent event) {
-    }
-
     private void setupDefaultButton() {
         btnRegister.setDefaultButton(true);
 
@@ -160,22 +151,6 @@ public class RegistrationController {
                 btnRegister.fire();
             }
         });
-    }
-
-    /**
-     * source : <a href="https://stackoverflow.com/a/17014524/9127495">...</a>
-     */
-    private void setupShowHidePasswordCheckbox(TextField textField, PasswordField passwordField,
-                                               CheckBox showCheckbox) {
-        textField.setVisible(false);
-        textField.setManaged(false);
-        textField.textProperty().bindBidirectional(passwordField.textProperty());
-
-        textField.managedProperty().bind(showCheckbox.selectedProperty());
-        textField.visibleProperty().bind(showCheckbox.selectedProperty());
-
-        passwordField.managedProperty().bind(showCheckbox.selectedProperty().not());
-        passwordField.visibleProperty().bind(showCheckbox.selectedProperty().not());
     }
 
     private void switchToLoginScene() {
