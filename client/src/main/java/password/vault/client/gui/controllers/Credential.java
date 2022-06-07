@@ -15,6 +15,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import password.vault.api.CredentialIdentifierDTO;
 import password.vault.client.gui.Context;
+import password.vault.client.gui.components.GetMasterPasswordDialogController;
 
 import java.io.IOException;
 import java.util.Optional;

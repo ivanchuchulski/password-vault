@@ -22,6 +22,8 @@ import password.vault.client.gui.CommonUIElements;
 import password.vault.client.gui.Context;
 import password.vault.client.gui.FXMLScenes;
 import password.vault.client.gui.StageManager;
+import password.vault.client.gui.components.AddCredentialDialogController;
+import password.vault.client.gui.components.GetMasterPasswordDialogController;
 import password.vault.client.gui.model.CredentialAdditionRequest;
 
 import java.io.IOException;
@@ -183,7 +185,7 @@ public class IndexController {
 
     private void testCustomDialogPane() {
         Dialog<CredentialAdditionRequest> addCredentialDialogPaneController =
-                new AddCredentialDialogPaneController(Context.getInstance().getStageManager().getCurrentStage());
+                new AddCredentialDialogController(Context.getInstance().getStageManager().getCurrentStage());
 
         Optional<CredentialAdditionRequest> credentialAdditionRequestOptional =
                 addCredentialDialogPaneController.showAndWait();

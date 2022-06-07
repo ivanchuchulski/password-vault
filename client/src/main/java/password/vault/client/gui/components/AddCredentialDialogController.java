@@ -1,4 +1,4 @@
-package password.vault.client.gui.controllers;
+package password.vault.client.gui.components;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -17,6 +17,7 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.Modality;
 import javafx.stage.Window;
 import password.vault.client.gui.CommonUIElements;
+import password.vault.client.gui.controllers.YesNoCheck;
 import password.vault.client.gui.model.CredentialAdditionRequest;
 
 import java.io.IOException;
@@ -24,9 +25,10 @@ import java.io.IOException;
 /**
  * source : <a href="https://stackoverflow.com/a/64967696/9127495">...</a>
  */
-public class AddCredentialDialogPaneController extends Dialog<CredentialAdditionRequest> {
+public class AddCredentialDialogController extends Dialog<CredentialAdditionRequest> {
 
-
+    private static final String ADD_CREDENTIALS_DIALOG_FILENAME = "/password/vault/client/gui/controllers" +
+            "/add_credential_dialog_pane.fxml";
     @FXML
     private DialogPane dialogAddCredentials;
 
@@ -66,10 +68,9 @@ public class AddCredentialDialogPaneController extends Dialog<CredentialAddition
     @FXML
     private Label lblErrors;
 
-    public AddCredentialDialogPaneController(Window owner) {
+    public AddCredentialDialogController(Window owner) {
         try {
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/password/vault/client/gui/controllers" +
-                                                                                  "/add_credential_dialog_pane.fxml"));
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(ADD_CREDENTIALS_DIALOG_FILENAME));
             fxmlLoader.setController(this);
 
             fxmlLoader.load();
@@ -87,36 +88,31 @@ public class AddCredentialDialogPaneController extends Dialog<CredentialAddition
             });
 
             final Button okButton = (Button) dialogAddCredentials.lookupButton(ButtonType.OK);
-            okButton.addEventFilter(ActionEvent.ACTION, ae -> {
+            okButton.addEventFilter(ActionEvent.ACTION, actionEventFilter -> {
                 if (!fieldsAreValid()) {
                     lblErrors.setVisible(true);
                     lblErrors.setText("error : all fields are necessary!");
-                    ae.consume(); //not valid
+                    actionEventFilter.consume();
                 }
             });
 
             initOwner(owner);
             initModality(Modality.APPLICATION_MODAL);
             setOnShowing(dialogEvent -> Platform.runLater(() -> txtWebsite.requestFocus()));
-
-            choiceSecurityCheck.getItems().addAll(YesNoCheck.values());
-            choiceSecurityCheck.getSelectionModel().selectFirst();
-
         } catch (IOException exception) {
-            throw new RuntimeException("unable to load custom add credential class", exception);
+            throw new RuntimeException("unable to load custom dialog fxml file", exception);
         }
-    }
-
-    private boolean fieldsAreValid() {
-        return !txtWebsite.getText().isBlank() && !txtUsername.getText().isBlank() && !txtPassword.getText().isBlank();
     }
 
     @FXML
     void initialize() {
         CommonUIElements.setupShowHidePasswordCheckbox(txtPasswordShown, txtPassword, chBoxShowPassword);
+
+        choiceSecurityCheck.getItems().addAll(YesNoCheck.values());
+        choiceSecurityCheck.getSelectionModel().selectFirst();
     }
 
-    public DialogPane getDialogAddCredentials() {
-        return dialogAddCredentials;
+    private boolean fieldsAreValid() {
+        return !txtWebsite.getText().isBlank() && !txtUsername.getText().isBlank() && !txtPassword.getText().isBlank();
     }
 }

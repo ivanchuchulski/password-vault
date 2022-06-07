@@ -1,4 +1,4 @@
-package password.vault.client.gui.controllers;
+package password.vault.client.gui.components;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -20,6 +20,9 @@ import password.vault.client.gui.CommonUIElements;
 import java.io.IOException;
 
 public class GetMasterPasswordDialogController extends Dialog<String> {
+
+    private static final String GET_MASTER_PASSWORD_DIALOG_FILENAME = "/password/vault/client/gui/controllers" +
+            "/get_master_password_dialog.fxml";
     @FXML
     private DialogPane dialogGetMasterPassword;
 
@@ -43,8 +46,7 @@ public class GetMasterPasswordDialogController extends Dialog<String> {
 
     public GetMasterPasswordDialogController(Window owner) {
         try {
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/password/vault/client/gui/controllers" +
-                                                                                  "/get_master_password_dialog.fxml"));
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(GET_MASTER_PASSWORD_DIALOG_FILENAME));
             fxmlLoader.setController(this);
 
             fxmlLoader.load();
@@ -59,20 +61,19 @@ public class GetMasterPasswordDialogController extends Dialog<String> {
             });
 
             final Button okButton = (Button) dialogGetMasterPassword.lookupButton(ButtonType.OK);
-            okButton.addEventFilter(ActionEvent.ACTION, ae -> {
+            okButton.addEventFilter(ActionEvent.ACTION, actionEventFilter -> {
                 if (!fieldsAreValid()) {
                     lblErrors.setVisible(true);
                     lblErrors.setText("error : all fields are necessary!");
-                    ae.consume(); //not valid
+                    actionEventFilter.consume();
                 }
             });
 
             initOwner(owner);
             initModality(Modality.APPLICATION_MODAL);
             setOnShowing(dialogEvent -> Platform.runLater(() -> txtPassword.requestFocus()));
-
         } catch (IOException exception) {
-            throw new RuntimeException("unable to load custom add credential class", exception);
+            throw new RuntimeException("unable to load custom dialog fxml file", exception);
         }
     }
 
