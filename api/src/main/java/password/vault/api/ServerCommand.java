@@ -17,7 +17,9 @@ public enum ServerCommand {
             "<master-password>"),
     REMOVE_PASSWORD("remove-password", 3, "remove-password <website> <user> <master-password>"),
     RETRIEVE_CREDENTIAL("get-password", 3, "get-password <website> <user> <master-password>"),
-    GET_ALL_CREDENTIALS("get-all-credentials", 1, "get-all-credentials <master-password>"),
+    GET_ALL_CREDENTIALS("get-all-credentials", 0, "get-all-credentials"),
+
+    GET_ALL_CREDENTIALS_JSON("get-all-credentials-json", 0, "get-all-credentials-json"),
 
     GENERATE_PASSWORD("generate-password", 4, "generate-password <website> <user> <passwordLength> <master-password>"),
     CHECK_PASSWORD_SAFETY("check-password", 1, "check-password <password>"),

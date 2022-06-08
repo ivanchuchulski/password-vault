@@ -1,5 +1,8 @@
 package password.vault.server;
 
+import com.google.gson.Gson;
+import password.vault.api.CredentialIdentifierDTO;
+import password.vault.server.password.vault.CredentialIdentifier;
 import password.vault.api.Response;
 import password.vault.api.ServerCommand;
 import password.vault.api.ServerResponses;
@@ -13,13 +16,13 @@ import password.vault.server.dto.PasswordGeneratorResponse;
 import password.vault.server.dto.PasswordSafetyResponse;
 import password.vault.server.password.generator.PasswordGenerator;
 import password.vault.server.password.safety.checker.PasswordSafetyChecker;
-import password.vault.server.password.vault.CredentialIdentifier;
 import password.vault.server.password.vault.PasswordVault;
 import password.vault.server.password.vault.WebsiteCredential;
 import password.vault.server.session.ChannelUsernameMapper;
 import password.vault.server.session.UserActionsLog;
 import password.vault.server.user.repository.UserRepository;
 
+import java.util.LinkedList;
 import java.util.List;
 
 public class CommandExecutor {
@@ -32,6 +35,8 @@ public class CommandExecutor {
     private final PasswordSafetyChecker passwordSafetyChecker;
     private final PasswordGenerator passwordGenerator;
 
+    private final Gson gson;
+
     public CommandExecutor(UserRepository userRepository, PasswordVault passwordVault,
                            PasswordSafetyChecker passwordSafetyChecker, PasswordGenerator passwordGenerator) {
         this.userRepository = userRepository;
@@ -42,6 +47,8 @@ public class CommandExecutor {
 
         this.userActionsLog = new UserActionsLog();
         this.channelUsernameMapper = new ChannelUsernameMapper();
+
+        this.gson = new Gson();
     }
 
     public CommandResponse executeCommand(UserRequest userRequest) {
@@ -98,13 +105,15 @@ public class CommandExecutor {
                     case REMOVE_PASSWORD -> removePassword(username, userRequest.arguments());
                     case RETRIEVE_CREDENTIAL -> retrieveCredentials(username, userRequest.arguments());
                     case GENERATE_PASSWORD -> generatePassword(username, userRequest.arguments());
-                    case GET_ALL_CREDENTIALS -> getAllCredentials(username);
+                    case GET_ALL_CREDENTIALS -> getAllCredentials(username, true);
+                    case GET_ALL_CREDENTIALS_JSON -> getAllCredentials(username, false);
                     case CHECK_PASSWORD_SAFETY -> checkPasswordSafety(userRequest.arguments());
                     default -> new Response(ServerResponses.HELP_COMMAND, ServerCommand.printHelp());
                 };
 
         return new CommandResponse(false, response);
     }
+
 
     private boolean commandHasIncorrectNumberOfArguments(UserRequest clientUserRequest, ServerCommand serverCommand) {
         return serverCommand.getNumberOfArguments() != clientUserRequest.numberOfArguments();
@@ -120,10 +129,10 @@ public class CommandExecutor {
             channelUsernameMapper.removeUsernameForChannel(userRequest.getSocketChannel());
             userActionsLog.removeUserSession(channelUsername);
 
-            return new Response(ServerResponses.DISCONNECTED, "successfully logged out");
+            return new Response(ServerResponses.DISCONNECTED, "successfully logged out and disconnecting...");
         } catch (UserRepository.UserNotLoggedInException e) {
             System.out.println("a non-logged in user disconnected");
-            return new Response(ServerResponses.DISCONNECTED, "successfully logged out");
+            return new Response(ServerResponses.DISCONNECTED, "successfully disconnected");
         } catch (UserRepository.LogoutException e) {
             return new Response(ServerResponses.LOGOUT_ERROR, "unable to process logout request");
         }
@@ -217,7 +226,8 @@ public class CommandExecutor {
             }
 
             return addPassword(username, arguments);
-        } catch (PasswordSafetyChecker.PasswordSafetyCheckerException | DatabaseConnectorException | PasswordHasher.HashException e) {
+        } catch (PasswordSafetyChecker.PasswordSafetyCheckerException | DatabaseConnectorException |
+                 PasswordHasher.HashException e) {
             return new Response(ServerResponses.CREDENTIAL_ADDITION_ERROR, "couldn't complete your request, try again");
         }
     }
@@ -238,8 +248,10 @@ public class CommandExecutor {
 
             return new Response(ServerResponses.CREDENTIAL_ADDITION_SUCCESS, "added password successfully");
         } catch (PasswordVault.CredentialsAlreadyAddedException e) {
-            return new Response(ServerResponses.CREDENTIAL_ADDITION_ERROR, "credential for that site and username already added ");
-        } catch (PasswordEncryptor.PasswordEncryptorException | DatabaseConnectorException | PasswordHasher.HashException e) {
+            return new Response(ServerResponses.CREDENTIAL_ADDITION_ERROR, "credential for that site and username " +
+                    "already added ");
+        } catch (PasswordEncryptor.PasswordEncryptorException | DatabaseConnectorException |
+                 PasswordHasher.HashException e) {
             return new Response(ServerResponses.CREDENTIAL_ADDITION_ERROR, "couldn't complete your request, try again");
         } catch (WebsiteCredential.InvalidWebsiteException e) {
             return new Response(ServerResponses.WRONG_COMMAND_ARGUMENT, "website is invalid");
@@ -265,7 +277,8 @@ public class CommandExecutor {
             return new Response(ServerResponses.NO_CREDENTIALS_ADDED, "you don't have any credential");
         } catch (PasswordVault.CredentialNotFoundException e) {
             return new Response(ServerResponses.NO_SUCH_CREDENTIAL, "no such credential");
-        } catch (DatabaseConnectorException | PasswordVault.CredentialRemovalException | PasswordHasher.HashException e) {
+        } catch (DatabaseConnectorException | PasswordVault.CredentialRemovalException |
+                 PasswordHasher.HashException e) {
             return new Response(ServerResponses.CREDENTIAL_REMOVAL_ERROR, "couldn't complete your request, try again");
         }
     }
@@ -289,32 +302,35 @@ public class CommandExecutor {
             return new Response(ServerResponses.NO_CREDENTIALS_ADDED, "you don't have any credentials");
         } catch (PasswordVault.CredentialNotFoundException e) {
             return new Response(ServerResponses.NO_SUCH_CREDENTIAL, "no such credential");
-        } catch (PasswordEncryptor.PasswordEncryptorException | DatabaseConnectorException | PasswordHasher.HashException e) {
+        } catch (PasswordEncryptor.PasswordEncryptorException | DatabaseConnectorException |
+                 PasswordHasher.HashException e) {
             return new Response(ServerResponses.CREDENTIAL_RETRIEVAL_ERROR, "unable to retrieve credential, try again");
         }
     }
 
-    private Response getAllCredentials(String username) {
+    private Response getAllCredentials(String username, boolean formatted) {
         try {
             List<CredentialIdentifier> allCredentials = passwordVault.getAllCredentials(username);
 
-            StringBuilder sb = new StringBuilder();
-            sb.append("user %s credentials : %n".formatted(username));
-            for (CredentialIdentifier credentialIdentifier : allCredentials) {
-                String format = String.format("username \"%s\" for website \"%s\"%n",
-                                              credentialIdentifier.usernameForWebsite(),
-                                              credentialIdentifier.website());
-                sb.append(format);
-            }
+            if (formatted) {
+                String allCredentialsFormatted = allCredentialsAsSingleString(username, allCredentials);
+                return new Response(ServerResponses.CREDENTIAL_RETRIEVAL_SUCCESS, allCredentialsFormatted);
+            } else {
+                List<CredentialIdentifierDTO> credentialIdentifierDTOS = new LinkedList<>();
 
-            return new Response(ServerResponses.CREDENTIAL_RETRIEVAL_SUCCESS, sb.toString());
+                for (CredentialIdentifier credentialIdentifier : allCredentials) {
+                    credentialIdentifierDTOS.add(new CredentialIdentifierDTO(credentialIdentifier.website(),
+                                                                             credentialIdentifier.usernameForWebsite()));
+                }
+
+                return new Response(ServerResponses.CREDENTIAL_RETRIEVAL_SUCCESS, gson.toJson(credentialIdentifierDTOS));
+            }
         } catch (PasswordVault.UsernameNotHavingCredentialsException e) {
             return new Response(ServerResponses.CREDENTIAL_REMOVAL_ERROR, "you do not have any credentials added");
         } catch (DatabaseConnectorException e) {
             return new Response(ServerResponses.CREDENTIAL_RETRIEVAL_ERROR, "unable to retrieve credential, try again");
         }
     }
-
 
     private Response generatePassword(String username, String[] arguments) {
         try {
@@ -328,7 +344,8 @@ public class CommandExecutor {
             }
 
             if (passwordVault.userHasCredentialsForSiteAndUsername(username, website, usernameForSite)) {
-                return new Response(ServerResponses.CREDENTIAL_GENERATION_ERROR, "credential for that site and username already added ");
+                return new Response(ServerResponses.CREDENTIAL_GENERATION_ERROR, "credential for that site and " +
+                        "username already added ");
             }
 
             PasswordGeneratorResponse passwordGeneratorResponse =
@@ -345,10 +362,12 @@ public class CommandExecutor {
                                       masterPassword);
 
             return new Response(ServerResponses.CREDENTIAL_GENERATION_SUCCESS, generatedPassword);
-        } catch (PasswordGenerator.PasswordGeneratorException | PasswordEncryptor.PasswordEncryptorException | DatabaseConnectorException | PasswordHasher.HashException e) {
+        } catch (PasswordGenerator.PasswordGeneratorException | PasswordEncryptor.PasswordEncryptorException |
+                 DatabaseConnectorException | PasswordHasher.HashException e) {
             return new Response(ServerResponses.PASSWORD_GENERATION_ERROR, "unable to generate password");
         } catch (PasswordVault.CredentialsAlreadyAddedException e) {
-            return new Response(ServerResponses.CREDENTIAL_ADDITION_ERROR, "credential for that site and username already added ");
+            return new Response(ServerResponses.CREDENTIAL_ADDITION_ERROR, "credential for that site and username " +
+                    "already added ");
         } catch (NumberFormatException e) {
             return new Response(ServerResponses.WRONG_COMMAND_NUMBER_OF_ARGUMENTS, "incorrect arguments");
         } catch (WebsiteCredential.InvalidWebsiteException e) {
@@ -383,5 +402,21 @@ public class CommandExecutor {
         PasswordHash givenMasterPasswordHash = new PasswordHash(masterPassword, salt);
 
         return givenMasterPasswordHash.equals(retrievedMasterPasswordHash);
+    }
+
+    private String allCredentialsAsSingleString(String username, List<CredentialIdentifier> allCredentials) {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("user %s credentials : %n".formatted(username));
+
+        for (CredentialIdentifier credentialIdentifier : allCredentials) {
+            String format = String.format("username \"%s\" for website \"%s\"%n",
+                                          credentialIdentifier.usernameForWebsite(),
+                                          credentialIdentifier.website());
+            sb.append(format);
+        }
+
+        return sb.toString();
+
     }
 }
