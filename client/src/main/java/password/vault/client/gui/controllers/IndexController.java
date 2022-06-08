@@ -371,7 +371,7 @@ public class IndexController {
 
         ObservableList<Node> flowPaneChildren = flowPane.getChildren();
         flowPaneChildren.clear();
-        flowPaneChildren.addAll(getDummyCredentials());
+        // flowPaneChildren.addAll(getDummyCredentials());
         flowPaneChildren.addAll(guiCredentials);
     }
 
@@ -383,7 +383,7 @@ public class IndexController {
         LinkedList<Credential> dummyCredentials = new LinkedList<>();
         for (int i = 0; i < limit; i++) {
             CredentialIdentifierDTO credentialIdentifierDTO = new CredentialIdentifierDTO(websiteTest + i, domain + i);
-            
+
             Credential guiCredential = new Credential();
             guiCredential.setIndexController(this);
             guiCredential.setCredentialIdentifierDTO(credentialIdentifierDTO);
