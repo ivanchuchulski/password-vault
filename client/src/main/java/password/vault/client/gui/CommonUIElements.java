@@ -13,6 +13,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import password.vault.client.gui.components.GetPasswordDialogController;
+import password.vault.client.gui.context.Context;
 
 public class CommonUIElements {
     private static Alert getAlertMessage(Alert.AlertType type, String header, String context, String title) {

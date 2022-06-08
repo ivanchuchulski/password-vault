@@ -1,4 +1,4 @@
-package password.vault.client.gui;
+package password.vault.client.gui.context;
 
 import password.vault.client.communication.Client;
 

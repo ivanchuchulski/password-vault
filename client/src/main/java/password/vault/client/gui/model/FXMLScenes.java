@@ -1,4 +1,4 @@
-package password.vault.client.gui;
+package password.vault.client.gui.model;
 
 import java.net.URL;
 

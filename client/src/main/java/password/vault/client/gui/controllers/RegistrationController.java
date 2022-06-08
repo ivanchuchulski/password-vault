@@ -15,9 +15,9 @@ import password.vault.api.ServerResponses;
 import password.vault.api.ServerTextCommandsFactory;
 import password.vault.client.communication.Client;
 import password.vault.client.gui.CommonUIElements;
-import password.vault.client.gui.Context;
-import password.vault.client.gui.FXMLScenes;
-import password.vault.client.gui.StageManager;
+import password.vault.client.gui.context.Context;
+import password.vault.client.gui.model.FXMLScenes;
+import password.vault.client.gui.context.StageManager;
 import password.vault.client.gui.model.RegistrationRequest;
 
 import java.io.IOException;

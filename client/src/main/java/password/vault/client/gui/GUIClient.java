@@ -5,6 +5,8 @@ import javafx.application.Platform;
 import javafx.stage.Stage;
 import password.vault.api.ServerTextCommandsFactory;
 import password.vault.client.communication.Client;
+import password.vault.client.gui.context.Context;
+import password.vault.client.gui.context.StageManager;
 
 import java.io.IOException;
 

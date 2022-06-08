@@ -21,14 +21,15 @@ import password.vault.api.ServerResponses;
 import password.vault.api.ServerTextCommandsFactory;
 import password.vault.client.communication.Client;
 import password.vault.client.gui.CommonUIElements;
-import password.vault.client.gui.Context;
-import password.vault.client.gui.FXMLScenes;
-import password.vault.client.gui.StageManager;
+import password.vault.client.gui.context.Context;
+import password.vault.client.gui.model.FXMLScenes;
+import password.vault.client.gui.context.StageManager;
 import password.vault.client.gui.components.AddCredentialDialogController;
 import password.vault.client.gui.components.GenerateCredentialDialogConroller;
 import password.vault.client.gui.dto.AddCredentialRequestDTO;
 import password.vault.client.gui.model.AddCredentialDialogResult;
 import password.vault.client.gui.model.GenerateCredentialsDialogResult;
+import password.vault.client.gui.model.YesNoCheck;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -184,7 +185,6 @@ public class IndexController {
         String masterPassword = masterPasswordOptional.get();
         GenerateCredentialsDialogResult generateCredentialsDialogResult = generateCredentialsDialogResultOptional.get();
 
-        System.out.println(generateCredentialsDialogResult);
         try {
             String command = ServerTextCommandsFactory.generatePassword(generateCredentialsDialogResult.website(),
                                                                         generateCredentialsDialogResult.username(),

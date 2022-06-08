@@ -1,10 +1,11 @@
-package password.vault.client.gui;
+package password.vault.client.gui.context;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+import password.vault.client.gui.model.FXMLScenes;
 
 import java.io.IOException;
 import java.net.URL;

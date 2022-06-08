@@ -1,4 +1,4 @@
-package password.vault.client.gui.controllers;
+package password.vault.client.gui.model;
 
 public enum YesNoCheck {
     YES("Yes"),

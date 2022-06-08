@@ -18,7 +18,7 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.Modality;
 import javafx.stage.Window;
 import password.vault.client.gui.CommonUIElements;
-import password.vault.client.gui.controllers.YesNoCheck;
+import password.vault.client.gui.model.YesNoCheck;
 import password.vault.client.gui.model.AddCredentialDialogResult;
 import password.vault.client.gui.model.FieldConstraints;
 
