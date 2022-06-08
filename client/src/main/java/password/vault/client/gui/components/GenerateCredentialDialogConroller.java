@@ -1,38 +1,31 @@
 package password.vault.client.gui.components;
 
 import javafx.application.Platform;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
+import javafx.scene.control.Slider;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Modality;
 import javafx.stage.Window;
-import password.vault.client.gui.CommonUIElements;
-import password.vault.client.gui.controllers.YesNoCheck;
-import password.vault.client.gui.model.AddCredentialDialogResult;
 import password.vault.client.gui.model.FieldConstraints;
+import password.vault.client.gui.model.GenerateCredentialsDialogResult;
 
 import java.io.IOException;
 
-/**
- * source : <a href="https://stackoverflow.com/a/64967696/9127495">...</a>
- */
-public class AddCredentialDialogController extends Dialog<AddCredentialDialogResult> {
+public class GenerateCredentialDialogConroller extends Dialog<GenerateCredentialsDialogResult> {
 
-    private static final String ADD_CREDENTIALS_DIALOG_FILENAME = "/password/vault/client/gui/components" +
-            "/add_credential_dialog.fxml";
+    private static final String GENERATE_CREDENTIALS_DIALOG_FILENAME = "/password/vault/client/gui/components/" +
+            "generate_credentials_dialog.fxml";
+
     @FXML
-    private DialogPane dialogAddCredentials;
+    private DialogPane dialogGenerateCredentials;
 
     @FXML
     private GridPane gridData;
@@ -44,52 +37,37 @@ public class AddCredentialDialogController extends Dialog<AddCredentialDialogRes
     private Label lblUsername;
 
     @FXML
-    private Label lblPassword;
-
-    @FXML
-    private Label lblSecurityCheck;
-
-    @FXML
     private TextField txtWebsite;
 
     @FXML
     private TextField txtUsername;
 
     @FXML
-    private TextField txtPasswordShown;
+    private Slider sliderLength;
 
     @FXML
-    private PasswordField txtPassword;
-
-    @FXML
-    private CheckBox chBoxShowPassword;
-
-    @FXML
-    private ChoiceBox<YesNoCheck> choiceSecurityCheck;
+    private Label lblSlider;
 
     @FXML
     private Label lblErrors;
 
-    public AddCredentialDialogController(Window owner) {
+    public GenerateCredentialDialogConroller(Window owner) {
         try {
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(ADD_CREDENTIALS_DIALOG_FILENAME));
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(GENERATE_CREDENTIALS_DIALOG_FILENAME));
             fxmlLoader.setController(this);
 
             fxmlLoader.load();
 
-            setDialogPane(dialogAddCredentials);
+            setDialogPane(dialogGenerateCredentials);
             setResultConverter(dialogButton -> {
                 if (dialogButton == ButtonType.OK) {
-
-                    return new AddCredentialDialogResult(txtWebsite.getText(),
-                                                         txtUsername.getText(),
-                                                         txtPassword.getText(),
-                                                         choiceSecurityCheck.getSelectionModel().getSelectedItem());
+                    return new GenerateCredentialsDialogResult(txtWebsite.getText(), txtUsername.getText(),
+                                                               (int) sliderLength.getValue());
                 }
                 return null;
             });
 
-            final Button okButton = (Button) dialogAddCredentials.lookupButton(ButtonType.OK);
+            final Button okButton = (Button) dialogGenerateCredentials.lookupButton(ButtonType.OK);
             okButton.addEventFilter(ActionEvent.ACTION, actionEventFilter -> {
                 if (!fieldsAreValid()) {
                     lblErrors.setVisible(true);
@@ -123,16 +101,16 @@ public class AddCredentialDialogController extends Dialog<AddCredentialDialogRes
 
     @FXML
     void initialize() {
-        CommonUIElements.setupShowHidePasswordCheckbox(txtPasswordShown, txtPassword, chBoxShowPassword);
+        sliderLength.setBlockIncrement(1);
+        sliderLength.setMajorTickUnit(1);
+        sliderLength.setMinorTickCount(0);
+        sliderLength.setShowTickLabels(true);
+        sliderLength.setSnapToTicks(true);
 
-        ObservableList<YesNoCheck> items = choiceSecurityCheck.getItems();
-        items.add(YesNoCheck.NO);
-        items.add(YesNoCheck.YES);
-        choiceSecurityCheck.getSelectionModel().selectFirst();
     }
 
     private boolean fieldsAreValid() {
-        return !txtWebsite.getText().isBlank() && !txtUsername.getText().isBlank() && !txtPassword.getText().isBlank();
+        return !txtWebsite.getText().isBlank() && !txtUsername.getText().isBlank();
     }
 
     private boolean isWebsiteValid() {
@@ -142,5 +120,4 @@ public class AddCredentialDialogController extends Dialog<AddCredentialDialogRes
     private boolean isUsernameValid() {
         return txtUsername.getText().matches(FieldConstraints.VALID_USERNAME_PATTERN);
     }
-
 }

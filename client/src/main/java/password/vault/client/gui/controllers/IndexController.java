@@ -25,8 +25,10 @@ import password.vault.client.gui.Context;
 import password.vault.client.gui.FXMLScenes;
 import password.vault.client.gui.StageManager;
 import password.vault.client.gui.components.AddCredentialDialogController;
+import password.vault.client.gui.components.GenerateCredentialDialogConroller;
 import password.vault.client.gui.dto.AddCredentialRequestDTO;
 import password.vault.client.gui.model.AddCredentialDialogResult;
+import password.vault.client.gui.model.GenerateCredentialsDialogResult;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -159,9 +161,51 @@ public class IndexController {
 
     @FXML
     void btnGenerateCredentialClicked(ActionEvent event) {
+        GenerateCredentialDialogConroller generateCredentialDialogConroller =
+                new GenerateCredentialDialogConroller(Context
+                                                              .getInstance()
+                                                              .getStageManager()
+                                                              .getCurrentStage());
+
+        Optional<GenerateCredentialsDialogResult> generateCredentialsDialogResultOptional =
+                generateCredentialDialogConroller.showAndWait();
+
+        if (generateCredentialsDialogResultOptional.isEmpty()) {
+            return;
+        }
+
+        Dialog<String> getPasswordDialogController = CommonUIElements.getMasterPasswordDialog();
+        Optional<String> masterPasswordOptional = getPasswordDialogController.showAndWait();
+        if (masterPasswordOptional.isEmpty()) {
+            CommonUIElements.getErrorAlert("Please enter your master password to proceed!").showAndWait();
+            return;
+        }
+
+        String masterPassword = masterPasswordOptional.get();
+        GenerateCredentialsDialogResult generateCredentialsDialogResult = generateCredentialsDialogResultOptional.get();
+
+        System.out.println(generateCredentialsDialogResult);
+        try {
+            String command = ServerTextCommandsFactory.generatePassword(generateCredentialsDialogResult.website(),
+                                                                        generateCredentialsDialogResult.username(),
+                                                                        generateCredentialsDialogResult.passwordLength(), masterPassword);
+
+            client.sendRequest(command);
+            Response response = client.receiveResponse();
+
+            checkResponseForValidSession(response);
+
+            CommonUIElements.getInformationAlert(response.message(), "password generation").showAndWait();
+
+            if (response.serverResponse().equals(ServerResponses.CREDENTIAL_GENERATION_SUCCESS)) {
+                getCredentialForUser();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            CommonUIElements.getFailedRequestWarningAlert();
+        }
 
     }
-
 
     @FXML
     void btnLogoutClicked(ActionEvent event) {
