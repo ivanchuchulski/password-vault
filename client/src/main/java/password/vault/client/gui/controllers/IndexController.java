@@ -5,13 +5,13 @@ import com.google.gson.reflect.TypeToken;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.geometry.Orientation;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
@@ -49,6 +49,9 @@ public class IndexController {
     private Button btnLogout;
 
     @FXML
+    private ScrollPane sclPane;
+
+    @FXML
     private FlowPane flowPane;
 
     @FXML
@@ -72,6 +75,9 @@ public class IndexController {
     @FXML
     private Button btnCheckPassword;
 
+    @FXML
+    private Label lblErrors;
+
     public IndexController() {
         Context context = Context.getInstance();
         this.client = context.getClient();
@@ -84,9 +90,12 @@ public class IndexController {
     void initialize() {
         lblWelcome.setText(lblWelcome.getText() + username + "!");
 
-        flowPane.setOrientation(Orientation.VERTICAL);
+        // flowPane.setOrientation(Orientation.VERTICAL);
         flowPane.setVgap(10);
         flowPane.setHgap(10);
+
+        sclPane.setFitToWidth(true);
+        sclPane.setFitToHeight(true);
 
         getCredentialForUser();
     }
@@ -266,6 +275,11 @@ public class IndexController {
             }
         }
 
+        if (filtered.isEmpty()) {
+            lblErrors.setVisible(true);
+            lblErrors.setText("No items have matched your criteria");
+        }
+
         flowPaneChildren.clear();
         flowPaneChildren.addAll(filtered);
     }
@@ -273,6 +287,10 @@ public class IndexController {
     @FXML
     void btnClearClicked(ActionEvent event) {
         txtSearch.clear();
+
+        lblErrors.setVisible(false);
+        lblErrors.setText("");
+
         getCredentialForUser();
     }
 
@@ -336,6 +354,12 @@ public class IndexController {
         }.getType();
         List<CredentialIdentifierDTO> credentials = gson.fromJson(response.message(), listType);
 
+        if (credentials.isEmpty()) {
+            lblErrors.setVisible(true);
+            lblErrors.setText("You don't have any credentials yet!");
+            return;
+        }
+
         List<Credential> guiCredentials = new LinkedList<>();
         for (CredentialIdentifierDTO credential : credentials) {
             Credential guiCredential = new Credential();
@@ -345,10 +369,29 @@ public class IndexController {
             guiCredentials.add(guiCredential);
         }
 
-
         ObservableList<Node> flowPaneChildren = flowPane.getChildren();
         flowPaneChildren.clear();
+        flowPaneChildren.addAll(getDummyCredentials());
         flowPaneChildren.addAll(guiCredentials);
+    }
+
+    private List<Credential> getDummyCredentials() {
+        int limit = 5;
+        String websiteTest = "website_";
+        String domain = "domain_";
+
+        LinkedList<Credential> dummyCredentials = new LinkedList<>();
+        for (int i = 0; i < limit; i++) {
+            CredentialIdentifierDTO credentialIdentifierDTO = new CredentialIdentifierDTO(websiteTest + i, domain + i);
+            
+            Credential guiCredential = new Credential();
+            guiCredential.setIndexController(this);
+            guiCredential.setCredentialIdentifierDTO(credentialIdentifierDTO);
+
+            dummyCredentials.add(guiCredential);
+        }
+
+        return dummyCredentials;
     }
 
     private void switchToLoginScene() {

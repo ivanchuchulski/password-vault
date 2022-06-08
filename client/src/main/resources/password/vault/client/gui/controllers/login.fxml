@@ -22,6 +22,11 @@
                <children>
                   <VBox alignment="CENTER" layoutX="385.0" layoutY="136.0" prefHeight="470.0" prefWidth="510.0" spacing="30.0">
                      <children>
+                        <Label fx:id="lblErrors" alignment="CENTER" prefHeight="38.0" prefWidth="233.0" textFill="RED" visible="false">
+                           <font>
+                              <Font name="System Bold" size="18.0" />
+                           </font>
+                        </Label>
                         <Label prefWidth="80.0" text="Username">
                            <font>
                               <Font name="System Bold" size="17.0" />
@@ -85,11 +90,6 @@
                               <Font size="14.0" />
                            </font>
                         </Button>
-                        <Label fx:id="lblErrors" alignment="CENTER" prefHeight="38.0" prefWidth="233.0" textFill="RED" visible="false">
-                           <font>
-                              <Font name="System Bold" size="18.0" />
-                           </font>
-                        </Label>
                         <Hyperlink fx:id="hypRegistration" alignment="CENTER" onAction="#hypRegistrationPressed" prefHeight="106.0" prefWidth="150.0" text="Create an account">
                            <padding>
                               <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
@@ -102,7 +102,7 @@
                         <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                      </padding>
                   </Button>
-                  <Label layoutX="519.0" layoutY="41.0" text="Password vault" textAlignment="CENTER">
+                  <Label layoutX="519.0" layoutY="38.0" text="Password vault" textAlignment="CENTER">
                      <font>
                         <Font name="System Bold" size="34.0" />
                      </font>
