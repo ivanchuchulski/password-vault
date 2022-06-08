@@ -12,6 +12,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.FlowPane;
@@ -21,13 +22,13 @@ import password.vault.api.ServerResponses;
 import password.vault.api.ServerTextCommandsFactory;
 import password.vault.client.communication.Client;
 import password.vault.client.gui.CommonUIElements;
-import password.vault.client.gui.context.Context;
-import password.vault.client.gui.model.FXMLScenes;
-import password.vault.client.gui.context.StageManager;
 import password.vault.client.gui.components.AddCredentialDialogController;
 import password.vault.client.gui.components.GenerateCredentialDialogConroller;
+import password.vault.client.gui.context.Context;
+import password.vault.client.gui.context.StageManager;
 import password.vault.client.gui.dto.AddCredentialRequestDTO;
 import password.vault.client.gui.model.AddCredentialDialogResult;
+import password.vault.client.gui.model.FXMLScenes;
 import password.vault.client.gui.model.GenerateCredentialsDialogResult;
 import password.vault.client.gui.model.YesNoCheck;
 
@@ -44,7 +45,6 @@ public class IndexController {
     private final Gson gson;
     private final String username;
 
-
     @FXML
     private Button btnLogout;
 
@@ -53,6 +53,15 @@ public class IndexController {
 
     @FXML
     private Label lblWelcome;
+
+    @FXML
+    private TextField txtSearch;
+
+    @FXML
+    private Button btnSearch;
+
+    @FXML
+    private Button btnClear;
 
     @FXML
     private Button btnAddCredential;
@@ -74,6 +83,10 @@ public class IndexController {
     @FXML
     void initialize() {
         lblWelcome.setText(lblWelcome.getText() + username + "!");
+
+        flowPane.setOrientation(Orientation.VERTICAL);
+        flowPane.setVgap(10);
+        flowPane.setHgap(10);
 
         getCredentialForUser();
     }
@@ -229,6 +242,40 @@ public class IndexController {
         });
     }
 
+    @FXML
+    void btnSearchClicked(ActionEvent event) {
+        String searchText = txtSearch.getText();
+
+        if (searchText.isBlank()) {
+            System.out.println("blank search text");
+
+            return;
+        }
+
+        ObservableList<Node> flowPaneChildren = flowPane.getChildren();
+
+        List<Credential> filtered = new LinkedList<>();
+
+        for (Node flowPaneChild : flowPaneChildren) {
+            Credential credential = (Credential) flowPaneChild;
+            String usernameFormatted = credential.getLblUsername().getText().toLowerCase();
+            String websiteFormatted = credential.getLblDomain().getText().toLowerCase();
+
+            if (usernameFormatted.contains(searchText) || websiteFormatted.contains(searchText)) {
+                filtered.add(credential);
+            }
+        }
+
+        flowPaneChildren.clear();
+        flowPaneChildren.addAll(filtered);
+    }
+
+    @FXML
+    void btnClearClicked(ActionEvent event) {
+        txtSearch.clear();
+        getCredentialForUser();
+    }
+
     public void fetchPassword(CredentialIdentifierDTO credentialIdentifierDTO, String masterPassword) {
         try {
             client.sendRequest(ServerTextCommandsFactory.retrieveCredentials(credentialIdentifierDTO.getWebsite(),
@@ -298,9 +345,6 @@ public class IndexController {
             guiCredentials.add(guiCredential);
         }
 
-        flowPane.setOrientation(Orientation.VERTICAL);
-        flowPane.setVgap(10);
-        flowPane.setHgap(10);
 
         ObservableList<Node> flowPaneChildren = flowPane.getChildren();
         flowPaneChildren.clear();
