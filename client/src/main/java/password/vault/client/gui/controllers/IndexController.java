@@ -2,6 +2,7 @@ package password.vault.client.gui.controllers;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -43,6 +44,8 @@ public class IndexController {
 
     private final Gson gson;
     private final String username;
+
+    private ObservableList<Node> currentCredentials;
 
     @FXML
     private Button btnLogout;
@@ -254,15 +257,14 @@ public class IndexController {
         String searchText = txtSearch.getText();
 
         if (searchText.isBlank()) {
-            System.out.println("blank search text");
-
             return;
         }
 
         ObservableList<Node> flowPaneChildren = flowPane.getChildren();
 
-        List<Credential> filtered = new LinkedList<>();
+        currentCredentials = FXCollections.observableArrayList(flowPaneChildren);
 
+        List<Credential> filtered = new LinkedList<>();
         for (Node flowPaneChild : flowPaneChildren) {
             Credential credential = (Credential) flowPaneChild;
             String usernameFormatted = credential.getLblUsername().getText().toLowerCase();
@@ -273,13 +275,14 @@ public class IndexController {
             }
         }
 
+        flowPaneChildren.clear();
+
         if (filtered.isEmpty()) {
             lblErrors.setVisible(true);
-            lblErrors.setText("No items have matched your criteria");
+            lblErrors.setText("No items have matched your criteria!");
+        } else {
+            flowPaneChildren.addAll(filtered);
         }
-
-        flowPaneChildren.clear();
-        flowPaneChildren.addAll(filtered);
     }
 
     @FXML
@@ -289,7 +292,9 @@ public class IndexController {
         lblErrors.setVisible(false);
         lblErrors.setText("");
 
-        getCredentialForUser();
+        ObservableList<Node> flowPaneChildren = flowPane.getChildren();
+        flowPaneChildren.clear();
+        flowPaneChildren.addAll(currentCredentials);
     }
 
     public void fetchPassword(CredentialIdentifierDTO credentialIdentifierDTO, String masterPassword) {
@@ -332,45 +337,52 @@ public class IndexController {
             }
         } catch (IOException e) {
             e.printStackTrace();
-            CommonUIElements.getFailedRequestWarningAlert();
+            CommonUIElements.getFailedRequestWarningAlert().showAndWait();
         }
     }
 
     private void getCredentialForUser() {
-        Response response = fetchCredentials();
+        try {
+            client.sendRequest(ServerTextCommandsFactory.getAllCredentialsJSON());
+            Response response = client.receiveResponse();
 
-        if (response == null) {
+            ObservableList<Node> flowPaneChildren = flowPane.getChildren();
+            flowPaneChildren.clear();
+
+            if (!response.serverResponse().equals(ServerResponses.CREDENTIAL_RETRIEVAL_SUCCESS)) {
+                lblErrors.setVisible(true);
+                lblErrors.setText(response.message());
+                return;
+            }
+
+            Type listType = new TypeToken<List<CredentialIdentifierDTO>>() {
+            }.getType();
+            List<CredentialIdentifierDTO> credentials = gson.fromJson(response.message(), listType);
+
+            lblErrors.setVisible(false);
+            lblErrors.setText("");
+
+            List<Credential> guiCredentials = new LinkedList<>();
+            for (CredentialIdentifierDTO credential : credentials) {
+                Credential guiCredential = new Credential();
+                guiCredential.setIndexController(this);
+                guiCredential.setCredentialIdentifierDTO(credential);
+                guiCredentials.add(guiCredential);
+            }
+
+            flowPaneChildren.addAll(guiCredentials);
+
+            // for testing purposes add a bunch of dummy credentials
+            // flowPaneChildren.addAll(getDummyCredentials());
+
+            if (!txtSearch.getText().isBlank()) {
+                btnSearch.fire();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            CommonUIElements.getErrorAlert("error fetching data from server");
             return;
         }
-
-        if (!response.serverResponse().equals(ServerResponses.CREDENTIAL_RETRIEVAL_SUCCESS)) {
-            CommonUIElements.getErrorAlert("error fetching data from server" + response.message());
-            return;
-        }
-
-        Type listType = new TypeToken<List<CredentialIdentifierDTO>>() {
-        }.getType();
-        List<CredentialIdentifierDTO> credentials = gson.fromJson(response.message(), listType);
-
-        if (credentials.isEmpty()) {
-            lblErrors.setVisible(true);
-            lblErrors.setText("You don't have any credentials yet!");
-            return;
-        }
-
-        List<Credential> guiCredentials = new LinkedList<>();
-        for (CredentialIdentifierDTO credential : credentials) {
-            Credential guiCredential = new Credential();
-            guiCredential.setIndexController(this);
-            guiCredential.setCredentialIdentifierDTO(credential);
-
-            guiCredentials.add(guiCredential);
-        }
-
-        ObservableList<Node> flowPaneChildren = flowPane.getChildren();
-        flowPaneChildren.clear();
-        // flowPaneChildren.addAll(getDummyCredentials());
-        flowPaneChildren.addAll(guiCredentials);
     }
 
     private List<Credential> getDummyCredentials() {
@@ -398,17 +410,6 @@ public class IndexController {
         context.setLoggedInUsername("");
         StageManager stageManager = context.getStageManager();
         stageManager.switchScene(FXMLScenes.LOGIN);
-    }
-
-    private Response fetchCredentials() {
-        try {
-            client.sendRequest(ServerTextCommandsFactory.getAllCredentialsJSON());
-            return client.receiveResponse();
-        } catch (IOException e) {
-            e.printStackTrace();
-            CommonUIElements.getErrorAlert("error fetching data from server");
-            return null;
-        }
     }
 
     private void checkResponseForValidSession(Response response) {

@@ -323,12 +323,14 @@ public class CommandExecutor {
                                                                              credentialIdentifier.usernameForWebsite()));
                 }
 
-                return new Response(ServerResponses.CREDENTIAL_RETRIEVAL_SUCCESS, gson.toJson(credentialIdentifierDTOS));
+                return new Response(ServerResponses.CREDENTIAL_RETRIEVAL_SUCCESS,
+                                    gson.toJson(credentialIdentifierDTOS));
             }
         } catch (PasswordVault.UsernameNotHavingCredentialsException e) {
-            return new Response(ServerResponses.CREDENTIAL_REMOVAL_ERROR, "you do not have any credentials added");
+            return new Response(ServerResponses.CREDENTIAL_RETRIEVAL_ERROR, "You don't have any credentials yet!");
         } catch (DatabaseConnectorException e) {
-            return new Response(ServerResponses.CREDENTIAL_RETRIEVAL_ERROR, "unable to retrieve credential, try again");
+            return new Response(ServerResponses.CREDENTIAL_RETRIEVAL_ERROR, "Unable to retrieve credentials, try " +
+                    "again");
         }
     }
 

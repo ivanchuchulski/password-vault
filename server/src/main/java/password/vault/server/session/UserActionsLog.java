@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class UserActionsLog {
-    private static final int MAX_ALLOWED_USER_INACTIVITY_MINUTES = 1;
+    private static final int MAX_ALLOWED_USER_INACTIVITY_MINUTES = 10;
 
     private final Map<String, LocalDateTime> sessions;
 
