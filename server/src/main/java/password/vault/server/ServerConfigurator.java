@@ -11,6 +11,9 @@ import password.vault.server.user.repository.UserRepositoryDatabase;
 import java.net.http.HttpClient;
 
 public class ServerConfigurator {
+
+    public static final int SERVER_PORT = 7777;
+
     public static Server getServer() {
         DatabaseConnector databaseConnector = new DatabaseConnector();
         UserRepository userRepositoryDB = new UserRepositoryDatabase(databaseConnector);
@@ -25,7 +28,7 @@ public class ServerConfigurator {
 
         CommandExecutor commandExecutor = new CommandExecutor(userRepositoryDB, passwordVaultDB, passwordSafetyChecker,
                                                               passwordGenerator);
-        final int serverPort = 7777;
-        return new Server(serverPort, commandExecutor);
+
+        return new Server(SERVER_PORT, commandExecutor);
     }
 }

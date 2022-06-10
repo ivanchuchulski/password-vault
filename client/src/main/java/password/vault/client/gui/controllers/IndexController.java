@@ -38,7 +38,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
-// TODO : handle session expiration
 public class IndexController {
     private final Client client;
 
@@ -90,7 +89,6 @@ public class IndexController {
     void initialize() {
         lblWelcome.setText(lblWelcome.getText() + username + "!");
 
-        // flowPane.setOrientation(Orientation.VERTICAL);
         flowPane.setVgap(10);
         flowPane.setHgap(10);
 
