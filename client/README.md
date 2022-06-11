@@ -1,11 +1,8 @@
 # Password Vault client app
 ### Running in console mode
+    .\gradlew :client:run --console=plain --args="-c=true"
 
-    .\gradlew :client:run --console=plain --args=true
-
-### Running in console mode
-
-    .\gradlew :client:run --args=false
+### Running with a GUI
+    .\gradlew :client:run --args="-c=false"
     or
-    .\gradlew :client:run 
-
+    .\gradlew :client:run
