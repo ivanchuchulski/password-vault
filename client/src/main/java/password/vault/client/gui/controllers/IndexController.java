@@ -2,7 +2,6 @@ package password.vault.client.gui.controllers;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -45,7 +44,7 @@ public class IndexController {
     private final Gson gson;
     private final String username;
 
-    private ObservableList<Node> currentCredentials;
+    private List<Credential> currentCredentials;
 
     @FXML
     private Button btnLogout;
@@ -86,6 +85,8 @@ public class IndexController {
         this.username = context.getLoggedInUsername();
 
         this.gson = new Gson();
+
+        this.currentCredentials = new LinkedList<>();
     }
 
     @FXML
@@ -262,11 +263,8 @@ public class IndexController {
 
         ObservableList<Node> flowPaneChildren = flowPane.getChildren();
 
-        currentCredentials = FXCollections.observableArrayList(flowPaneChildren);
-
         List<Credential> filtered = new LinkedList<>();
-        for (Node flowPaneChild : flowPaneChildren) {
-            Credential credential = (Credential) flowPaneChild;
+        for (Credential credential : currentCredentials) {
             String usernameFormatted = credential.getLblUsername().getText().toLowerCase();
             String websiteFormatted = credential.getLblDomain().getText().toLowerCase();
 
@@ -362,15 +360,17 @@ public class IndexController {
             lblErrors.setVisible(false);
             lblErrors.setText("");
 
-            List<Credential> guiCredentials = new LinkedList<>();
+            currentCredentials.clear();
+
             for (CredentialIdentifierDTO credential : credentials) {
                 Credential guiCredential = new Credential();
                 guiCredential.setIndexController(this);
                 guiCredential.setCredentialIdentifierDTO(credential);
-                guiCredentials.add(guiCredential);
+
+                currentCredentials.add(guiCredential);
             }
 
-            flowPaneChildren.addAll(guiCredentials);
+            flowPaneChildren.addAll(currentCredentials);
 
             // for testing purposes add a bunch of dummy credentials
             // flowPaneChildren.addAll(getDummyCredentials());
@@ -381,7 +381,6 @@ public class IndexController {
         } catch (IOException e) {
             e.printStackTrace();
             CommonUIElements.getErrorAlert("error fetching data from server");
-            return;
         }
     }
 
