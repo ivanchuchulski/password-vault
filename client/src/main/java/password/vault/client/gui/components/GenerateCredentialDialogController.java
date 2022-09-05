@@ -19,7 +19,7 @@ import password.vault.client.gui.model.GenerateCredentialsDialogResult;
 
 import java.io.IOException;
 
-public class GenerateCredentialDialogConroller extends Dialog<GenerateCredentialsDialogResult> {
+public class GenerateCredentialDialogController extends Dialog<GenerateCredentialsDialogResult> {
 
     private static final String GENERATE_CREDENTIALS_DIALOG_FILENAME = "/password/vault/client/gui/components/" +
             "generate_credentials_dialog.fxml";
@@ -51,7 +51,7 @@ public class GenerateCredentialDialogConroller extends Dialog<GenerateCredential
     @FXML
     private Label lblErrors;
 
-    public GenerateCredentialDialogConroller(Window owner) {
+    public GenerateCredentialDialogController(Window owner) {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(GENERATE_CREDENTIALS_DIALOG_FILENAME));
             fxmlLoader.setController(this);

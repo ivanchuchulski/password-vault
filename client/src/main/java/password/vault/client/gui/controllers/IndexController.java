@@ -23,7 +23,7 @@ import password.vault.api.ServerTextCommandsFactory;
 import password.vault.client.communication.Client;
 import password.vault.client.gui.CommonUIElements;
 import password.vault.client.gui.components.AddCredentialDialogController;
-import password.vault.client.gui.components.GenerateCredentialDialogConroller;
+import password.vault.client.gui.components.GenerateCredentialDialogController;
 import password.vault.client.gui.context.Context;
 import password.vault.client.gui.context.StageManager;
 import password.vault.client.gui.dto.AddCredentialRequestDTO;
@@ -186,14 +186,14 @@ public class IndexController {
 
     @FXML
     void btnGenerateCredentialClicked(ActionEvent event) {
-        GenerateCredentialDialogConroller generateCredentialDialogConroller =
-                new GenerateCredentialDialogConroller(Context
+        GenerateCredentialDialogController generateCredentialDialogController =
+                new GenerateCredentialDialogController(Context
                                                               .getInstance()
                                                               .getStageManager()
                                                               .getCurrentStage());
 
         Optional<GenerateCredentialsDialogResult> generateCredentialsDialogResultOptional =
-                generateCredentialDialogConroller.showAndWait();
+                generateCredentialDialogController.showAndWait();
 
         if (generateCredentialsDialogResultOptional.isEmpty()) {
             return;

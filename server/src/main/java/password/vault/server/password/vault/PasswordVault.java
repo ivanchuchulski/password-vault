@@ -7,11 +7,11 @@ import java.util.List;
 
 public interface PasswordVault {
     void addPassword(String username, WebsiteCredential websiteCredential, String masterPassword)
-            throws PasswordVaultDB.CredentialsAlreadyAddedException, PasswordEncryptor.PasswordEncryptorException, DatabaseConnectorException;
+            throws CredentialsAlreadyAddedException, PasswordEncryptor.PasswordEncryptorException, DatabaseConnectorException;
 
     void removePassword(String username, String website, String usernameForSite, String masterPassword)
             throws UsernameNotHavingCredentialsException, CredentialNotFoundException, DatabaseConnectorException,
-            PasswordVaultDB.CredentialRemovalException;
+            CredentialRemovalException;
 
     String retrieveCredentials(String username, String website, String usernameForSite, String masterPassword)
             throws UsernameNotHavingCredentialsException, CredentialNotFoundException,

@@ -16,7 +16,7 @@ public class StageManager {
     public StageManager(Stage primaryStage) {
         this.primaryStage = primaryStage;
 
-        primaryStage.setResizable(false);
+        primaryStage.setResizable(true);
         primaryStage.setTitle("Password Vault");
 
         primaryStage.show();
